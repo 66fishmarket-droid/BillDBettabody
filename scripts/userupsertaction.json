@@ -1,0 +1,56 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Bill – User Upsert", "version": "1.0.0" },
+  "servers": [{ "url": "https://hook.eu2.make.com" }],
+  "paths": {
+    "/cwxh4f7a7akrfnr9ljilctodqm8355af": {
+      "post": {
+        "operationId": "post_user_upsert",
+        "summary": "Upsert client profile to Google Sheets via Make webhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["version","event","client_id","source","data"],
+                "properties": {
+                  "version": { "type": "string", "example": "1.0" },
+                  "event": { "type": "string", "enum": ["user.upsert"] },
+                  "client_id": { "type": "string", "example": "cli_001" },
+                  "source": { "type": "string", "example": "gpt.bill" },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "first_name": { "type": "string" },
+                      "last_name": { "type": "string" },
+                      "email": { "type": "string" },
+                      "timezone": { "type": "string", "example": "Europe/London" },
+                      "goals": { "type": "string" },
+                      "schedule": { "type": "string" },
+                      "chronic_contraindications": { "type": "array", "items": { "type": "object" } },
+                      "injuries": { "type": "string" },
+                      "equipment": { "type": "string" },
+                      "diet_style": { "type": "string" },
+                      "calorie_target": { "type": "number" },
+                      "protein_min": { "type": "number" },
+                      "supplements": { "type": "string" },
+                      "preferences": { "type": "string" },
+                      "notes": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK – Make received the payload",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          }
+        }
+      }
+    }
+  }
+}
