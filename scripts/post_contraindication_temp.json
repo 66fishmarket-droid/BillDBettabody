@@ -1,0 +1,26 @@
+{
+  "name": "post_contraindication_temp",
+  "description": "Logs a temporary contraindication (injury, illness, travel, etc.) for a client into the Contraindications.temp worksheet via Make.com webhook.",
+  "webhook_url": "https://hook.eu2.make.com/7n8m9rg7chlxjrtfcdrekx1qc12smsyn",
+  "method": "POST",
+  "expected_response": {
+    "logged": true,
+    "record_id": "row_2511261053"
+  },
+  "payload_template": {
+    "client_id": "cli_001",
+    "date_reported": "2025-11-26",
+    "type": "injury",
+    "description": "mild right knee strain after trail run",
+    "expected_duration": "10",
+    "status": "active",
+    "notes": "advise light cycling and upper body work only",
+    "date_resolved": ""
+  },
+  "response_handling": {
+    "on_success": "Right then, contraindication logged successfully for {{client_id}} — {{type}} noted.",
+    "on_failure": "Hmm, looks like the contraindication couldn’t be logged. Let’s double-check the connection or sheet name."
+  },
+  "version": "1.0",
+  "last_updated": "2025-11-26T10:55:00Z"
+}
