@@ -1,24 +1,90 @@
 {
-  "version": "1.0",
-  "event": "plan.generate",
-  "client_id": "cli_001",
-  "source": "gpt.bill",
-  "data": {
-    "phase": "Base",
-    "week_start": "2025-12-01",
-    "duration_weeks": 4,
-    "days_per_week": 3,
-    "goal_focus": "Build aerobic base and mobility",
-    "location": "home",
-    "available_equipment": ["dumbbells", "treadmill"],
-    "nutrition": {
-      "calories": 2200,
-      "protein": 160,
-      "carbs": 210,
-      "fat": 70
-    },
-    "supplements": [
-      {"name": "Creatine Monohydrate", "dosage": "5g post-workout"}
-    ]
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bill – Generate Training Plan",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "https://hook.eu2.make.com" }
+  ],
+  "paths": {
+    "/euifx4w0t1qayx4yd94pjfjcud6hxulb": {
+      "post": {
+        "operationId": "generate_training_plan",
+        "summary": "Create or refresh a structured training and nutrition plan for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["version", "event", "client_id", "source", "data"],
+                "properties": {
+                  "version": { "type": "string", "example": "1.0" },
+                  "event": { "type": "string", "enum": ["plan.generate"] },
+                  "client_id": { "type": "string", "example": "cli_001" },
+                  "source": { "type": "string", "example": "gpt.bill" },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "phase": { "type": "string", "example": "Base" },
+                      "week_start": { "type": "string", "format": "date" },
+                      "duration_weeks": { "type": "integer", "example": 4 },
+                      "days_per_week": { "type": "integer", "example": 3 },
+                      "goal_focus": { "type": "string", "example": "Build aerobic base" },
+                      "location": { "type": "string", "example": "home" },
+                      "available_equipment": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "nutrition": {
+                        "type": "object",
+                        "properties": {
+                          "calories": { "type": "integer" },
+                          "protein": { "type": "integer" },
+                          "carbs": { "type": "integer" },
+                          "fat": { "type": "integer" }
+                        }
+                      },
+                      "supplements": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": { "type": "string" },
+                            "dosage": { "type": "string" },
+                            "timing": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "action": { "type": "string", "example": "plan_created" },
+                    "plan_id": { "type": "string", "example": "plan_251126102245" },
+                    "phase": { "type": "string", "example": "Base" },
+                    "client_id": { "type": "string", "example": "cli_001" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
