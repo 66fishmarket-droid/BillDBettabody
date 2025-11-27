@@ -1,0 +1,74 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bill – Update Temporary Contraindication",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://hook.eu2.make.com"
+    }
+  ],
+  "paths": {
+    "/5m8b7ab4uhfeg8t6dfr4c6yq7pjk1xns": {
+      "post": {
+        "summary": "Update an existing temporary contraindication when a client reports recovery or status change.",
+        "operationId": "update_contraindication_temp",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "record_id": {
+                    "type": "string",
+                    "description": "Row identifier from the initial log response, e.g. 'row_23'."
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "Client identifier, e.g. 'cli_001'."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "New status, e.g. 'resolved' or 'active'."
+                  },
+                  "date_resolved": {
+                    "type": "string",
+                    "description": "Date the issue was resolved, in YYYY-MM-DD format."
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional notes about recovery or remaining limitations."
+                  }
+                },
+                "required": [
+                  "record_id",
+                  "client_id",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful update",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": { "type": "boolean" },
+                    "record_id": { "type": "string" },
+                    "client_id": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
