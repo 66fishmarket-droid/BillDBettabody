@@ -10,7 +10,7 @@
     }
   ],
   "paths": {
-    "/5m8b7ab4uhfeg8t6dfr4c6yq7pjk1xns": {
+    "/bkkygjml0fmc2rkguyesn4jeppg5ia9d": {
       "post": {
         "summary": "Update an existing temporary contraindication when a client reports recovery or status change.",
         "operationId": "update_contraindication_temp",
