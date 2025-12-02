@@ -1,0 +1,107 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bill – Log Chronic Contraindication",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://hook.eu2.make.com"
+    }
+  ],
+  "paths": {
+    "/box83ye6ison8gbpsecr1pufermgdx0b": {
+      "post": {
+        "summary": "Log a chronic (baseline) contraindication for a client.",
+        "operationId": "post_contraindication_chronic",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Client ID, e.g. cli_001"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Name/label of the chronic condition, e.g. 'knee osteoarthritis'"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "description": "Severity descriptor, e.g. 'mild', 'moderate', 'severe'"
+                  },
+                  "affected_system": {
+                    "type": "string",
+                    "description": "Primary system affected, e.g. 'musculoskeletal', 'cardiovascular'"
+                  },
+                  "contraindicated_movements": {
+                    "type": "string",
+                    "description": "Comma- or pipe-separated list of movements or patterns to avoid or modify"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Free-text notes and management considerations"
+                  },
+                  "date_added": {
+                    "type": "string",
+                    "description": "Date the condition was first logged (ISO format, e.g. 2025-12-02)"
+                  },
+                  "last_reviewed": {
+                    "type": "string",
+                    "description": "Date this record was last reviewed/confirmed (ISO format)"
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Status of the chronic record, usually 'active'"
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "condition",
+                  "severity",
+                  "affected_system",
+                  "contraindicated_movements",
+                  "date_added",
+                  "last_reviewed",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chronic contraindication logged successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged": {
+                      "type": "boolean"
+                    },
+                    "record_id": {
+                      "type": "string",
+                      "description": "Row ID or unique identifier in the Contraindications_Chronic sheet"
+                    },
+                    "client_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "logged",
+                    "record_id",
+                    "client_id"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
