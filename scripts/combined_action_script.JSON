@@ -1,0 +1,508 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bill – Make Actions",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://hook.eu2.make.com"
+    }
+  ],
+  "paths": {
+    "/cwxh4f7a7akrfnr9ljilctodqm8355af": {
+      "post": {
+        "operationId": "post_user_upsert",
+        "summary": "Upsert client profile to Google Sheets via Make webhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "event",
+                  "client_id",
+                  "source",
+                  "data"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "example": "1.0"
+                  },
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "user.upsert"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "example": "cli_001"
+                  },
+                  "source": {
+                    "type": "string",
+                    "example": "gpt.bill"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "first_name": {
+                        "type": "string"
+                      },
+                      "last_name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string"
+                      },
+                      "timezone": {
+                        "type": "string",
+                        "example": "Europe/London"
+                      },
+                      "goals": {
+                        "type": "string"
+                      },
+                      "schedule": {
+                        "type": "string"
+                      },
+                      "chronic_contraindications": {
+                        "type": "string",
+                        "description": "New chronic condition identifier (e.g. chr_20250206T122345_cli_001). The Make scenario merges this into the existing chronic_contraindications list for the client."
+                      },
+                      "injuries": {
+                        "type": "string",
+                        "description": "Active temporary injury record_id, if any."
+                      },
+                      "equipment": {
+                        "type": "string"
+                      },
+                      "diet_style": {
+                        "type": "string"
+                      },
+                      "calorie_target": {
+                        "type": "number"
+                      },
+                      "protein_min": {
+                        "type": "number"
+                      },
+                      "supplements": {
+                        "type": "string"
+                      },
+                      "preferences": {
+                        "type": "string"
+                      },
+                      "notes": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK – Make received the payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/euifx4w0t1qayx4yd94pjfjcud6hxulb": {
+      "post": {
+        "operationId": "generate_training_plan",
+        "summary": "Create or refresh a structured training and nutrition plan for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "event",
+                  "client_id",
+                  "source",
+                  "data"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "example": "1.0"
+                  },
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "plan.generate"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "example": "cli_001"
+                  },
+                  "source": {
+                    "type": "string",
+                    "example": "gpt.bill"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "phase": {
+                        "type": "string",
+                        "example": "Base"
+                      },
+                      "week_start": {
+                        "type": "string",
+                        "format": "date"
+                      },
+                      "duration_weeks": {
+                        "type": "integer",
+                        "example": 4
+                      },
+                      "days_per_week": {
+                        "type": "integer",
+                        "example": 3
+                      },
+                      "goal_focus": {
+                        "type": "string",
+                        "example": "Build aerobic base"
+                      },
+                      "location": {
+                        "type": "string",
+                        "example": "home"
+                      },
+                      "available_equipment": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "nutrition": {
+                        "type": "object",
+                        "properties": {
+                          "calories": {
+                            "type": "integer"
+                          },
+                          "protein": {
+                            "type": "integer"
+                          },
+                          "carbs": {
+                            "type": "integer"
+                          },
+                          "fat": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "supplements": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "dosage": {
+                              "type": "string"
+                            },
+                            "timing": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "action": {
+                      "type": "string",
+                      "example": "plan_created"
+                    },
+                    "plan_id": {
+                      "type": "string",
+                      "example": "plan_251126102245"
+                    },
+                    "phase": {
+                      "type": "string",
+                      "example": "Base"
+                    },
+                    "client_id": {
+                      "type": "string",
+                      "example": "cli_001"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/7n8m9rg7chlxjrtfcdrekx1qc12smsyn": {
+      "post": {
+        "operationId": "post_contraindication_temp",
+        "summary": "Log a temporary contraindication for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "date_reported": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "expected_duration": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "date_resolved": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "date_reported",
+                  "type",
+                  "description"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged": {
+                      "type": "boolean"
+                    },
+                    "record_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/bkkygjml0fmc2rkguyesn4jeppg5ia9d": {
+      "post": {
+        "operationId": "update_contraindication_temp",
+        "summary": "Update an existing temporary contraindication when a client reports recovery or status change.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "record_id": {
+                    "type": "string",
+                    "description": "Row identifier from the initial log response, e.g. 'row_23'."
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "Client identifier, e.g. 'cli_001'."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "New status, e.g. 'resolved' or 'active'."
+                  },
+                  "expected_duration": {
+                    "type": "string",
+                    "description": "Updated expected duration in days or a short descriptor, e.g. '10' or 'extended by 7 days'."
+                  },
+                  "date_resolved": {
+                    "type": "string",
+                    "description": "Date the issue was resolved, in YYYY-MM-DD format."
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional notes about recovery, remaining limitations, or why more time is needed."
+                  }
+                },
+                "required": [
+                  "record_id",
+                  "client_id",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful update",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": {
+                      "type": "boolean"
+                    },
+                    "record_id": {
+                      "type": "string"
+                    },
+                    "client_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/box83ye6ison8gbpsecr1pufermgdx0b": {
+      "post": {
+        "operationId": "post_contraindication_chronic",
+        "summary": "Log a chronic (baseline) contraindication for a client.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Client ID, e.g. cli_001"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Name/label of the chronic condition, e.g. 'knee osteoarthritis'"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "description": "Severity descriptor, e.g. 'mild', 'moderate', 'severe'"
+                  },
+                  "affected_system": {
+                    "type": "string",
+                    "description": "Primary system affected, e.g. 'musculoskeletal', 'cardiovascular'"
+                  },
+                  "contraindicated_movements": {
+                    "type": "string",
+                    "description": "Comma- or pipe-separated list of movements or patterns to avoid or modify"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Free-text notes and management considerations"
+                  },
+                  "date_added": {
+                    "type": "string",
+                    "description": "Date the condition was first logged (ISO format, e.g. 2025-12-02)"
+                  },
+                  "last_reviewed": {
+                    "type": "string",
+                    "description": "Date this record was last reviewed/confirmed (ISO format)"
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Status of the chronic record, usually 'active'"
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "condition",
+                  "severity",
+                  "affected_system",
+                  "contraindicated_movements",
+                  "date_added",
+                  "last_reviewed",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chronic contraindication logged successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged": {
+                      "type": "boolean"
+                    },
+                    "record_id": {
+                      "type": "string",
+                      "description": "Row ID or unique identifier in the Contraindications_Chronic sheet"
+                    },
+                    "client_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "logged",
+                    "record_id",
+                    "client_id"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
