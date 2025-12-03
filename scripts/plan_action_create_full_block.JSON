@@ -1,0 +1,87 @@
+{
+  "plan_action": "create_full_block",
+
+  "client": {
+    "client_id": "cli_001",
+    "name": "Example Human"
+  },
+
+  "plan": {
+    "plan_id": "plan_2026_Q1",          // optional: null for brand new
+    "phase_name": "Hypertrophy Base",
+    "phase_goal": "Build strength and muscle while restoring 5–10k running",
+    "week_start": "2026-01-05",         // ISO date
+    "duration_weeks": 4,
+    "days_per_week": 4,
+    "constraints": "Mild right knee OA, avoid deep knee flexion under heavy load",
+    "primary_locations": "Gym floor, Treadmill, Pool",
+    "nutrition_targets": "High protein, slight calorie surplus",
+    "supplement_protocol": "Creatine, Vitamin D, Omega-3",
+    "notes": "Returning to structured training after long break"
+  },
+
+  "goals": {
+    "primary": "General strength and longevity",
+    "secondary": [
+      "Return to 5–10 km continuous running",
+      "Maintain shoulder health"
+    ],
+    "tertiary": []
+  },
+
+  "modalities": [
+    {
+      "modality": "strength",
+      "priority": "primary",
+      "target_sessions_per_week": 2
+    },
+    {
+      "modality": "running",
+      "priority": "secondary",
+      "target_sessions_per_week": 2
+    },
+    {
+      "modality": "swim",
+      "priority": "optional",
+      "target_sessions_per_week": 1
+    },
+    {
+      "modality": "mobility",
+      "priority": "always",
+      "target_sessions_per_week": 3
+    }
+  ],
+
+  "availability": {
+    "default_session_minutes": 75,
+    "days": [
+      { "day_of_week": "Monday",    "available_minutes": 60 },
+      { "day_of_week": "Wednesday", "available_minutes": 90 },
+      { "day_of_week": "Saturday",  "available_minutes": 75 }
+    ]
+  },
+
+  "athlete_profile": {
+    "age": 47,
+    "sex": "male",
+    "training_age": "intermediate",       // beginner|intermediate|advanced
+    "injury_flags": [
+      "knee_osteoarthritis_mild",
+      "history_low_back_pain"
+    ],
+    "cardio_status": "deconditioned",
+    "recovery_profile": {
+      "sleep_quality": "moderate",
+      "stress_level": "high",
+      "training_consistency_past_12_months": "patchy"
+    }
+  },
+
+  "facility_context": {
+    "has_gym_floor": true,
+    "has_pool": true,
+    "has_track_or_safe_outdoor_run": true,
+    "gym_to_pool_transition_minutes": 10,
+    "notes": "Pool and gym on separate floors, must pass through changing rooms"
+  }
+}
