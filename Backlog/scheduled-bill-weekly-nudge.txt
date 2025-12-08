@@ -1,0 +1,22 @@
+TITLE: Weekly Auto-Nudge From Bill
+
+DESCRIPTION:
+Implement a scheduled reminder system for clients where Bill contacts them once per week:
+"Hi, it’s Bill. I’m preparing next week's plan. Any travel, injuries, or schedule changes?"
+
+NOTES:
+- In ChatGPT, currently implemented only for developer.
+- For real users, requires backend scheduler (Make / backend service).
+- Should allow user reply → Bill triggers populate_training_week automatically.
+
+DEPENDENCIES:
+- populate_training_week action
+- client lookup action (future)
+- authentication model for multi-user environments
+
+STATUS:
+Backlog
+
+PRIORITY:
+High (for commercial app)
+
