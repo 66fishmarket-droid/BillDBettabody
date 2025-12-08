@@ -1,0 +1,23 @@
+TITLE: Build Client Lookup Architecture
+
+DESCRIPTION:
+Bill must be able to:
+- Identify returning clients
+- Load their current:
+  - profile
+  - active injuries
+  - active training block
+  - upcoming sessions
+- Summarise situation in natural language
+
+ACTIONS NEEDED:
+- get_client_overview API endpoint
+- get_next_week API endpoint
+- Make scenarios to aggregate profile data from Sheets into structured JSON
+
+STATUS:
+Backlog
+
+PRIORITY:
+High
+
