@@ -1,0 +1,14 @@
+TITLE: Garmin Training Plan Export Integration
+
+DESCRIPTION:
+Long-term architecture for:
+- Exporting daily sessions into Garmin Connect-compatible JSON
+- Sending structured workouts via email or API to user watch
+- Syncing completed workouts back into adaptation logs
+
+STATUS:
+Backlog
+
+PRIORITY:
+Medium-high
+
