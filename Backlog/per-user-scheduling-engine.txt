@@ -1,0 +1,15 @@
+TITLE: Per-User Scheduling Engine
+
+DESCRIPTION:
+Create a Make.com or backend scheduler that:
+- Detects next week's block or week
+- Auto-generates the week if enabled
+- Sends personalised reminders
+- Adapts training based on planned travel or injuries
+
+STATUS:
+Backlog
+
+PRIORITY:
+Medium
+
