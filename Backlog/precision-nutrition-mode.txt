@@ -1,0 +1,22 @@
+TITLE: Precision Nutrition Mode (Future Premium Feature)
+
+DESCRIPTION:
+Optional high-detail mode where Bill generates:
+- Per-session targeted macros
+- Glycogen periodisation
+- Hydration/electrolyte planning
+- Supplement timing guidance
+- Caloric cycling for fat loss or hypertrophy
+
+NOTES:
+Requires:
+- More detailed session metadata
+- User coaching preference (“precision mode: on/off”)
+- More complex GPT prompts and rules
+
+STATUS:
+Long-term backlog
+
+PRIORITY:
+Low for v1, high for commercial product roadmap
+
