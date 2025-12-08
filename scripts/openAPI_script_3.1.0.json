@@ -1,0 +1,1037 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bill – Make Actions",
+    "version": "1.3.0"
+  },
+  "servers": [
+    {
+      "url": "https://hook.eu2.make.com"
+    }
+  ],
+  "paths": {
+    "/cwxh4f7a7akrfnr9ljilctodqm8355af": {
+      "post": {
+        "operationId": "post_user_upsert",
+        "summary": "Upsert client profile to Google Sheets via Make webhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "event",
+                  "client_id",
+                  "source",
+                  "data"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "example": "1.0"
+                  },
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "user.upsert"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "example": "otter"
+                  },
+                  "source": {
+                    "type": "string",
+                    "example": "gpt.bill"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "first_name": {
+                        "type": "string"
+                      },
+                      "last_name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string"
+                      },
+                      "timezone": {
+                        "type": "string",
+                        "example": "Europe/London"
+                      },
+                      "sex": {
+                        "type": "string",
+                        "description": "Sex/gender descriptor used only for training assumptions."
+                      },
+                      "age_years": {
+                        "type": "integer",
+                        "description": "Age in years."
+                      },
+                      "height_cm": {
+                        "type": "number",
+                        "description": "Height in centimetres."
+                      },
+                      "weight_kg": {
+                        "type": "number",
+                        "description": "Weight in kilograms."
+                      },
+                      "waist_circumference_cm": {
+                        "type": "number",
+                        "description": "Estimated or measured waist circumference in centimetres."
+                      },
+                      "training_experience": {
+                        "type": "string",
+                        "description": "Overall training experience, e.g. beginner, intermediate, advanced."
+                      },
+                      "primary_background": {
+                        "type": "string",
+                        "description": "Primary training background, e.g. strength, endurance, mixed, none."
+                      },
+                      "last_trained_date": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Date client last trained regularly (YYYY-MM-DD)."
+                      },
+                      "typical_sessions_per_week_last_3_months": {
+                        "type": "integer",
+                        "description": "Approximate training sessions per week over the last 3 months."
+                      },
+                      "cardio_fitness_level": {
+                        "type": "string",
+                        "description": "Cardiorespiratory fitness level, e.g. deconditioned, moderate, strong."
+                      },
+                      "strength_level": {
+                        "type": "string",
+                        "description": "Strength level, e.g. beginner, intermediate, advanced."
+                      },
+                      "movement_quality": {
+                        "type": "string",
+                        "description": "Movement quality descriptor, e.g. limited, ok, good."
+                      },
+                      "goals": {
+                        "type": "string",
+                        "description": "Free-text goals in the client's own words."
+                      },
+                      "goal_primary": {
+                        "type": "string",
+                        "description": "Primary distilled goal."
+                      },
+                      "goal_secondary": {
+                        "type": "string",
+                        "description": "Comma-separated list of secondary goals."
+                      },
+                      "goal_tertiary": {
+                        "type": "string",
+                        "description": "Optional tertiary or nice-to-have goals."
+                      },
+                      "goal_timeframe_months": {
+                        "type": "integer",
+                        "description": "Approximate timeframe for primary goal in months."
+                      },
+                      "schedule": {
+                        "type": "string",
+                        "description": "Narrative weekly schedule summary and training windows."
+                      },
+                      "equipment": {
+                        "type": "string",
+                        "description": "Overall free-text summary of available equipment."
+                      },
+                      "equipment_home": {
+                        "type": "string",
+                        "description": "Home equipment details."
+                      },
+                      "equipment_gym": {
+                        "type": "string",
+                        "description": "Gym facilities and equipment."
+                      },
+                      "equipment_preference": {
+                        "type": "string",
+                        "description": "Preference such as gym_only, home_only, or mixed."
+                      },
+                      "has_pool": {
+                        "type": "boolean",
+                        "description": "True if client has regular access to a swim pool."
+                      },
+                      "has_track_or_safe_run": {
+                        "type": "boolean",
+                        "description": "True if client has access to safe outdoor running or a track."
+                      },
+                      "gym_travel_time_minutes": {
+                        "type": "integer",
+                        "description": "Approximate travel time to gym in minutes."
+                      },
+                      "chronic_contraindications": {
+                        "type": "string",
+                        "description": "New or merged chronic condition identifiers (e.g. chr_20250206T122345_cli_001). The Make scenario merges this into the existing chronic_contraindications list for the client."
+                      },
+                      "injuries": {
+                        "type": "string",
+                        "description": "Active temporary injury record_id(s), if any."
+                      },
+                      "risk_summary": {
+                        "type": "string",
+                        "description": "Short coach note describing key risk considerations."
+                      },
+                      "diet_style": {
+                        "type": "string",
+                        "description": "Diet style, e.g. omnivore, vegetarian, vegan."
+                      },
+                      "calorie_target": {
+                        "type": "number",
+                        "description": "Approximate daily calorie target."
+                      },
+                      "protein_min": {
+                        "type": "number",
+                        "description": "Minimum grams of protein per day."
+                      },
+                      "supplements": {
+                        "type": "string",
+                        "description": "Free-text summary or list of supplements."
+                      },
+                      "sleep_quality": {
+                        "type": "string",
+                        "description": "Sleep quality descriptor, e.g. poor, ok, good."
+                      },
+                      "stress_level": {
+                        "type": "string",
+                        "description": "Stress level descriptor, e.g. low, moderate, high."
+                      },
+                      "work_pattern": {
+                        "type": "string",
+                        "description": "Work pattern, e.g. desk-based, shift, manual."
+                      },
+                      "family_responsibilities": {
+                        "type": "string",
+                        "description": "Notes on caregiving/parenting or other responsibilities that affect training."
+                      },
+                      "watch_platform": {
+                        "type": "string",
+                        "description": "Watch or tracker platform, e.g. garmin, apple, polar, none."
+                      },
+                      "watch_user_id": {
+                        "type": "string",
+                        "description": "External watch or platform user ID, if applicable."
+                      },
+                      "preferences": {
+                        "type": "string",
+                        "description": "Training preferences, likes/dislikes, constraints."
+                      },
+                      "notes": {
+                        "type": "string",
+                        "description": "General coach notes."
+                      },
+                      "last_profile_update": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "ISO datetime when the profile was last materially updated."
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK – Make received the payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/euifx4w0t1qayx4yd94pjfjcud6hxulb": {
+      "post": {
+        "operationId": "update_training_plan",
+        "summary": "Update or refresh a structured training plan (blocks, weeks, sessions) for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "event",
+                  "client_id",
+                  "source",
+                  "data"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "example": "1.0"
+                  },
+                  "event": {
+                    "type": "string",
+                    "enum": [
+                      "plan.generate"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "example": "cli_001"
+                  },
+                  "source": {
+                    "type": "string",
+                    "example": "gpt.bill"
+                  },
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "phase_name": {
+                        "type": "string",
+                        "example": "Base",
+                        "description": "High-level block/phase name. Stored in plans_blocks.phase_name and plans_sessions.phase."
+                      },
+                      "phase_goal": {
+                        "type": "string",
+                        "example": "Build aerobic base while maintaining 2x weekly strength.",
+                        "description": "Plain-language description of what this block should achieve. Stored in plans_blocks.phase_goal."
+                      },
+                      "week_start": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-12-08",
+                        "description": "Start date for Week 1 of the block (YYYY-MM-DD). Stored in plans_blocks.week_start."
+                      },
+                      "duration_weeks": {
+                        "type": "integer",
+                        "example": 4,
+                        "description": "Number of weeks in this block. Stored in plans_blocks.duration_weeks."
+                      },
+                      "days_per_week": {
+                        "type": "integer",
+                        "example": 3,
+                        "description": "Target training days per week. Stored in plans_blocks.days_per_week."
+                      },
+                      "goal_focus": {
+                        "type": "string",
+                        "example": "Build aerobic base",
+                        "description": "Primary focus of the block. Can be mirrored into plans_weeks.primary_focus or used to shape sessions."
+                      },
+                      "constraints": {
+                        "type": "string",
+                        "example": "Avoid heavy overhead pressing; knee OA: limit deep knee flexion; chronic low back pain.",
+                        "description": "Summary of key constraints (chronic + temp issues) relevant to the block. Stored in plans_blocks.constraints."
+                      },
+                      "primary_locations": {
+                        "type": "string",
+                        "example": "gym, home, outdoor",
+                        "description": "Summary of main training environments. Stored in plans_blocks.primary_locations."
+                      },
+                      "nutrition_targets": {
+                        "type": "object",
+                        "description": "Block-level daily nutrition targets. Stored (typically as JSON/text) in plans_blocks.nutrition_targets.",
+                        "properties": {
+                          "calories": {
+                            "type": "integer",
+                            "example": 2400
+                          },
+                          "protein": {
+                            "type": "integer",
+                            "example": 150
+                          },
+                          "carbs": {
+                            "type": "integer",
+                            "example": 250
+                          },
+                          "fat": {
+                            "type": "integer",
+                            "example": 70
+                          }
+                        }
+                      },
+                      "supplement_protocol": {
+                        "type": "array",
+                        "description": "Block-level supplement protocol. Stored (typically as JSON/text) in plans_blocks.supplement_protocol.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "example": "Creatine monohydrate"
+                            },
+                            "dosage": {
+                              "type": "string",
+                              "example": "3–5 g daily"
+                            },
+                            "timing": {
+                              "type": "string",
+                              "example": "Any time of day"
+                            }
+                          }
+                        }
+                      },
+                      "notes": {
+                        "type": "string",
+                        "description": "Free-text notes to guide plan generation. Stored in plans_blocks.notes."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "action": {
+                      "type": "string",
+                      "example": "plan_created"
+                    },
+                    "plan_id": {
+                      "type": "string",
+                      "example": "plan_251126102245"
+                    },
+                    "phase_name": {
+                      "type": "string",
+                      "example": "Base"
+                    },
+                    "client_id": {
+                      "type": "string",
+                      "example": "cli_001"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v35x7s4w3ksju9e4jgjes5rpsoxb3a22": {
+      "post": {
+        "operationId": "generate_training_plan",
+        "summary": "Generate a full training block (macro, meso, micro, steps) for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "plan_action",
+                  "client",
+                  "plan"
+                ],
+                "properties": {
+                  "plan_action": {
+                    "type": "string",
+                    "description": "Type of plan operation to perform.",
+                    "enum": [
+                      "create_full_block"
+                    ]
+                  },
+                  "client": {
+                    "type": "object",
+                    "required": [
+                      "client_id"
+                    ],
+                    "properties": {
+                      "client_id": {
+                        "type": "string",
+                        "description": "Unique ID for the client.",
+                        "example": "cli_001"
+                      },
+                      "name": {
+                        "type": "string",
+                        "description": "Human-readable name of the client."
+                      }
+                    }
+                  },
+                  "plan": {
+                    "type": "object",
+                    "required": [
+                      "phase_name",
+                      "phase_goal",
+                      "week_start",
+                      "duration_weeks",
+                      "days_per_week"
+                    ],
+                    "properties": {
+                      "plan_id": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Existing plan ID if updating/continuing a plan; may be null or omitted for a brand new plan."
+                      },
+                      "phase_name": {
+                        "type": "string",
+                        "description": "Phase or block name (e.g. Hypertrophy Base).",
+                        "example": "Base"
+                      },
+                      "phase_goal": {
+                        "type": "string",
+                        "description": "High-level primary goal for this phase.",
+                        "example": "Build aerobic base while maintaining 2x weekly strength."
+                      },
+                      "week_start": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Start date of the block in ISO format (YYYY-MM-DD).",
+                        "example": "2025-12-08"
+                      },
+                      "duration_weeks": {
+                        "type": "integer",
+                        "description": "Number of weeks in this block.",
+                        "example": 4
+                      },
+                      "days_per_week": {
+                        "type": "integer",
+                        "description": "Target training days per week.",
+                        "example": 3
+                      },
+                      "constraints": {
+                        "type": "string",
+                        "description": "Key injuries, schedule limits, or equipment constraints.",
+                        "example": "Avoid heavy overhead pressing; knee OA: limit deep knee flexion; chronic low back pain.",
+                        "nullable": true
+                      },
+                      "primary_locations": {
+                        "type": "string",
+                        "description": "Typical training environments (e.g. Gym floor, Treadmill, Pool).",
+                        "example": "gym, home, outdoor",
+                        "nullable": true
+                      },
+                      "nutrition_targets": {
+                        "type": "object",
+                        "description": "Block-level daily nutrition targets. Stored (typically as JSON/text) in plans_blocks.nutrition_targets.",
+                        "properties": {
+                          "calories": {
+                            "type": "integer",
+                            "example": 2400
+                          },
+                          "protein": {
+                            "type": "integer",
+                            "example": 150
+                          },
+                          "carbs": {
+                            "type": "integer",
+                            "example": 250
+                          },
+                          "fat": {
+                            "type": "integer",
+                            "example": 70
+                          }
+                        }
+                      },
+                      "supplement_protocol": {
+                        "type": "array",
+                        "description": "Block-level supplement protocol. Stored (typically as JSON/text) in plans_blocks.supplement_protocol.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "example": "Creatine monohydrate"
+                            },
+                            "dosage": {
+                              "type": "string",
+                              "example": "3–5 g daily"
+                            },
+                            "timing": {
+                              "type": "string",
+                              "example": "Any time of day"
+                            }
+                          }
+                        }
+                      },
+                      "notes": {
+                        "type": "string",
+                        "description": "Free-text notes to guide plan generation. Stored in plans_blocks.notes."
+                      }
+                    }
+                  },
+                  "goals": {
+                    "type": "object",
+                    "description": "Goal stack for this block.",
+                    "properties": {
+                      "primary": {
+                        "type": "string",
+                        "description": "Primary training goal.",
+                        "example": "General strength and longevity"
+                      },
+                      "secondary": {
+                        "type": "array",
+                        "description": "Secondary goals list.",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "tertiary": {
+                        "type": "array",
+                        "description": "Optional tertiary goals.",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "modalities": {
+                    "type": "array",
+                    "description": "List of training modalities and their priority and target frequency.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "modality"
+                      ],
+                      "properties": {
+                        "modality": {
+                          "type": "string",
+                          "description": "Type of training (e.g. strength, running, swim, mobility).",
+                          "example": "strength"
+                        },
+                        "priority": {
+                          "type": "string",
+                          "description": "Relative importance of this modality (e.g. primary, secondary, optional, always).",
+                          "example": "primary"
+                        },
+                        "target_sessions_per_week": {
+                          "type": "integer",
+                          "description": "Planned number of sessions per week for this modality.",
+                          "example": 2,
+                          "nullable": true
+                        }
+                      }
+                    }
+                  },
+                  "availability": {
+                    "type": "object",
+                    "description": "Time availability for training.",
+                    "properties": {
+                      "default_session_minutes": {
+                        "type": "integer",
+                        "description": "Default time budget per session in minutes.",
+                        "example": 75,
+                        "nullable": true
+                      },
+                      "days": {
+                        "type": "array",
+                        "description": "Optional list of day-specific time budgets.",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "day_of_week"
+                          ],
+                          "properties": {
+                            "day_of_week": {
+                              "type": "string",
+                              "description": "Day of the week (e.g. Monday).",
+                              "example": "Monday"
+                            },
+                            "available_minutes": {
+                              "type": "integer",
+                              "description": "Time budget in minutes for that day.",
+                              "example": 60,
+                              "nullable": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "athlete_profile": {
+                    "type": "object",
+                    "description": "Profile of the client to adapt training to physiology and recovery.",
+                    "properties": {
+                      "age": {
+                        "type": "integer",
+                        "description": "Age in years.",
+                        "example": 47,
+                        "nullable": true
+                      },
+                      "sex": {
+                        "type": "string",
+                        "description": "Sex/gender descriptor.",
+                        "example": "male",
+                        "nullable": true
+                      },
+                      "training_age": {
+                        "type": "string",
+                        "description": "Training experience level (e.g. beginner, intermediate, advanced).",
+                        "example": "intermediate",
+                        "nullable": true
+                      },
+                      "injury_flags": {
+                        "type": "array",
+                        "description": "List of injury or risk flags (e.g. knee_osteoarthritis_mild).",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "cardio_status": {
+                        "type": "string",
+                        "description": "Cardiorespiratory conditioning status.",
+                        "example": "deconditioned",
+                        "nullable": true
+                      },
+                      "recovery_profile": {
+                        "type": "object",
+                        "description": "Recovery capacity indicators.",
+                        "properties": {
+                          "sleep_quality": {
+                            "type": "string",
+                            "example": "moderate",
+                            "nullable": true
+                          },
+                          "stress_level": {
+                            "type": "string",
+                            "example": "high",
+                            "nullable": true
+                          },
+                          "training_consistency_past_12_months": {
+                            "type": "string",
+                            "example": "patchy",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "facility_context": {
+                    "type": "object",
+                    "description": "Information about the training facilities available to the client.",
+                    "properties": {
+                      "has_gym_floor": {
+                        "type": "boolean",
+                        "example": true,
+                        "nullable": true
+                      },
+                      "has_pool": {
+                        "type": "boolean",
+                        "example": true,
+                        "nullable": true
+                      },
+                      "has_track_or_safe_outdoor_run": {
+                        "type": "boolean",
+                        "example": true,
+                        "nullable": true
+                      },
+                      "gym_to_pool_transition_minutes": {
+                        "type": "integer",
+                        "description": "Estimated time cost in minutes to move from gym floor to pool including changing.",
+                        "example": 10,
+                        "nullable": true
+                      },
+                      "notes": {
+                        "type": "string",
+                        "description": "Additional notes about facility layout and constraints.",
+                        "example": "Pool and gym on separate floors, must pass through changing rooms",
+                        "nullable": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "action": {
+                      "type": "string",
+                      "example": "plan_created"
+                    },
+                    "plan_id": {
+                      "type": "string",
+                      "example": "plan_251126102245"
+                    },
+                    "block_id": {
+                      "type": "string",
+                      "example": "blk_251126102245"
+                    },
+                    "client_id": {
+                      "type": "string",
+                      "example": "cli_001"
+                    },
+                    "weeks_created": {
+                      "type": "integer",
+                      "example": 4
+                    },
+                    "sessions_created": {
+                      "type": "integer",
+                      "example": 12
+                    },
+                    "steps_created": {
+                      "type": "integer",
+                      "example": 120
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/7n8m9rg7chlxjrtfcdrekx1qc12smsyn": {
+      "post": {
+        "operationId": "post_contraindication_temp",
+        "summary": "Log a temporary contraindication for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "date_reported": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "expected_duration": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "date_resolved": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "date_reported",
+                  "type",
+                  "description"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful log",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged": {
+                      "type": "boolean"
+                    },
+                    "record_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bkkygjml0fmc2rkguyesn4jeppg5ia9d": {
+      "post": {
+        "operationId": "update_contraindication_temp",
+        "summary": "Update an existing temporary contraindication when a client reports recovery or status change.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "record_id": {
+                    "type": "string",
+                    "description": "Row identifier from the initial log response, e.g. 'row_23'."
+                  },
+                  "client_id": {
+                    "type": "string",
+                    "description": "Client identifier, e.g. 'cli_001'."
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "New status, e.g. 'resolved' or 'active'."
+                  },
+                  "expected_duration": {
+                    "type": "string",
+                    "description": "Updated expected duration in days or a short descriptor, e.g. '10' or 'extended by 7 days'."
+                  },
+                  "date_resolved": {
+                    "type": "string",
+                    "description": "Date the issue was resolved, in YYYY-MM-DD format."
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Optional notes about recovery, remaining limitations, or why more time is needed."
+                  }
+                },
+                "required": [
+                  "record_id",
+                  "client_id",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful update",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": {
+                      "type": "boolean"
+                    },
+                    "record_id": {
+                      "type": "string"
+                    },
+                    "client_id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/box83ye6ison8gbpsecr1pufermgdx0b": {
+      "post": {
+        "operationId": "post_contraindication_chronic",
+        "summary": "Log a chronic (baseline) contraindication for a client.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "client_id": {
+                    "type": "string",
+                    "description": "Client ID, e.g. cli_001"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Name/label of the chronic condition, e.g. 'knee osteoarthritis'"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "description": "Severity descriptor, e.g. 'mild', 'moderate', 'severe'"
+                  },
+                  "affected_system": {
+                    "type": "string",
+                    "description": "Primary system affected, e.g. 'musculoskeletal', 'cardiovascular'"
+                  },
+                  "contraindicated_movements": {
+                    "type": "string",
+                    "description": "Comma- or pipe-separated list of movements or patterns to avoid or modify"
+                  },
+                  "notes": {
+                    "type": "string",
+                    "description": "Free-text notes and management considerations"
+                  },
+                  "date_added": {
+                    "type": "string",
+                    "description": "Date the condition was first logged (ISO format, e.g. 2025-12-02)"
+                  },
+                  "last_reviewed": {
+                    "type": "string",
+                    "description": "Date this record was last reviewed/confirmed (ISO format)"
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Status of the chronic record, usually 'active'"
+                  }
+                },
+                "required": [
+                  "client_id",
+                  "condition",
+                  "severity",
+                  "affected_system",
+                  "contraindicated_movements",
+                  "date_added",
+                  "last_reviewed",
+                  "status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chronic contraindication logged successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged": {
+                      "type": "boolean"
+                    },
+                    "record_id": {
+                      "type": "string",
+                      "description": "Row ID or unique identifier in the Contraindications_Chronic sheet"
+                    },
+                    "client_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "logged",
+                    "record_id",
+                    "client_id"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
