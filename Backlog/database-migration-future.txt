@@ -1,0 +1,18 @@
+TITLE: Database Migration (Away from Google Sheets)
+
+DESCRIPTION:
+Plan for future migration to a scalable database when commercializing:
+- PostgreSQL, Supabase, or Firestore
+- API gateways for Bill actions
+- Row-level security for multi-client access
+- Versioned plans and adaptive history tracking
+
+GOAL:
+Support 100–1000 users with clean persistence and safe access.
+
+STATUS:
+Backlog
+
+PRIORITY:
+Medium
+
