@@ -1,0 +1,19 @@
+TITLE: Step Generation Refactor Into Weekly Generator
+
+DESCRIPTION:
+Shift all Plans_Steps generation out of the block scaffolder and into the weekly session generator. Each week should dynamically create steps based on:
+- session type
+- client readiness
+- injuries
+- facility
+- time availability
+
+NOTES:
+Existing placeholders removed from block generator.
+
+STATUS:
+In progress (weekly generator design phase)
+
+PRIORITY:
+High
+
