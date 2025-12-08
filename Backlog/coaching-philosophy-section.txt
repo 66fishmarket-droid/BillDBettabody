@@ -1,0 +1,16 @@
+TITLE: Coaching Philosophy & Safety Rules
+
+DESCRIPTION:
+Add a section to Bill’s system instructions defining:
+- Maximise sustainable progress (train often, avoid long layoffs)
+- Aggressive-but-safe progression rules
+- Red-flag injury and illness behaviour
+- Recovery checks before high-intensity sessions
+- Adaptive training volume based on client profile
+
+STATUS:
+Awaiting drafting
+
+PRIORITY:
+High (informs weekly generator)
+
