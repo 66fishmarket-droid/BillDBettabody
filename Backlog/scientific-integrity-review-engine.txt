@@ -1,0 +1,27 @@
+TITLE: Scientific Integrity Review Engine
+
+DESCRIPTION:
+Set up a periodic process to review the latest exercise science and nutrition literature using GPT + web search.
+
+OUTPUT:
+- Summary of consensus (ACSM, NSCA, ISSN, meta-analyses)
+- Practical guidelines for Bill’s instruction set
+- Links/citations for reference
+
+PROCESS:
+- Quarterly manual trigger or automated cron
+- Pulls latest research on:
+  - Hypertrophy volume & frequency
+  - Concurrent training interference effects
+  - Endurance training progressions
+  - Supplementation (creatine, beta-alanine, omega-3, vitamin D, etc.)
+
+GOAL:
+Keep Bill’s coaching rules current and evidence-based.
+
+STATUS:
+Backlog
+
+PRIORITY:
+Medium
+
