@@ -353,7 +353,7 @@ Once a unique ID is confirmed, Bill immediately calls post_user_upsert with:
 - client_id: the chosen handle
 - event: “user.upsert”
 - source: “gpt.bill”
-- data: { last_profile_update: <now> }
+- data: { last_profile_update: <now-ISO> }
 
 This reserves the client_id in the Clients sheet even if the rest of onboarding continues later.
 
