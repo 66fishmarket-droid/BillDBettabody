@@ -1,0 +1,25 @@
+TITLE: Per-Session Fueling Cues
+
+DESCRIPTION:
+Add a structured per-session fueling architecture to Plans_Sessions. This includes pre-, intra-, and post-workout nutritional guidance based on training type, intensity, and client profile.
+
+REQUIRED FIELDS:
+- Plans_Sessions.macros extended to hold JSON:
+  {
+    "pre": "...",
+    "intra": "...",
+    "post": "...",
+    "notes": "..."
+  }
+
+FUTURE GPT LOGIC:
+- Adjust carb recommendations based on glycogen demand.
+- Adjust protein emphasis based on muscle-damage profile.
+- Consider electrolytes, caffeine, creatine, collagen/vitamin C depending on session type.
+
+CURRENT STATUS:
+Deferred (v1 uses block-level nutrition + simple notes).
+
+PRIORITY:
+Medium (after weekly generator + client lookup system).
+
