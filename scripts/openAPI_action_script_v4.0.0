@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Bill – Make Actions",
-    "version": "2.0.0"
+    "version": "2.0.1"
   },
   "servers": [
     {
@@ -20,13 +20,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "version",
-                  "event",
-                  "client_id",
-                  "source",
-                  "data"
-                ],
+                "required": ["version", "event", "client_id", "source", "data"],
                 "properties": {
                   "version": { "type": "string" },
                   "event": { "type": "string", "enum": ["user.upsert"] },
@@ -34,7 +28,7 @@
                   "source": { "type": "string" },
                   "data": {
                     "type": "object",
-                    "description": "Flexible client profile object",
+                    "properties": {},
                     "additionalProperties": true
                   }
                 }
@@ -45,7 +39,15 @@
         "responses": {
           "200": {
             "description": "OK – Make received the payload",
-            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }
@@ -118,7 +120,15 @@
         "responses": {
           "200": {
             "description": "Logged",
-            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }
@@ -150,7 +160,15 @@
         "responses": {
           "200": {
             "description": "Updated",
-            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }
@@ -194,7 +212,15 @@
         "responses": {
           "200": {
             "description": "Chronic logged",
-            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }
@@ -210,21 +236,8 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["plan_action", "client", "plan"],
                 "additionalProperties": true,
-                "properties": {
-                  "plan_action": { "type": "string" },
-                  "client": { "type": "object", "additionalProperties": true },
-                  "plan": { "type": "object", "additionalProperties": true },
-                  "goals": { "type": "object", "additionalProperties": true },
-                  "modalities": {
-                    "type": "array",
-                    "items": { "type": "object", "additionalProperties": true }
-                  },
-                  "availability": { "type": "object", "additionalProperties": true },
-                  "athlete_profile": { "type": "object", "additionalProperties": true },
-                  "facility_context": { "type": "object", "additionalProperties": true }
-                }
+                "required": ["plan_action", "client", "plan"]
               }
             }
           }
@@ -232,7 +245,15 @@
         "responses": {
           "200": {
             "description": "Plan created",
-            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }
@@ -246,14 +267,26 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "additionalProperties": true }
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
             }
           }
         },
         "responses": {
           "200": {
             "description": "Plan updated",
-            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {},
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         }
       }
@@ -267,7 +300,13 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "type": "object", "required": ["client_id"], "properties": { "client_id": { "type": "string" } } }
+              "schema": {
+                "type": "object",
+                "required": ["client_id"],
+                "properties": {
+                  "client_id": { "type": "string" }
+                }
+              }
             }
           }
         },
@@ -282,26 +321,26 @@
                   "properties": {
                     "status": { "type": "string" },
                     "client_id": { "type": "string" },
-                    "client_profile": { "type": "object", "additionalProperties": true },
-                    "active_plan": { "type": "object", "additionalProperties": true },
+                    "client_profile": { "type": "object", "properties": {}, "additionalProperties": true },
+                    "active_plan": { "type": "object", "properties": {}, "additionalProperties": true },
                     "weeks": {
                       "type": "array",
-                      "items": { "type": "object", "additionalProperties": true }
+                      "items": { "type": "object", "properties": {}, "additionalProperties": true }
                     },
                     "sessions": {
                       "type": "array",
-                      "items": { "type": "object", "additionalProperties": true }
+                      "items": { "type": "object", "properties": {}, "additionalProperties": true }
                     },
                     "chronic_contraindications": {
                       "type": "array",
-                      "items": { "type": "object", "additionalProperties": true }
+                      "items": { "type": "object", "properties": {}, "additionalProperties": true }
                     },
                     "temporary_contraindications": {
                       "type": "array",
-                      "items": { "type": "object", "additionalProperties": true }
+                      "items": { "type": "object", "properties": {}, "additionalProperties": true }
                     },
-                    "nutrition": { "type": "object", "additionalProperties": true },
-                    "history_summary": { "type": "object", "additionalProperties": true },
+                    "nutrition": { "type": "object", "properties": {}, "additionalProperties": true },
+                    "history_summary": { "type": "object", "properties": {}, "additionalProperties": true },
                     "timestamp": { "type": "string" },
                     "details": { "type": "string", "nullable": true }
                   },
@@ -333,7 +372,6 @@
 
                   "context": {
                     "type": "object",
-                    "description": "Plan and week context already resolved by Bill",
                     "properties": {
                       "plan_id": { "type": "string" },
                       "block_id": { "type": "string" },
@@ -347,7 +385,6 @@
 
                   "sessions": {
                     "type": "array",
-                    "description": "Each session already computed by Bill, including steps",
                     "items": {
                       "type": "object",
                       "required": ["session_id", "steps"],
@@ -360,7 +397,6 @@
 
                         "steps": {
                           "type": "array",
-                          "description": "Bill-generated step objects to be written into Plans_Steps",
                           "items": {
                             "type": "object",
                             "properties": {
@@ -390,7 +426,6 @@
 
                   "metadata": {
                     "type": "object",
-                    "description": "Extra info for logging/debugging",
                     "properties": {
                       "request_timestamp": { "type": "string" },
                       "trigger_source": { "type": "string" }
@@ -411,16 +446,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "status": { "type": "string" },
-                    "client_id": { "type": "string" },
-                    "plan_id": { "type": "string" },
-                    "week_id": { "type": "string" },
-                    "sessions_written": { "type": "integer" },
-                    "steps_written": { "type": "integer" },
-                    "timestamp": { "type": "string" },
-                    "details": { "type": "string", "nullable": true }
-                  },
+                  "properties": {},
                   "additionalProperties": true
                 }
               }
