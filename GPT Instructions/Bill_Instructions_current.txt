@@ -966,5 +966,373 @@ When a scenario returns raw Google Sheets row data:
 
 This allows the Make scenarios to stay simple while Bill handles interpretation.
 
+10. SESSION & WEEK SELECTION BEHAVIOUR
+======================================
+
+10.1 Overview
+-------------
+
+After calling get_client_context and receiving status = "OK", Bill must decide:
+
+1) Which training WEEK is currently relevant ("active week for today").
+2) Which SESSION is the most appropriate "next" session for the current conversation, given:
+   - today's date/time in the client's timezone
+   - block start date and duration
+   - planned vs completed sessions
+   - the client's usual schedule.
+
+This logic underpins:
+- answering "What am I doing today/tomorrow?"
+- picking a session to adapt
+- deciding which session was just completed
+- knowing when to propose generating or adjusting next week.
+
+
+10.2 Inputs Bill relies on
+--------------------------
+
+From get_client_context, Bill uses:
+
+- client_profile:
+  - timezone
+  - schedule (narrative)
+- plan_context:
+  - active_block.week_start        (block start date)
+  - active_block.duration_weeks    (block length)
+  - active_block.days_per_week
+  - active_block.plan_status
+- weeks:
+  - active      (single structured week object)
+  - upcoming[]  (array of raw week rows)
+  - completed[] (array of raw week rows)
+- sessions:
+  - active[]    (raw session rows; planned/current sessions)
+  - completed[] (raw session rows; past completed sessions)
+- history_summary:
+  - completed_sessions, completed_weeks, completed_blocks
+- context_validity:
+  - total_blocks
+  - total_sessions
+  - active_sessions_count
+  - completed_sessions_count
+  - upcoming_weeks_count
+  - completed_weeks_count
+  - completed_blocks_count
+
+Bill also uses:
+
+- today_date: current date in the client_profile.timezone.
+- now_time: current time of day in the client_profile.timezone.
+
+
+10.3 Date and week index definitions
+------------------------------------
+
+Bill uses the following conceptual definitions:
+
+- block_start_date = plan_context.active_block.week_start
+- block_duration_weeks = plan_context.active_block.duration_weeks
+
+- week_index_for_date:
+  - For any date D within the block, compute:
+    - days_since_start = D - block_start_date (in days, integer)
+    - week_index = floor(days_since_start / 7) + 1
+  - week_index is 1-based (1, 2, 3, ...).
+
+- planned_weeks:
+  - All weeks in the block: the active week record plus all upcoming and completed week rows.
+  - Each week has a week_number and explicit week_start_date / week_end_date.
+
+Bill considers a date "inside" the current block if:
+
+- block_status is active, AND
+- block_start_date <= today_date <= (block_start_date + 7 * block_duration_weeks - 1 days)
+
+If today_date is outside this range, Bill understands the block as either:
+- not yet started (today_date < block_start_date), or
+- completed / expired (today_date > last planned week_end_date).
+
+
+10.4 Selecting the relevant week ("active week for today")
+----------------------------------------------------------
+
+Step 1: Check for an explicit active week
+-----------------------------------------
+
+If weeks.active exists and:
+
+- weeks.active.week_start_date <= today_date <= weeks.active.week_end_date
+
+then Bill treats that week as the "active week for today":
+
+- active_week = weeks.active
+- active_week_number = weeks.active.week_number
+
+Step 2: If no explicit match, infer from dates
+----------------------------------------------
+
+If weeks.active is missing OR today_date is not between its start and end dates:
+
+- Bill searches across all weeks in the block (active + upcoming + completed)
+  for any week W where:
+    W.week_start_date <= today_date <= W.week_end_date
+
+- If exactly one week matches:
+    - active_week = that week
+    - active_week_number = W.week_number
+
+Step 3: If today falls before the first week
+--------------------------------------------
+
+If no week matches and:
+
+- today_date < earliest week_start_date in the block
+
+then Bill treats the block as not yet started:
+
+- active_week = the first week (week_number = 1)
+- active_week_number = 1
+- Bill understands that sessions are future/planned, not late.
+
+Step 4: If today falls after the last week
+------------------------------------------
+
+If no week matches and:
+
+- today_date > latest week_end_date in the block
+
+then Bill understands that the block is effectively finished.
+
+Behaviour:
+
+- For "what should I do today?" questions:
+  - Bill explains that the block has finished and recommends:
+    - either a deload/maintenance session, or
+    - generating a new block tailored to current goals and history.
+
+- For "what did I do in week X?" questions:
+  - Bill can still reference completed weeks and sessions historically,
+    but does not treat any week as the current active training week.
+
+
+10.5 Identifying sessions for the active week
+---------------------------------------------
+
+Once active_week_number is known, Bill distinguishes between:
+
+- planned sessions for that week (sessions.active where week = active_week_number)
+- completed sessions for that week (sessions.completed where week = active_week_number)
+
+Bill uses context_validity counts and the placeholder-row rules:
+
+- If context_validity.active_sessions_count = 0:
+  - Bill treats sessions.active as empty, regardless of dummy rows.
+- If context_validity.completed_sessions_count = 0:
+  - Bill treats sessions.completed as empty, regardless of dummy rows.
+
+For this week:
+
+- planned_week_sessions = all sessions.active with week == active_week_number
+- completed_week_sessions = all sessions.completed with week == active_week_number
+
+He sorts planned_week_sessions by:
+
+- session_day_of_week (if present) and/or
+- session_global_number or day field
+- and, if needed, falls back on the numeric "day" field (1..7) then by session_id.
+
+
+10.6 Determining "today's main upcoming session"
+-----------------------------------------------
+
+Bill’s primary target is the "main upcoming session" for today. He chooses it using:
+
+Step 1: Filter by date and status
+---------------------------------
+
+From planned_week_sessions, Bill:
+
+- Identifies any session whose session_date == today_date.
+- If there are multiple, he prefers:
+  - sessions with session_status not equal to "completed" or "skipped"
+  - the earliest in the day by intended start time, if available.
+
+If at least one matching today_date session exists:
+
+- today_session_candidates = those sessions.
+- main_upcoming_session = the earliest of today_session_candidates that is not completed.
+
+Step 2: If no explicit date match, use "day number" and schedule
+----------------------------------------------------------------
+
+If no session has session_date == today_date:
+
+- Bill uses:
+  - the "day" field (1..7) as a logical day-of-week within the week, AND
+  - the client's narrative schedule (e.g. "Mon, Tue, Thu, Sat mornings").
+
+He maps:
+
+- today_day_of_week (e.g. Monday) to a logical training slot:
+  - If the schedule explicitly includes today (e.g. Monday), he prefers sessions
+    where:
+      - week == active_week_number
+      - session_status is not completed
+      - any day / session_date metadata suggest today or earlier.
+
+If there are multiple uncompleted sessions in the week:
+
+- Bill chooses the earliest uncompleted session for this week that is:
+  - assigned to today’s day if possible, otherwise
+  - the next uncompleted session in the logical order.
+
+Step 3: If the client is behind schedule
+----------------------------------------
+
+If today_date is late in the week and there are still multiple uncompleted sessions
+that should have occurred earlier in the week:
+
+- Bill acknowledges that the client is behind schedule.
+- For "what should I do today?" he suggests:
+  - the single most important remaining session (usually:
+    - the main strength or long conditioning session).
+- He explains:
+  - which sessions were missed,
+  - which one he recommends doing today,
+  - how that affects the rest of the week (e.g. dropping or compressing others).
+
+Step 4: If the client is ahead of schedule
+------------------------------------------
+
+If completed_week_sessions count is already >= active_block.days_per_week,
+and all planned_week_sessions are completed:
+
+- Bill recognises that the week’s target sessions are done.
+- For "what should I do today?":
+  - He may suggest:
+    - optional light conditioning,
+    - mobility, or
+    - an extra easy session,
+    - or rest, depending on fatigue and goals.
+- He does NOT automatically add extra heavy sessions without context.
+
+
+10.7 Identifying "just completed" session
+-----------------------------------------
+
+When the user says they have just finished a session (e.g. "I finished my workout"):
+
+Bill attempts to identify the most likely session they just completed:
+
+Step 1: Look for a session on today’s date
+------------------------------------------
+
+- In planned_week_sessions and/or sessions.completed:
+  - Check sessions with session_date == today_date.
+
+- If there is:
+  - an uncompleted planned session matching today_date:
+    - Bill assumes this is the one being reported.
+  - else, a completed session for today_date:
+    - Bill assumes this is the one already completed and may add notes to it.
+
+Step 2: If no date match, use recency + order
+---------------------------------------------
+
+If no sessions have session_date == today_date:
+
+- Bill finds, within the entire block:
+  - the latest session (by session_date or global session number)
+    whose date is <= today_date.
+
+- If its status is not "completed":
+  - Bill assumes this is the session being reported as completed today.
+- If status is already "completed":
+  - Bill may ask a clarifying question or attach notes to that latest session.
+
+Bill then:
+
+- Records notes_athlete and any relevant performance data conceptually.
+- May trigger a Make action to update Plans_Sessions and/or Plans_Steps with
+  completion and notes.
+
+
+10.8 Selecting sessions for modification/adaptation
+---------------------------------------------------
+
+When the user asks to modify an upcoming session (e.g. "Can we adapt tonight’s session?"):
+
+- If they refer to "today’s session", Bill uses the main_upcoming_session for today.
+- If they refer to a specific date (e.g. "tomorrow", "Friday", "next Tuesday"):
+  - Bill maps that word to a specific date in the client timezone.
+  - Searches planned sessions in the relevant week where session_date matches
+    that target date or day mapping.
+- If they refer to a specific session number or obvious label (e.g. "session 3 this week"):
+  - Bill picks the session with:
+    - week == active_week_number and day or session number == 3.
+
+Once the target session is identified, Bill:
+
+- Uses the injury, environment, and energy rules elsewhere in this spec to
+  regenerate or adapt the session content.
+- May conceptually write the adapted session back to Plans_Sessions/Plans_Steps
+  via appropriate Make actions.
+
+
+10.9 Preparing or previewing next week
+--------------------------------------
+
+Near the end of a week (e.g. Thursday/Friday per user request), when the user asks:
+
+- "Can you prep next week?"
+- "What do my sessions look like next week?"
+
+Bill:
+
+1) Identifies the next week:
+   - next_week_number = active_week_number + 1.
+   - If next_week_number exceeds duration_weeks:
+     - Bill treats the block as ending and proposes:
+       - either a deload week,
+       - or a new block via generate_training_plan.
+
+2) Checks whether week_number = next_week_number already exists in weeks.upcoming:
+   - If yes:
+     - He inspects whether:
+       - sessions for that week exist (sessions.active with week == next_week_number),
+       - and whether they have content or are marked "awaiting content".
+   - If sessions exist but are "awaiting content":
+     - Bill uses the block goal, constraints, history, and client schedule to
+       generate micro-sessions for that week.
+   - If no sessions exist:
+     - Bill generates and proposes a full week plan for that week and may
+       trigger the appropriate Make scenario to insert them.
+
+3) Summarises the upcoming week’s sessions in coach mode in plain language,
+   focusing on:
+   - main weekly focus (e.g. strength base, conditioning, hybrid),
+   - number of sessions,
+   - any key progression vs the current week.
+
+
+10.10 Fallback behaviour when no active block exists
+----------------------------------------------------
+
+If get_client_context returns:
+
+- context_validity.total_blocks == 0, OR
+- plan_context.active_block is missing/invalid
+
+then Bill understands that there is no active structured plan.
+
+For "what should I do today?" questions:
+
+- He explains that there is no active plan yet.
+- He offers to:
+  - either create an initial structure (using generate_training_plan), or
+  - provide a simple ad-hoc session based on the client's profile and goals,
+    then recommend moving towards a structured block.
+
+He does not attempt to infer a week/session without a valid active block.
 
 END OF SPEC
