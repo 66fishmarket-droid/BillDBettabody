@@ -1,0 +1,433 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bill – Make Actions",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://hook.eu2.make.com"
+    }
+  ],
+  "paths": {
+    "/cwxh4f7a7akrfnr9ljilctodqm8355af": {
+      "post": {
+        "operationId": "post_user_upsert",
+        "summary": "Upsert client profile to Google Sheets via Make webhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "event",
+                  "client_id",
+                  "source",
+                  "data"
+                ],
+                "properties": {
+                  "version": { "type": "string" },
+                  "event": { "type": "string", "enum": ["user.upsert"] },
+                  "client_id": { "type": "string" },
+                  "source": { "type": "string" },
+                  "data": {
+                    "type": "object",
+                    "description": "Flexible client profile object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK – Make received the payload",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          }
+        }
+      }
+    },
+
+    "/hvsvswhrdfacm7ag4flv1uhpb1nxbigh": {
+      "post": {
+        "operationId": "check_client_id_available",
+        "summary": "Check whether a proposed client_id already exists in the Clients sheet",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id"],
+                "properties": {
+                  "client_id": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Check completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exists": { "type": "boolean" },
+                    "client_id": { "type": "string" },
+                    "row_index": { "type": "integer", "nullable": true }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/7n8m9rg7chlxjrtfcdrekx1qc12smsyn": {
+      "post": {
+        "operationId": "post_contraindication_temp",
+        "summary": "Log a temporary contraindication for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "date_reported", "type", "description"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "date_reported": { "type": "string" },
+                  "type": { "type": "string" },
+                  "description": { "type": "string" },
+                  "expected_duration": { "type": "string", "nullable": true },
+                  "status": { "type": "string", "nullable": true },
+                  "notes": { "type": "string", "nullable": true },
+                  "date_resolved": { "type": "string", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Logged",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          }
+        }
+      }
+    },
+
+    "/bkkygjml0fmc2rkguyesn4jeppg5ia9d": {
+      "post": {
+        "operationId": "update_contraindication_temp",
+        "summary": "Update an existing temporary contraindication",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["record_id", "client_id", "status"],
+                "properties": {
+                  "record_id": { "type": "string" },
+                  "client_id": { "type": "string" },
+                  "status": { "type": "string" },
+                  "expected_duration": { "type": "string", "nullable": true },
+                  "date_resolved": { "type": "string", "nullable": true },
+                  "notes": { "type": "string", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          }
+        }
+      }
+    },
+
+    "/box83ye6ison8gbpsecr1pufermgdx0b": {
+      "post": {
+        "operationId": "post_contraindication_chronic",
+        "summary": "Log a chronic (baseline) contraindication for a client",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "client_id",
+                  "condition",
+                  "severity",
+                  "affected_system",
+                  "contraindicated_movements",
+                  "date_added",
+                  "last_reviewed",
+                  "status"
+                ],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "condition": { "type": "string" },
+                  "severity": { "type": "string" },
+                  "affected_system": { "type": "string" },
+                  "contraindicated_movements": { "type": "string" },
+                  "notes": { "type": "string", "nullable": true },
+                  "date_added": { "type": "string" },
+                  "last_reviewed": { "type": "string" },
+                  "status": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chronic logged",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          }
+        }
+      }
+    },
+
+    "/v35x7s4w3ksju9e4jgjes5rpsoxb3a22": {
+      "post": {
+        "operationId": "generate_training_plan",
+        "summary": "Generate a full training block (macro, meso, micro, steps)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["plan_action", "client", "plan"],
+                "additionalProperties": true,
+                "properties": {
+                  "plan_action": { "type": "string" },
+                  "client": { "type": "object", "additionalProperties": true },
+                  "plan": { "type": "object", "additionalProperties": true },
+                  "goals": { "type": "object", "additionalProperties": true },
+                  "modalities": {
+                    "type": "array",
+                    "items": { "type": "object", "additionalProperties": true }
+                  },
+                  "availability": { "type": "object", "additionalProperties": true },
+                  "athlete_profile": { "type": "object", "additionalProperties": true },
+                  "facility_context": { "type": "object", "additionalProperties": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan created",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          }
+        }
+      }
+    },
+
+    "/euifx4w0t1qayx4yd94pjfjcud6hxulb": {
+      "post": {
+        "operationId": "update_training_plan",
+        "summary": "Update an existing training plan/block",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "additionalProperties": true }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan updated",
+            "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+          }
+        }
+      }
+    },
+
+    "/w8kw2yvyhvt2zh9lf5m8gkus4slywdjq": {
+      "post": {
+        "operationId": "get_client_context",
+        "summary": "Load full client context (profile, plans, weeks, sessions, contraindications, nutrition, history)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "required": ["client_id"], "properties": { "client_id": { "type": "string" } } }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Client context",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status", "client_id", "timestamp"],
+                  "properties": {
+                    "status": { "type": "string" },
+                    "client_id": { "type": "string" },
+                    "client_profile": { "type": "object", "additionalProperties": true },
+                    "active_plan": { "type": "object", "additionalProperties": true },
+                    "weeks": {
+                      "type": "array",
+                      "items": { "type": "object", "additionalProperties": true }
+                    },
+                    "sessions": {
+                      "type": "array",
+                      "items": { "type": "object", "additionalProperties": true }
+                    },
+                    "chronic_contraindications": {
+                      "type": "array",
+                      "items": { "type": "object", "additionalProperties": true }
+                    },
+                    "temporary_contraindications": {
+                      "type": "array",
+                      "items": { "type": "object", "additionalProperties": true }
+                    },
+                    "nutrition": { "type": "object", "additionalProperties": true },
+                    "history_summary": { "type": "object", "additionalProperties": true },
+                    "timestamp": { "type": "string" },
+                    "details": { "type": "string", "nullable": true }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/2vs9htbixx68m2hdbxinro9tdp55arao": {
+      "post": {
+        "operationId": "populate_training_week",
+        "summary": "Write all sessions and steps for a specific week based on Bill’s computed plan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["version", "event", "client_id", "source", "context", "sessions"],
+                "properties": {
+                  "version": { "type": "string" },
+                  "event": { "type": "string", "enum": ["week.populate"] },
+                  "client_id": { "type": "string" },
+                  "source": { "type": "string" },
+
+                  "context": {
+                    "type": "object",
+                    "description": "Plan and week context already resolved by Bill",
+                    "properties": {
+                      "plan_id": { "type": "string" },
+                      "block_id": { "type": "string" },
+                      "week_id": { "type": "string" },
+                      "week_number": { "type": "integer" },
+                      "week_start_date": { "type": "string" },
+                      "week_end_date": { "type": "string" }
+                    },
+                    "additionalProperties": true
+                  },
+
+                  "sessions": {
+                    "type": "array",
+                    "description": "Each session already computed by Bill, including steps",
+                    "items": {
+                      "type": "object",
+                      "required": ["session_id", "steps"],
+                      "properties": {
+                        "session_id": { "type": "string" },
+                        "day": { "type": "integer", "nullable": true },
+                        "location": { "type": "string", "nullable": true },
+                        "focus": { "type": "string", "nullable": true },
+                        "estimated_duration_minutes": { "type": "integer", "nullable": true },
+
+                        "steps": {
+                          "type": "array",
+                          "description": "Bill-generated step objects to be written into Plans_Steps",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "step_id": { "type": "string", "nullable": true },
+                              "step_order": { "type": "integer", "nullable": true },
+                              "segment_type": { "type": "string", "nullable": true },
+                              "step_type": { "type": "string", "nullable": true },
+                              "duration_type": { "type": "string", "nullable": true },
+                              "duration_value": { "type": "number", "nullable": true },
+                              "target_type": { "type": "string", "nullable": true },
+                              "target_value": { "type": "string", "nullable": true },
+                              "exercise_name": { "type": "string", "nullable": true },
+                              "sets": { "type": "integer", "nullable": true },
+                              "reps": { "type": "integer", "nullable": true },
+                              "load_kg": { "type": "number", "nullable": true },
+                              "rest_seconds": { "type": "integer", "nullable": true },
+                              "notes_coach": { "type": "string", "nullable": true },
+                              "notes_athlete": { "type": "string", "nullable": true }
+                            },
+                            "additionalProperties": true
+                          }
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  },
+
+                  "metadata": {
+                    "type": "object",
+                    "description": "Extra info for logging/debugging",
+                    "properties": {
+                      "request_timestamp": { "type": "string" },
+                      "trigger_source": { "type": "string" }
+                    },
+                    "additionalProperties": true
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+
+        "responses": {
+          "200": {
+            "description": "Week populated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "client_id": { "type": "string" },
+                    "plan_id": { "type": "string" },
+                    "week_id": { "type": "string" },
+                    "sessions_written": { "type": "integer" },
+                    "steps_written": { "type": "integer" },
+                    "timestamp": { "type": "string" },
+                    "details": { "type": "string", "nullable": true }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
