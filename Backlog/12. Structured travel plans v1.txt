@@ -1,0 +1,96 @@
+TITLE: Structured Travel_Plans sheet and travel-specific planning logic
+
+STATUS: Backlog
+PRIORITY: Medium
+
+SUMMARY
+-------
+Move from a free-text "Upcoming Travel" blob in the Clients sheet to a
+structured Travel_Plans sheet. This will make it easier for Make scenarios and
+Bill to reason about travel periods, locations, and constraints when planning
+blocks/weeks and adjusting sessions.
+
+USER STORY
+----------
+As a client, I want Bill to remember my trips and adapt my training around
+them (hotel gyms, holidays, long workdays), so that the plan feels realistic
+and sustainable instead of ignoring the realities of travel.
+
+DATA / MODEL IMPACT
+-------------------
+New sheet: Travel_Plans (name TBD, e.g. "Clients_Travel_Plans").
+
+Proposed columns:
+- trip_id                – Make-generated unique id (e.g. "trip_cli001_20260315")
+- client_id              – foreign key to Clients sheet
+- label                  – short name (e.g. "Barcelona work trip")
+- location_text          – e.g. "Barcelona, Spain"
+- start_date             – YYYY-MM-DD
+- end_date               – YYYY-MM-DD
+- context                – free text (e.g. "conference days, hotel gym unknown")
+- status                 – "planned" | "active" | "completed" | "cancelled"
+- created_at             – timestamp
+- updated_at             – timestamp
+
+TECHNICAL REQUIREMENTS (MVP)
+----------------------------
+1) Create "Bill - Add Travel Plan" scenario:
+   - Input via webhook:
+     - client_id
+     - label
+     - location_text
+     - start_date
+     - end_date
+     - context
+   - Behaviour:
+     - Generate trip_id.
+     - Insert a new row into Travel_Plans with status = "planned".
+     - Optionally also append/reflect this in Clients.Upcoming_Travel (for
+       backwards compatibility and human readability).
+     - Respond with status and trip_id.
+
+2) Create "Bill - Update Travel Plan Status" scenario:
+   - Input via webhook:
+     - trip_id
+     - new_status ("planned" | "active" | "completed" | "cancelled")
+   - Behaviour:
+     - Find the matching row in Travel_Plans.
+     - Update status and updated_at.
+     - (Optional) Remove or annotate corresponding line in Clients.Upcoming_Travel.
+
+3) Extend "Bill - Load Client Context":
+   - When assembling client context, also fetch Travel_Plans rows for:
+     - client_id = requested client
+     - status in ["planned", "active"]
+   - Expose this as:
+     - client_travel_plans: array of objects with (trip_id, label, location,
+       start_date, end_date, context, status).
+   - Bill can then use this structured travel info to:
+     - Adjust block/week planning.
+     - Adjust session content and constraints.
+     - Select the correct location for weather calls.
+
+SCENARIOS AFFECTED
+------------------
+- New: Bill - Add Travel Plan.
+- New: Bill - Update Travel Plan Status.
+- Existing: Bill - Load Client Context (read & include travel plans).
+- Existing planning scenarios (block/week/session) to optionally consume
+  the structured travel_plans array instead of (or in addition to)
+  Clients.Upcoming_Travel.
+
+TRANSITION / COMPATIBILITY
+--------------------------
+- Initially, keep Clients.Upcoming_Travel as a human-readable summary field.
+- Gradually move Bill's reasoning to favour Travel_Plans as the source of truth.
+- Optionally implement a one-way sync:
+  - Travel_Plans → generate/refresh a rolling summary string into
+    Clients.Upcoming_Travel for human inspection.
+
+OPEN QUESTIONS
+--------------
+- Do we need per-trip equipment flags (e.g. "hotel gym", "no gym", "bike
+  available") as structured columns now, or leave them in the context field?
+- How should Bill handle overlapping trips or partially overlapping dates
+  with planned blocks/weeks?
+- When (if ever) do old completed travel plans get archived or removed?
