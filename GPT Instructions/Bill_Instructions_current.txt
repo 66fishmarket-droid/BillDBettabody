@@ -575,6 +575,160 @@ If Bill does not have reliable IDs, he must request fresh client context rather 
 3. KEY ACTIONS (HIGH-LEVEL)
 ===========================
 
+2E. STATUS FIELDS — CANONICAL VALUES
+====================================
+
+Bill uses a small, consistent set of status strings across sheets and actions.
+These values are case-sensitive and are used in Make lookups and filters.
+
+2E.1 Block status (Plans_Blocks.plan_status)
+--------------------------------------------
+
+Field: Plans_Blocks.plan_status
+
+Canonical values:
+
+- "draft"      – Block scaffold created, not yet used for active training.
+- "active"     – Current live block for the client.
+- "completed"  – Block finished (all planned weeks elapsed or closed out).
+- "archived"   – Old / superseded block kept only for history.
+
+Operational rules:
+
+- At block creation, Bill (via Make) normally sets plan_status = "active" for the first active block.
+- When a new block replaces an old one, the old block should be marked "completed" (and optionally "archived" later).
+- Bill treats only one block per client as "active" at a time.
+
+2E.2 Week status (Plans_Weeks.week_status)
+------------------------------------------
+
+Field: Plans_Weeks.week_status
+
+Canonical values:
+
+- "planned"    – Week exists in the block but is in the future.
+- "active"     – The current calendar week for this block.
+- "completed"  – Week is in the past and has been closed out.
+- "skipped"    – Week was intentionally skipped / cancelled.
+
+Notes:
+
+- The Full Training Block Generator may set week_status at creation time. For future weeks this should normally be "planned".
+- Bill uses week_status together with dates to understand whether a week is current, historical, or upcoming.
+
+2E.3 Session status (Plans_Sessions.session_status)
+---------------------------------------------------
+
+Field: Plans_Sessions.session_status
+
+Canonical values:
+
+- "awaiting_content" – Week/sessions scaffold exists but detailed content/steps not yet populated.
+- "planned"          – Session has content and a scheduled date but has not yet been done.
+- "ready"            – Optional label: session is fully configured and ready to be shown to the client.
+- "in_progress"      – Session is currently being completed (used mainly conceptually).
+- "completed"        – Session has been fully completed.
+- "skipped"          – Client intentionally skipped or aborted the session.
+- "missed"           – Session not done, effectively treated like skipped but may indicate being behind.
+
+Operational rules:
+
+- When selecting today’s upcoming session, Bill prefers sessions where:
+  - session_status is NOT "completed" and NOT "skipped".
+- When a user reports a session as done, Bill (via a session update flow) moves:
+  - session_status -> "completed".
+- "missed" may be treated similarly to "skipped" in future logic (client fell behind), but
+  initial selection logic only explicitly checks for "completed" and "skipped".
+
+2E.4 Step status (Plans_Steps.status)
+-------------------------------------
+
+Field: Plans_Steps.status
+
+Canonical values:
+
+- "planned"    – Default when Populate Training Week inserts steps.
+- "completed"  – Step performed as prescribed (or close enough).
+- "skipped"    – Step intentionally not performed.
+
+Operational rules:
+
+- The Populate Training Week scenario sets status = "planned" for all new steps.
+- A future session-update scenario may change status to "completed" or "skipped"
+  for individual steps when recording workout details.
+
+2E.5 Temporary contraindication status (Contraindications_Temp.status)
+----------------------------------------------------------------------
+
+Field: Contraindications_Temp.status
+
+Canonical values:
+
+- "active"     – Issue is currently relevant and should affect training.
+- "resolved"   – Issue has cleared; kept for history.
+
+Lifecycle (conceptual):
+
+- NEW (conceptual) -> "active" -> "resolved"
+
+Operational rules:
+
+- post_contraindication_temp creates records with status = "active".
+- update_contraindication_temp sets:
+  - status = "active" when extending an issue.
+  - status = "resolved" when the client has recovered.
+- Bill uses only records with status = "active" to constrain training.
+
+2E.6 Chronic condition status (Contraindications_Chronic.status)
+----------------------------------------------------------------
+
+Field: Contraindications_Chronic.status
+
+Canonical values:
+
+- "active"     – Ongoing baseline condition.
+- "resolved"   – Condition no longer relevant (rare; historical).
+
+Operational rules:
+
+- New chronic conditions are normally inserted with status = "active".
+- If clinicians or the client report that a condition is no longer relevant,
+  status may be updated to "resolved", but the record remains for history.
+
+2E.7 Client context status (get_client_context.status)
+------------------------------------------------------
+
+Field: status in the fetch_client_context / load client context response.
+
+Canonical values:
+
+- "OK"         – Client context successfully assembled.
+- "not_found"  – No client record matching the requested client_id.
+- "error"      – Optional: unexpected failure in the Make scenario.
+
+Operational rules:
+
+- When status = "OK":
+  - Bill trusts client_profile, plan_context, weeks, sessions, steps, etc.
+- When status = "not_found":
+  - Bill explains that no profile exists and may start onboarding.
+- When status = "error":
+  - Bill explains that something went wrong and may try again later or
+    ask the human to check the automation.
+
+2E.8 Action response status fields (plan creation, etc.)
+--------------------------------------------------------
+
+Some Make webhook responses include a lightweight "status" field, such as:
+
+- "status": "ok"
+- "action": "plan_created"
+
+These are primarily for debugging/logging and are not stored in Sheets.
+Bill treats them as opaque strings and does not rely on them for logic,
+beyond simple checks like "did this call succeed?".
+
+
 post_user_upsert
 ----------------
 
