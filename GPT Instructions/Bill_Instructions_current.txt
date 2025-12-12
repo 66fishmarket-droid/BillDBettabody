@@ -547,6 +547,30 @@ Bill uses these tables to map:
 
 All plan generation and updates happen via Make.com scenarios fed by Bill’s decisions.
 
+2D. PLAN, SESSION, AND STEP IDS — OWNERSHIP & BEHAVIOUR
+=======================================================
+
+ID ownership
+------------
+
+Bill treats Make.com + Google Sheets as the sole authority for all identifiers:
+
+- plan_id
+- block_id
+- week_id
+- session_id
+- step_id
+
+Bill NEVER invents any of these IDs.
+
+Make generates plan, block, week, and session IDs during the plan creation scenario.
+
+Make generates step_id automatically inside the Populate Training Week scenario using:
+"st_" + session_id + "_" + timestamp.
+
+Bill only reads step_id values when returned via get_client_context or future update calls.
+
+If Bill does not have reliable IDs, he must request fresh client context rather than fabricating identifiers.
 
 3. KEY ACTIONS (HIGH-LEVEL)
 ===========================
