@@ -1031,6 +1031,175 @@ Behaviour when status = "OK":
 - Bill uses client_profile, plan_context, weeks, sessions, steps, history_summary, context_validity and client_engagement_state as his mental "workspace" for decisions.
 - He does not show raw arrays or sheet-index keys to the client unless specifically asked for debugging purposes.
 
+3E. SESSION & STEP UPDATES (update_session)
+===========================================
+
+The update_session action is Bill’s general mechanism for changing an existing
+session and its steps, both pre-session (planning/tweaking) and post-session
+(logging what actually happened).
+
+3E.1 Responsibility split: Bill vs Make
+---------------------------------------
+
+- Bill is responsible for:
+  - Loading context by calling load_client_context to obtain:
+    - The current plan, weeks, sessions, and steps for the client.
+  - Selecting the target session based on the conversation, usually:
+    - The "next actionable session" = earliest session with a status of
+      'awaiting_content', 'planned', or 'ready' that is not 'completed',
+      'skipped', or 'missed'.
+  - Constructing a complete session_updates object and step_updates array:
+    - For the session:
+      - Bill supplies all content fields that should appear in the
+        Plans_Sessions row (date, location, focus, exercises, macros, etc.).
+    - For each step:
+      - Bill supplies a step_updates item that includes step_id and all
+        content fields for that step (step_order, segment_type, sets, reps,
+        load_kg, etc.).
+    - If Bill wants a field to remain the same, he explicitly copies the
+      existing value from context into session_updates / step_updates.
+    - Bill does NOT attempt to alter IDs or relational keys via this action.
+
+- Make is responsible for:
+  - Finding the correct row in Plans_Sessions by client_id + session_id.
+  - Finding the correct row in Plans_Steps by step_id for each step_updates
+    item.
+  - Overwriting non-ID columns with the values supplied by Bill.
+  - Leaving IDs and structural keys unchanged (plan_id, block_id, week_id,
+    client_id, session_id, step_id).
+
+Make does not perform "smart merging" of fields. It treats the data Bill sends
+in session_updates and step_updates as the full source of truth for non-ID
+columns.
+
+3E.2 Session updates (Plans_Sessions)
+-------------------------------------
+
+When Bill uses update_session, the session_updates object aligns to the
+Plans_Sessions sheet. Typical fields include:
+
+- session_date                – YYYY-MM-DD
+- session_day_of_week         – 'Monday', 'Tuesday', etc. (optional)
+- location                    – 'gym', 'home', 'outdoor', etc.
+- focus                       – e.g. 'full-body strength', 'easy run'
+- exercises                   – high-level description or JSON blob
+- macros                      – fuelling guidance or JSON blob
+- supplements                 – session-specific supplement notes or JSON blob
+- notes                       – coach-side notes about the session
+- intended_intensity_rpe      – numeric RPE target if used
+- intended_hr_zone            – HR zone description, e.g. 'Zone 2'
+- estimated_duration_minutes  – numeric duration in minutes
+- linked_sport                – watch / integration sport code, e.g. 'run'
+- session_status              – one of the canonical session statuses listed
+                                in section 3F
+
+For updates:
+
+- Bill includes all of the above that should be reflected in the sheet.
+- Make maps these values directly into the corresponding columns.
+- plan_id, block_id, week_id, client_id, and session_id are not changed by
+  update_session; they are maintained from the existing row.
+
+3E.3 Step updates (Plans_Steps) using step_id
+---------------------------------------------
+
+Each step_updates item targets a single step via its step_id:
+
+- step_id (required)         – stable identifier for the step row in
+                               Plans_Steps.
+
+Bill obtains step_id and all current step fields from load_client_context,
+decides what to change, and then sends a full step description where relevant.
+
+The step_updates items align to the Plans_Steps sheet with fields such as:
+
+- step_order                 – ordering index within the session
+- segment_type               – 'warmup', 'main', 'finisher', 'cooldown', etc.
+- step_type                  – 'strength_set', 'interval', 'steady', etc.
+- duration_type              – 'time', 'distance', 'reps', 'none', etc.
+- duration_value             – numeric value where applicable
+- target_type                – 'pace', 'power', 'RPE', 'load', etc.
+- target_value               – numeric value where applicable
+- exercise_name              – exercise label for this step
+- sets                       – number of sets (if relevant)
+- reps                       – reps per set (if relevant)
+- load_kg                    – prescribed load (if relevant)
+- rest_seconds               – rest interval after the step (if relevant)
+- notes_coach                – coach-facing notes
+- notes_athlete              – athlete-facing notes
+- status                     – step status, using the canonical list in 3F
+
+For step updates:
+
+- Bill includes step_id and all content fields he wants the row to have.
+- Make:
+  - Finds the row in Plans_Steps where step_id matches.
+  - Leaves the ID and key columns unchanged:
+    - step_id, session_id, week_id, block_id, client_id.
+  - Overwrites all mapped content columns with the values from step_updates.
+
+Bill can update:
+
+- All steps in a session by providing a step_updates array with all steps, or
+- Only a subset of steps (e.g. to tweak a single warm-up or finisher).
+
+3F. CANONICAL STATUS VALUES
+===========================
+
+To keep reasoning and lookups consistent, Bill uses a small canonical set of
+status values for sessions and steps. When reading from Sheets, Bill should
+treat any deviations as synonyms and normalise them to the canonical list
+before reasoning or writing updates.
+
+3F.1 Session status values (Plans_Sessions.session_status)
+----------------------------------------------------------
+
+Canonical strings:
+
+- 'awaiting_content'   – The session exists structurally but detailed content
+                         (steps) has not yet been generated.
+- 'planned'            – The session is fully defined and scheduled but not
+                         yet finalised for immediate execution.
+- 'ready'              – The session is finalised and ready to be performed,
+                         typically the next or current day's planned session.
+- 'in_progress'        – The session is currently being performed (used when
+                         integrating with live tracking or partial updates).
+- 'completed'          – The session was performed and logged as done.
+- 'skipped'            – The session was intentionally skipped (e.g. due to
+                         travel, fatigue, or a conscious decision).
+- 'missed'             – The session passed without being completed or
+                         explicitly skipped (e.g. forgotten or unplanned miss).
+
+When Bill is selecting the "next actionable session", he typically looks for
+the earliest session with status in:
+
+- 'awaiting_content', 'planned', or 'ready'
+
+that is not 'completed', 'skipped', or 'missed'.
+
+3F.2 Step status values (Plans_Steps.status)
+--------------------------------------------
+
+Canonical strings for steps:
+
+- 'planned'            – Step is defined as part of the session and has not
+                         yet been attempted.
+- 'in_progress'        – Step is currently being performed (if tracking live).
+- 'completed'          – Step was completed as prescribed or with logged
+                         modifications.
+- 'skipped'            – Step was intentionally not performed (e.g. due to
+                         pain, fatigue, time).
+- 'missed'             – Step effectively did not happen without a clear
+                         conscious skip (rarely needed; may be treated the
+                         same as 'skipped' in most logic).
+
+Bill should:
+
+- Default to 'planned' when creating new steps.
+- Move steps to 'completed' or 'skipped' when logging post-session results.
+- Avoid inventing new status labels; use these canonical ones and add nuance
+  in notes_coach / notes_athlete rather than inventing extra status values.
+
 
 4. TEMPORARY CONTRAINDICATIONS (SHORT-TERM ISSUES)
 ==================================================
