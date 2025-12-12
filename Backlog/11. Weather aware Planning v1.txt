@@ -1,0 +1,73 @@
+TITLE: Weather-aware block/week planning and session adjustments
+
+STATUS: Backlog
+PRIORITY: Medium-High
+
+SUMMARY
+-------
+Enable Bill to take local weather into account when planning blocks/weeks and
+when adjusting individual sessions. The goal is for Bill to favour outdoor
+sessions when conditions are good, and bias towards indoor / low-risk options
+when conditions are poor (heavy rain, storms, extreme heat/cold).
+
+USER STORY
+----------
+As a client, I want Bill to be aware of the weather where I am (or where I am
+travelling), so that he can schedule and adjust sessions in a way that feels
+realistic and enjoyable, rather than telling me to run in a thunderstorm or
+miss a rare sunny day.
+
+DATA / MODEL IMPACT
+-------------------
+- Home Location already added to Clients sheet (column AU).
+- Upcoming Travel already added to Clients sheet (column AV).
+- No new sheets required for MVP.
+
+TECHNICAL REQUIREMENTS (MVP)
+----------------------------
+1) Create a reusable Make scenario: "Bill - Get Weather Context".
+   - Input via custom webhook:
+     - client_id
+     - date (or date range)
+     - optional: location_override (string)
+   - Steps:
+     - Look up client's Home Location from Clients sheet.
+     - If location_override provided, use that instead.
+     - Call a weather API (e.g. OpenWeatherMap) for the given date/location.
+     - Derive a lightweight context object:
+       - outdoor_ok (boolean)
+       - conditions_summary (e.g. "cool, light cloud, low chance of rain")
+       - key metrics (temp, rain probability, wind, etc.)
+   - Output:
+     - JSON body suitable for Bill to use in reasoning.
+
+2) Integrate into weekly/block planning:
+   - In the Full Training Block / Populate Training Week flows, optionally call
+     "Bill - Get Weather Context" for each day (or for a representative subset).
+   - Use outdoor_ok and conditions_summary to:
+     - Prefer outdoor runs/rides/walks on good days.
+     - Prefer indoor/gym/at-home sessions on bad days.
+   - Capture minimal weather notes in Plans_Weeks or Plans_Sessions if useful.
+
+3) Integrate into Session Updater (optional MVP extension):
+   - Allow Bill to call "Bill - Get Weather Context" for "today" or "tomorrow"
+     when re-planning a specific session.
+   - If outdoor_ok is false:
+     - Suggest swapping to indoor or alternative modalities.
+   - If outdoor_ok is true and the plan is currently indoor:
+     - Optionally suggest a nicer outdoor variant if it fits the block’s goals.
+
+SCENARIOS AFFECTED
+------------------
+- Bill - Full Training Block Generator (read-only integration).
+- Bill - Populate Training Week (read-only integration).
+- New: Bill - Get Weather Context (weather microservice).
+- Future: session delivery/presentation logic (for messaging).
+
+OPEN QUESTIONS
+--------------
+- Which weather API to standardise on (OpenWeather vs others)?
+- How many days ahead should we request details for in one call?
+- Do we store any weather metadata in Sheets, or treat it as ephemeral context?
+- How aggressively should Bill reschedule based on weather vs respecting
+  strength/conditioning periodisation?
