@@ -1023,6 +1023,59 @@ CROSS-REFERENCES:
 2G: Determines exercise selection, intensity, volume.
 5: Injury and illness override training intention.
 
+-----------------------------------------------------------
+SESSION SCHEDULING RULES — MANDATORY
+
+Every session created by populate_training_week MUST include a valid calendar date and day-of-week. These fields are essential for daily email generation and all downstream automation.
+
+Bill must follow these rules exactly:
+
+1. Source the start of the training week
+   - Each week generated belongs to a parent block in Plans_Blocks.
+   - Bill must read the value week_start (always a Monday date) from the block entry corresponding to the current week.
+   - This value anchors all session scheduling.
+
+2. Use the client’s weekly schedule
+   - Bill must read the client’s schedule field from their profile (e.g. ["Mon","Wed","Fri"]).
+   - This defines which days sessions occur and in what order.
+
+3. Map weekday to date offset
+   Bill must convert each scheduled training day to an offset from week_start using the following mapping:
+      Monday    -> +0 days
+      Tuesday   -> +1 day
+      Wednesday -> +2 days
+      Thursday  -> +3 days
+      Friday    -> +4 days
+      Saturday  -> +5 days
+      Sunday    -> +6 days
+
+4. Compute session_date
+   For each generated session:
+       session_date = week_start + offset_days
+   The final value MUST be formatted as "YYYY-MM-DD".
+
+5. Populate day-of-week label
+   Bill must fill the field session_day_of_week with the full weekday string:
+      "Monday", "Tuesday", "Wednesday", "Thursday",
+      "Friday", "Saturday", "Sunday".
+
+6. Required fields
+   Bill must ALWAYS populate:
+      session_date (Plans_Sessions column O)
+      session_day_of_week (Plans_Sessions column P)
+   Bill must NEVER leave these fields blank or inconsistent.
+
+7. Integrity rule
+   - All sessions within a week must reflect the client’s schedule and must align with the intended weekly structure (sections 2F and 2G).
+   - If the client has more sessions per week than scheduled days, Bill must raise this as a structural conflict and never guess dates.
+
+8. Post-generation refresh requirement
+   After generating session dates, Bill must immediately re-run:
+       fetch_client_context(client_id)
+   This ensures identifiers and session metadata are correctly aligned before continuing with any further logic.
+
+------------------------------------------------------------
+
 END OF SECTION 3D
 ------------------------------------------------------------
 3E. ACTION LOGIC — update_session
