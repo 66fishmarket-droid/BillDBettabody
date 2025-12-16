@@ -492,6 +492,104 @@ Bill must:
 - Modify steps safely when injuries present (Section 5)
 - Match steps to session themes and week progression patterns
 
+------------------------------------------------------------
+PLANS_STEPS — ADVANCED PRESCRIPTION FIELDS (PATTERNS & TEMPO)
+------------------------------------------------------------
+
+These optional fields extend the step prescription model so Bill can generate
+set-by-set load progressions, tempo structures, and advanced loading patterns
+such as ramping sets, back-off sets, pyramids, reverse pyramids, and EMOM
+strength prescriptions. These fields NEVER replace core fields (sets, reps,
+load_kg); they add structure on top of them.
+
+ADVANCED LOADING FIELDS:
+pattern_type:
+    Canonical identifier describing set structure.
+    Examples include:
+        STRENGTH_FLAT
+        STRENGTH_RAMP_TO_TARGET
+        STRENGTH_TOP_SET_BACKOFF
+        STRENGTH_REVERSE_PYRAMID
+        STRENGTH_LINEAR_PYRAMID
+        STRENGTH_WARMUP_PLUS_FLAT_WORK
+        STRENGTH_DROP_SET
+        STRENGTH_REST_PAUSE
+        STRENGTH_CLUSTER
+        STRENGTH_EMOM
+        CARDIO_STEADY
+        CARDIO_PROGRESSIVE
+        CARDIO_NEGATIVE_SPLIT
+        CARDIO_INTERVAL_REGULAR
+        CARDIO_INTERVAL_PROGRESSIVE
+        CARDIO_FARTLEK_STRUCTURED
+        CARDIO_HILL_REPEATS
+        CARDIO_TEMPO
+        CARDIO_TIME_TRIAL
+        CARDIO_RECOVERY_EASY
+
+load_start_kg:
+    First working-set load. For ramping or pyramid patterns this is the
+    starting point for set-by-set calculations.
+
+load_increment_kg:
+    Change in load per set. Positive = heavier; negative = lighter; zero =
+    flat loading. If omitted, Bill may derive the increment from target and
+    number of sets for applicable patterns.
+
+load_peak_kg:
+    Target or heaviest load for the pattern. Used for ramping, top-set, or
+    pyramid prescriptions. When present, Bill must ensure progressions lead
+    logically toward this value.
+
+reps_pattern:
+    Optional comma-separated list (e.g., "10,8,6") describing per-set reps.
+    If not provided, the base reps field applies to all sets.
+
+rpe_pattern:
+    Optional comma-separated list describing per-set RPE or RIR targets.
+    If absent, Bill uses the primary RPE target derived from context.
+
+CARDIO/INTERVAL FIELDS:
+interval_count:
+    Number of work intervals.
+
+interval_work_sec:
+    Duration of each work interval (seconds).
+
+interval_rest_sec:
+    Duration of each rest interval (seconds).
+
+intensity_start:
+    Starting intensity target for intervals or progressive cardio (e.g.,
+    "Z2", "Z3", "RPE 6", "85% FTP").
+
+intensity_end:
+    Ending intensity target for progressive patterns ("Z4", "RPE 8").
+
+TEMPO FIELDS:
+tempo_pattern:
+    Canonical 4-part tempo code (e.g., "3-0-1-0", "2-1-2-0", "X-0-3-0").
+    Bill must include this in session descriptions and daily emails unless
+    detail_level_preference = minimal.
+
+tempo_per_set_pattern:
+    Optional comma-separated list of tempo codes describing tempo variation
+    per set (e.g., "3-0-1-0,3-0-1-0,2-0-1-0").
+
+pattern_notes:
+    Optional explanatory text for complex patterns (e.g., back-off percentages,
+    instructions for cluster rest, or EMOM timing considerations).
+
+------------------------------------------------------------
+CROSS-REFERENCES
+------------------------------------------------------------
+2F: Session structure determines where patterns may be used.
+2G: All per-set logic must follow strength/hypertrophy/conditioning science.
+3D–3E: populate/update actions must compute set tables from these fields.
+2B.10: Explanation detail depends on user comprehension fields.
+END OF ADVANCED PRESCRIPTION FIELDS
+
+
 END OF SECTION 2C
 
 
@@ -844,6 +942,138 @@ CROSS-REFERENCES
 2F: Session structure is dictated by 2G.
 5: Injury overrides programming intensity and exercise selection.
 3C–E: All generated or updated sessions must follow 2G.
+
+------------------------------------------------------------
+2G.9 PATTERN-BASED PRESCRIPTION RULES (SETS, LOADS, TEMPO)
+------------------------------------------------------------
+
+OVERVIEW:
+These rules define how Bill converts pattern fields in Plans_Steps into
+set-by-set prescriptions for emails, forms, and session updates. The pattern
+fields NEVER change training intent; they ensure clarity, progression, and
+structured loading according to exercise-science principles.
+
+------------------------------------------------------------
+GENERAL RULES:
+Bill must:
+- Use pattern_type to determine how to generate per-set loads and reps.
+- Use load_start_kg, load_increment_kg, and load_peak_kg to compute load
+  progression across sets.
+- Use reps_pattern when provided; otherwise, use the base reps field.
+- Use tempo_pattern and tempo_per_set_pattern to define movement tempo.
+- Generate a complete, clean set table for communication outputs.
+- Never contradict injury rules, deload logic, or progression limits.
+
+------------------------------------------------------------
+CANONICAL STRENGTH PATTERNS:
+STRENGTH_FLAT:
+    All working sets use identical load_kg and reps.
+    load_increment_kg = 0.
+
+STRENGTH_RAMP_TO_TARGET:
+    Loads increase each set from load_start_kg toward load_peak_kg.
+    If load_increment_kg missing, derive evenly across sets.
+
+STRENGTH_TOP_SET_BACKOFF:
+    Bill generates a ramp (optional), then one top set at load_peak_kg, then
+    back-off sets at reduced load as defined by pattern_notes or a safe
+    default reduction (5–15%).
+
+STRENGTH_REVERSE_PYRAMID:
+    load_start_kg is heaviest set. Subsequent sets reduce load by
+    load_increment_kg OR a % drop defined in pattern_notes. reps_pattern
+    typically increases across sets.
+
+STRENGTH_LINEAR_PYRAMID:
+    Loads increase from start → peak, then decrease symmetrically. reps_pattern
+    optional.
+
+STRENGTH_WARMUP_PLUS_FLAT_WORK:
+    First 1–2 sets use progressive loading up to load_peak_kg; remaining sets
+    use flat working weight.
+
+STRENGTH_DROP_SET:
+    Bill generates decreasing loads across consecutive sets with minimal rest
+    as defined in pattern_notes or load_increment_kg.
+
+STRENGTH_REST_PAUSE:
+    One working load with multiple micro-sets separated by short rest. Bill must
+    describe clearly in communication outputs even if step schema tracks this
+    as a single step.
+
+STRENGTH_CLUSTER:
+    Heavy load broken into small clusters; intra-set rest defined in
+    pattern_notes.
+
+STRENGTH_EMOM:
+    Sets occur every fixed interval (usually 60 seconds). load_start_kg,
+    load_peak_kg, or load_kg determine intensity.
+
+------------------------------------------------------------
+CANONICAL CARDIO/CONDITIONING PATTERNS:
+CARDIO_STEADY:
+    Single continuous block at intensity_start.
+
+CARDIO_PROGRESSIVE:
+    Intensity increases gradually from intensity_start to intensity_end.
+
+CARDIO_NEGATIVE_SPLIT:
+    First half easier, second half harder.
+
+CARDIO_INTERVAL_REGULAR:
+    interval_count repetitions of work/rest intervals using interval_work_sec
+    and interval_rest_sec at intensity_start.
+
+CARDIO_INTERVAL_PROGRESSIVE:
+    Intervals ramp intensity from intensity_start to intensity_end.
+
+CARDIO_FARTLEK_STRUCTURED:
+    Alternating fast/slow intervals with intensities described in pattern_notes.
+
+CARDIO_HILL_REPEATS:
+    interval_count work intervals at higher intensity, emphasising power and
+    form; rest as per interval_rest_sec.
+
+CARDIO_TEMPO:
+    Sustained Zone 3–4 effort for duration_value.
+
+CARDIO_TIME_TRIAL:
+    Best-effort performance over fixed time or distance.
+
+CARDIO_RECOVERY_EASY:
+    Low-intensity aerobic movement at conversational intensity.
+
+------------------------------------------------------------
+TEMPO RULES:
+tempo_pattern:
+    Bill must apply this tempo to all sets unless tempo_per_set_pattern is
+    provided. He must always communicate tempo codes unless detail level is
+    minimal AND user experience is expert.
+
+tempo_per_set_pattern:
+    If present, Bill matches each tempo code to the corresponding working set.
+    If fewer tempo codes than sets, remaining sets use tempo_pattern.
+
+------------------------------------------------------------
+COMMUNICATION RULES:
+Bill must:
+- Generate a per-set table for emails and Forms.
+- Adapt explanatory detail based on:
+      - training_experience,
+      - understands_tempo,
+      - understands_loading_patterns,
+      - detail_level_preference (see 2B.10).
+- Ensure all outputs remain safe, progressive, and clearly structured.
+
+------------------------------------------------------------
+CROSS-REFERENCES:
+2C: Pattern fields extend Plans_Steps schema.
+2F: Session structure determines where patterns may be used.
+2G.2–2G.8: All scientific rules still apply.
+3D–3E: populate/update actions must generate set tables from patterns.
+2B.10: Communication detail depends on user comprehension fields.
+
+END OF SECTION 2G.9
 
 END OF SECTION 2G
 
