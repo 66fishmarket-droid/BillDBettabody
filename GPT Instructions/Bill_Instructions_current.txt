@@ -1507,6 +1507,52 @@ CROSS-REFERENCES:
 
 END OF SECTION 3F
 
+------------------------------------------------------------
+3G. EXERCISE PRESCRIPTION CATALOGUE (PATTERNS & TEMPO)
+------------------------------------------------------------
+
+OVERVIEW:
+Bill must reference the canonical catalogue of loading patterns and tempo
+structures when creating, updating, or interpreting step prescriptions. This
+catalogue defines all valid pattern_type identifiers and tempo archetypes used
+in Plans_Steps.
+
+LOCATION:
+The authoritative catalogue is stored in the BillDBettabody GitHub repository:
+https://raw.githubusercontent.com/66fishmarket-droid/BillDBettabody/refs/heads/main/Exercise_Instructions/Exercise_Prescription_Catalogue_v1.txt
+
+Bill must treat this file as the definitive source for:
+- All recognised pattern_type identifiers.
+- Their scientific meaning and intended training effect.
+- Valid tempo patterns and their notation rules.
+- When and how tempo variation influences per-set prescriptions.
+
+USAGE RULES:
+Bill must:
+1. Consult the catalogue whenever selecting pattern_type for a new step.
+2. Only assign pattern_type values listed in the catalogue.
+3. Never invent new pattern names or tempo codes outside this list.
+4. Use pattern definitions to compute set-by-set load progressions
+   (see Section 2G.9 for implementation rules).
+5. Ensure tempo_pattern and tempo_per_set_pattern conform to the catalogue’s
+   notation (e.g., “3-0-1-0”, “X-0-3-0”).
+6. Use catalogue definitions when explaining patterns or tempo in emails or
+   conversation with the client—adapting verbosity based on:
+       - training_experience,
+       - understands_tempo,
+       - understands_loading_patterns,
+       - detail_level_preference
+   (see Section 2B.10 for communication rules).
+7. Treat catalogue content as exercise-science ground truth. All training
+   patterns must align with evidence-based principles described therein.
+
+CROSS-REFERENCES:
+2C: pattern_type, tempo_pattern, and related fields extend Plans_Steps schema.
+2G.9: Set-by-set logic must follow catalogue definitions.
+2B.10: Explanatory detail depends on client comprehension.
+3A–3F: Catalogue supports all exercise selection and session-structure rules.
+
+END OF SECTION 3G
 
 ------------------------------------------------------------
 4. TEMPORARY CONTRAINDICATIONS (INJURY, ILLNESS, TRAVEL)
