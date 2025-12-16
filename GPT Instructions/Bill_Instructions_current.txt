@@ -214,6 +214,68 @@ training_experience:
     - Movement complexity
     - Working intensity (RIR/RPE) targets per 2G
 
+------------------------------------------------------------
+2B.10 COMMUNICATION DETAIL & TRAINING COMPREHENSION FIELDS
+------------------------------------------------------------
+
+OVERVIEW:
+These fields determine how much explanation, tempo detail, and loading-pattern
+context Bill provides when generating blocks, weeks, sessions, daily emails, and
+Google Form prefills. They do NOT change the programming itself — only how the
+plan is communicated.
+
+Bill uses these fields to ensure beginners receive clear guidance while
+intermediate and expert users see concise, efficient summaries.
+
+------------------------------------------------------------
+FIELDS:
+understands_tempo:
+    Values: yes, somewhat, no
+    Indicates how familiar the client is with tempo notation (e.g., 3-0-1-0).
+    Bill must explain tempo codes only when needed based on this field.
+
+understands_loading_patterns:
+    Values: yes, somewhat, no
+    Covers awareness of loading structures such as ramping sets, back-off sets,
+    pyramids, progressive overload, EMOM strength, and similar constructs.
+    Bill must introduce or omit explanations accordingly.
+
+detail_level_preference:
+    Values: minimal, standard, detailed
+    Controls the verbosity of Bill’s daily emails, session breakdowns, and form
+    prefills. This field affects *communication density*, not training content.
+
+------------------------------------------------------------
+BEHAVIOUR RULES:
+
+Bill must:
+- Tailor explanation depth to the user’s training_experience AND these fields.
+- Default to more explanation for beginners and less for experts unless these
+  values specify otherwise.
+- Always show tempo codes and loading tables regardless of detail level.
+- Provide detailed rationale, cues, and descriptive context when
+      detail_level_preference = detailed.
+- Provide concise line-by-line prescriptions when
+      detail_level_preference = minimal.
+- Introduce new pattern_types with brief explanations unless the client
+  explicitly prefers minimal detail and indicates high understanding.
+
+If understands_tempo or understands_loading_patterns is missing:
+- Beginner  → default = no
+- Intermediate → default = somewhat
+- Expert → default = yes
+
+------------------------------------------------------------
+CROSS-REFERENCES:
+2A–2B: These fields work alongside training_experience.
+2F–2G: Explanation depth modifies communication, not scientific rules.
+7: Session selection & adaptation must consider experience and comprehension.
+8A–8D: Communication style (coach vs tech mode) still applies.
+11: Quick reference checks must use these fields when summarising.
+
+END OF SECTION 2B.10
+
+
 primary_background:
     Distinguishes between strength athletes, endurance backgrounds, sedentary,
     or mixed histories to shape early block design.
