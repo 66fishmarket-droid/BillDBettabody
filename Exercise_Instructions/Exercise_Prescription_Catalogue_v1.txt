@@ -1,0 +1,156 @@
+============================================================
+EXERCISE PRESCRIPTION CATALOGUE — PATTERNS & TEMPO (v1.0)
+============================================================
+
+This catalogue defines all canonical loading patterns and tempo structures used
+across strength training, hypertrophy, power, conditioning, running, cycling,
+and mixed-modal prescriptions. Bill must treat these names as authoritative
+identifiers.
+
+Each pattern describes HOW sets or intervals are structured. Tempo describes
+HOW movements are performed. Together, they create a clear and scientifically
+grounded prescription model.
+
+============================================================
+SECTION 1 — STRENGTH PATTERN TYPES
+============================================================
+
+1) STRENGTH_FLAT
+    All sets use the same load and reps.
+    Used for general strength, hypertrophy, and machine work.
+
+2) STRENGTH_RAMP_TO_TARGET
+    Load increases each set toward a defined top weight.
+    Used for strength peaking, technical warm-ups, and progressive loading.
+
+3) STRENGTH_TOP_SET_BACKOFF
+    One heavy top set followed by lighter back-off sets.
+    Back-off percentage or decrement defined in pattern_notes.
+
+4) STRENGTH_REVERSE_PYRAMID
+    Heaviest set first, decreasing loads thereafter.
+    Reps usually increase across sets.
+
+5) STRENGTH_LINEAR_PYRAMID
+    Loads increase from start → peak → decrease.
+    Used for balanced strength-hypertrophy combinations.
+
+6) STRENGTH_WARMUP_PLUS_FLAT_WORK
+    First 1–2 sets ramp up, remaining sets use steady working load.
+
+7) STRENGTH_DROP_SET
+    One heavy set followed by rapid weight reductions without rest.
+    Defines metabolic stress / hypertrophy emphasis.
+
+8) STRENGTH_REST_PAUSE
+    One main working load with multiple micro-sets separated by 10–30s rest.
+
+9) STRENGTH_CLUSTER
+    Heavy load broken into repeated mini-sets (e.g., 2+2+2+2).
+    Intra-set rest defined in pattern_notes.
+
+10) STRENGTH_EMOM
+    Strength performed every minute on the minute.
+    Load may be flat or ramping.
+
+11) STRENGTH_AMRAP_SET
+    One set performed for as many reps as possible at a fixed load.
+
+============================================================
+SECTION 2 — CARDIO / CONDITIONING PATTERN TYPES
+============================================================
+
+12) CARDIO_STEADY
+    Continuous effort at fixed intensity (Z1–Z3 depending on target).
+
+13) CARDIO_PROGRESSIVE
+    Gradual increase in intensity from start to finish.
+
+14) CARDIO_NEGATIVE_SPLIT
+    First half easier, second half harder.
+
+15) CARDIO_INTERVAL_REGULAR
+    Repeated intervals with consistent work/rest durations.
+
+16) CARDIO_INTERVAL_PROGRESSIVE
+    Interval intensity increases through the workout.
+
+17) CARDIO_FARTLEK_STRUCTURED
+    Alternating fast and slow segments with structured timing.
+
+18) CARDIO_HILL_REPEATS
+    Repeated uphill intervals at high intensity.
+
+19) CARDIO_TEMPO
+    Continuous threshold-level effort at Z3–Z4.
+
+20) CARDIO_TIME_TRIAL
+    All-out performance over a defined time or distance.
+
+21) CARDIO_RECOVERY_EASY
+    Low-intensity recovery session at Z1–Z2.
+
+============================================================
+SECTION 3 — MIXED-MODAL / SKILL / MOBILITY PATTERN TYPES
+============================================================
+
+22) MOBILITY_SEQUENCE
+    Defined sequence of mobility drills.
+
+23) SKILL_PRACTICE_TECHNIQUE
+    Technique, drills, gait work, neurological patterning.
+
+24) MIXED_CIRCUIT_DENSITY
+    Repeated rounds of mixed movements performed for time or density.
+
+============================================================
+SECTION 4 — TEMPO CODES & TEMPO ARCHETYPES
+============================================================
+
+Tempo notation: ECCENTRIC – PAUSE (BOTTOM) – CONCENTRIC – PAUSE (TOP)
+
+Examples:
+    3-0-1-0 = 3 seconds down, no pause, 1 second up, no pause  
+    4-2-1-0 = slow eccentric, long pause  
+    X-0-1-0 = explosive concentric (“X” = as fast as safely possible)
+
+------------------------------------------------------------
+GLOBAL TEMPO ARCHETYPES
+------------------------------------------------------------
+
+T1: TEMPO_CONTROLLED
+    Default hypertrophy tempo. Usually 3-0-1-0.
+
+T2: TEMPO_SLOW_ECCENTRIC
+    Increased time under tension. 4-0-1-0, 5-0-1-0.
+
+T3: TEMPO_PAUSED_BOTTOM
+    Eliminates stretch reflex. 3-1-1-0 or 2-2-1-0.
+
+T4: TEMPO_PAUSED_TOP
+    Stability or positional control. 2-0-1-2.
+
+T5: TEMPO_EXPLOSIVE_CONCENTRIC
+    Power training. 3-0-X-0 or 2-0-X-0.
+
+T6: TEMPO_SUPERCONTROLLED
+    Rehab / motor learning. 4-2-2-1 or slower.
+
+T7: TEMPO_SPEED_STRENGTH
+    Quick eccentric, explosive concentric. 1-0-X-0.
+
+T8: TEMPO_OLYMPIC
+    Used in weightlifting derivatives. X-0-X-1 or similar.
+
+------------------------------------------------------------
+TEMPO APPLICATION RULES
+------------------------------------------------------------
+- Tempo applies per movement unless tempo_per_set_pattern overrides it.
+- Beginners should see tempo explained in plain language.
+- Intermediates see short reminders.
+- Experts see only tempo codes unless detail_level_preference = detailed.
+- Tempo influences training effect: hypertrophy, strength, stability, power.
+
+------------------------------------------------------------
+END OF CATALOGUE
+============================================================
