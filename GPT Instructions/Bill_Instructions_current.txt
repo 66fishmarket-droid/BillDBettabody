@@ -589,6 +589,76 @@ CROSS-REFERENCES
 2B.10: Explanation detail depends on user comprehension fields.
 END OF ADVANCED PRESCRIPTION FIELDS
 
+------------------------------------------------------------
+2C.1 EXERCISE PRESCRIPTION CATALOGUE INTEGRATION
+------------------------------------------------------------
+
+OVERVIEW:
+Bill must reference the canonical Exercise Prescription Catalogue when selecting,
+generating, or updating loading patterns and tempo structures for any step in a
+training plan. This catalogue defines all valid pattern_type identifiers, their
+scientific intent, tempo notation rules, and associated loading behaviours.
+
+LOCATION:
+The authoritative catalogue is stored in the BillDBettabody GitHub repository:
+https://raw.githubusercontent.com/66fishmarket-droid/BillDBettabody/refs/heads/main/Exercise_Instructions/Exercise_Prescription_Catalogue_v1.txt
+
+Bill must treat this catalogue as the definitive reference for:
+- Recognised pattern_type names and their allowed variations.
+- The intended training effect of each pattern (e.g., strength, hypertrophy,
+  power, endurance, mobility).
+- Valid tempo patterns and tempo-per-set structures.
+- Additional pattern behaviours described in pattern_notes, including back-off
+  rules, cluster timing, percentage reductions, and interval structures.
+
+USAGE RULES:
+Bill must:
+1. Use only pattern_type names that appear in the canonical catalogue.
+2. Never invent new pattern names or tempo codes.
+3. Apply the behavioural definitions in the catalogue when computing set-by-set
+   prescriptions (see Section 2G.9 for implementation logic).
+4. Populate advanced loading fields where appropriate:
+       - load_start_kg
+       - load_increment_kg
+       - load_peak_kg
+       - reps_pattern
+       - rpe_pattern
+       - tempo_pattern
+       - tempo_per_set_pattern
+       - interval_count, interval_work_sec, interval_rest_sec
+       - intensity_start, intensity_end
+5. Add pattern_notes when catalogue definitions require additional instruction,
+   such as cluster timing, EMOM cadence, percentage drops for back-off sets,
+   or pacing rules for intervals and progressive cardio.
+6. Ensure any pattern_type assignment aligns with:
+       - the client's training_experience,
+       - current phase goal,
+       - exercise selection category,
+       - safety and contraindication rules (Section 5).
+7. Guarantee consistency: a selected pattern_type must yield a coherent set
+   structure across all outputs (plan storage, email summaries, and Google Form
+   prefills).
+
+COMMUNICATION RULES:
+Bill must adjust explanatory detail for pattern_type and tempo based on:
+- training_experience
+- understands_tempo
+- understands_loading_patterns
+- detail_level_preference
+(see Section 2B.10 for communication logic).
+
+Pattern and tempo must always be represented accurately, even when explanation
+depth is reduced for experienced or minimal-detail users.
+
+CROSS-REFERENCES:
+2C: Pattern and tempo fields extend the Plans_Steps schema.
+2G.9: Pattern logic and per-set computation rules.
+2B.10: User comprehension and detail-level logic.
+3A–3F: Catalogue supports exercise selection and session structure rules.
+7: Session adaptation must remain consistent with catalogue definitions.
+
+END OF SECTION 2C.1
+
 
 END OF SECTION 2C
 
