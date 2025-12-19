@@ -1,0 +1,271 @@
+Bill D’Bettabody – Exercise Library & Equipment Ontology
+
+Design Decisions & Rationale (Working Record)
+
+Purpose
+
+This document records agreed design decisions for the Exercise Library and equipment ontology used by Bill D’Bettabody.
+Its goal is to ensure safety, scalability, consistency, and long-term maintainability as Bill moves from sandbox to production.
+
+This is a design reference, not an implementation guide.
+
+1. Core Design Philosophy
+
+The Exercise Library must support:
+
+Commercial gyms
+
+Home / zero-budget environments
+
+Improvised environments (furniture, stairs, railings, etc.)
+
+Adaptive and inclusive training contexts
+
+Safety must be data-driven, not assumed.
+
+Bill should never rely on implicit “common sense” about equipment.
+
+Ontology must move from broad → narrow to support grouping, substitution, and reasoning.
+
+2. Exercise Library Is Exercise-Centric
+
+The library stores exercises, not equipment objects.
+
+There are no rows for “chair”, “table”, or “door frame”.
+
+Equipment context is expressed via:
+
+equipment (broad class)
+
+variant (specific setup)
+
+safety_notes, regression, and progression
+
+This prevents equipment sprawl and keeps programming logic stable.
+
+3. Equipment Ontology (Top-Level Classes)
+
+The following equipment classes are first-class and canonical:
+
+none
+True bodyweight, floor-based exercises
+
+household
+Domestic furniture or fixtures used for support or loading
+
+free_weight
+Dumbbells, kettlebells, barbells, sandbags, backpacks, etc.
+
+fixed_machine
+Selectorised or plate-loaded machines
+
+cable_system
+Pulley-based resistance systems
+
+portable_accessory
+Bands, suspension trainers, sliders, medicine balls, etc.
+
+cardio_machine
+Stationary machines (treadmill, spin bike, rower, etc.)
+
+human_powered_vehicle
+Human propulsion through space (bicycles, handbikes, scooters, etc.)
+
+environmental
+Outdoor or built environment features (stairs, hills, playground bars)
+
+4. Human-Powered Vehicle Rule (Explicit Boundary)
+
+Definition:
+A human-powered vehicle is any device where exercise stimulus is created by propelling the body and device through physical space.
+
+Rule:
+
+Moves through space → human_powered_vehicle
+
+Stationary resistance → cardio_machine
+
+Examples:
+
+Road bike, MTB, handbike → human_powered_vehicle
+
+Static exercise bike, wattbike → cardio_machine
+
+Outdoor running → environmental
+
+This distinction is intentional and must not be blurred.
+
+5. Household Equipment Safety Model
+
+Household equipment is defined by load-bearing characteristics, not trust in the object.
+
+Design Rules
+
+Use generic names (chair, table, wall, door frame)
+
+Pair them with explicit safety characteristics
+
+Always define unsafe red flags
+
+Always include safe alternatives
+
+Bill must default to alternatives if structural integrity cannot be verified.
+
+6. Agreed Household / Environmental Definitions (v1)
+Chair (sturdy)
+
+No wheels, no swivel, rigid frame
+
+Supports full bodyweight without flex
+
+Not folding or heavily cushioned
+
+Uses: incline push-ups, step-ups, assisted squats
+
+Alternatives: stairs, bench, low wall
+
+Table (solid)
+
+Heavy, non-movable, no flex
+
+No glass, no wheels
+
+Uses: inverted rows, incline push-ups
+
+Alternatives: suspension trainer, railing, playground bar
+
+Wall (structural)
+
+Brick, concrete, or stud wall
+
+No loose fixtures, non-slippery
+
+Uses: wall sits, wall push-ups, handstand holds
+
+Alternatives: floor-based variations
+
+Door Frame (structural – high risk)
+
+Solid frame, firmly anchored hinges
+
+Solid-core door only if used
+
+No sliding, pocket, or glass doors
+
+No movement under test load
+
+Uses: assisted rows, isometric holds (advanced only)
+
+Explicitly not for dynamic or kipping movements
+
+Alternatives: suspension trainer, band rows, table rows
+
+Stairs / Steps
+
+Fixed, even height, non-slip
+
+No loose carpet or damage
+
+Uses: step-ups, split squats, calf raises
+
+Alternatives: chair, box, lunges
+
+Railings (support-only)
+
+Firmly anchored, no wobble
+
+Never treated as full load-bearing
+
+Uses: assisted squats, balance support
+
+Alternatives: wall, suspension trainer, chair
+
+7. How This Appears in the Exercise Sheet
+equipment
+
+Always broad and machine-readable
+Examples: household, environmental, human_powered_vehicle
+
+variant
+
+Encodes setup specificity
+Examples:
+
+incline_chair
+
+row_table
+
+step_stairs
+
+row_doorframe
+
+safety_notes
+
+Mandatory for household/environmental exercises
+
+Contains structural requirements and stop conditions
+
+regression / progression
+
+Always defined to provide safe downgrade and upgrade paths
+
+This ensures Bill can substitute without hallucinating.
+
+8. Repeatable Exercise Entry Pattern
+
+Every exercise added should follow this order:
+
+Clear, unambiguous exercise_name
+
+Broad classification:
+
+category
+
+body_region
+
+movement_pattern
+
+equipment
+
+Narrowed execution via variant
+
+Safety metadata:
+
+safety_notes
+
+common_mistakes
+
+regression
+
+Logical progression
+
+If Step 2 feels unclear, the exercise definition is probably weak.
+
+9. Bill Behaviour (Design Intent – Not Yet Implemented)
+
+When prescribing exercises with:
+
+equipment = household or environmental
+
+Bill should:
+
+Surface one safety qualifier
+
+Offer one alternative
+
+Default to caution if context is unclear
+
+This will be encoded later in Bill’s instructions.
+
+10. Identified Backlog Items (Implicit)
+
+Ingest Google Form session responses into client context
+
+Allow Bill to reference athlete notes from form responses
+
+Add explicit rule to Bill’s instructions for household/environmental safety qualifiers
+
+Continue building Exercise Library content using the agreed pattern
+
+Status:
+This ontology and usage model is considered agreed and locked as a foundation for production build-out.
