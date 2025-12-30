@@ -1,0 +1,79 @@
+EXERCISE_BESTS_V2 - CANONICAL SCHEMA (v2)
+
+Purpose
+- One canonical "best so far" record per (client_id, exercise_name, metric_key, context_key).
+- Bill reads ONLY this table for prescriptions and progress checks.
+- Make updates this table from evidence streams (Session_Responses, validated issues, imports).
+- Issues_Log is NOT a source of truth. It is a request/exception channel.
+
+Primary key
+- client_id
+- exercise_name
+- metric_key
+- context_key
+
+Field definitions
+
+Identity
+- client_id: string. Canonical client identifier.
+- exercise_name: string. Canonical exercise name (must match Exercises_Library naming once established).
+- metric_key: string. Defines the metric being tracked. Examples:
+  - strength_e1rm
+  - strength_true_1rm
+  - run_5k_time
+  - row_1000m_time
+  - pullups_maxreps
+  - burpees_5min_reps
+- metric_family: enum {strength, cardio, calisthenics, mixed}.
+- better_direction: enum {higher, lower}. Determines whether improvements are greater-than or less-than.
+
+Context
+- context_key: string. Disambiguates variants of the same metric/exercise. Examples:
+  - "default"
+  - "5k"
+  - "1000m"
+  - "amrap_5min"
+  - "treadmill"
+  - "outdoor"
+  Rule: if no special context applies, set to "default".
+
+Canonical best (what Bill reads)
+- current_value: number. The best-so-far value in base units.
+- current_unit: string. The unit for current_value. Examples: "kg", "s", "reps", "w", "m".
+- current_timestamp: ISO datetime string. When the best performance occurred.
+- current_evidence_type: enum {session_response, manual_test, imported, coach_override}.
+- current_evidence_ref: string. Reference to the evidence (session_id, form response row id, etc.).
+- current_confidence: enum {high, medium, low}. Default "high" for structured session responses; lower if inferred/ambiguous.
+
+First recorded best (history anchor)
+- first_value, first_unit, first_timestamp, first_evidence_type, first_evidence_ref: same semantics as current_*, captured when the row is first created.
+
+Optional metric details (populate only when relevant)
+Strength fields
+- strength_load_kg: number. The load that produced the best (if applicable).
+- strength_reps: number. The reps that produced the best (if applicable).
+- strength_e1rm_kg: number. Estimated 1RM used for prescription anchor (if applicable).
+
+Cardio/machine fields
+- distance_m: number. Distance in meters (if applicable).
+- duration_s: number. Duration in seconds (if applicable).
+- avg_power_w: number. Average power in watts (if applicable).
+- avg_hr_bpm: number. Average heart rate (if applicable).
+
+Notes
+- notes: string. Non-canonical commentary. Never required for logic. Used to explain ambiguity or special handling.
+
+Comparison rules (universal)
+- If better_direction = "higher": new_value must be > current_value to update.
+- If better_direction = "lower": new_value must be < current_value to update.
+- Tie-breakers (only if needed for deterministic behavior):
+  - strength_e1rm: if e1rm ties, higher load wins; if load ties, higher reps wins.
+  - time metrics: if duration ties, prefer evidence with higher confidence.
+
+Base units (to keep Make comparisons consistent)
+- time: seconds ("s")
+- distance: meters ("m")
+- load: kilograms ("kg")
+- power: watts ("w")
+- heart rate: bpm ("bpm")
+- reps: "reps"
