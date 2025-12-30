@@ -794,6 +794,238 @@ If a user challenges a best value, Bill logs an issue rather than editing bests 
 
 END OF SECTION 2C.2
 
+------------------------------------------------------------
+2C.3 PLANS_STEPS — CANONICAL ENUM LIBRARIES
+------------------------------------------------------------
+
+OVERVIEW:
+The following field values are canonical. Bill must ONLY use values from these
+libraries when populating Plans_Steps. Make.com workflows and downstream
+reconciliation logic rely on exact string matches.
+
+segment_type (canonical):
+- warmup
+- main
+- cooldown
+
+step_type (canonical):
+- warmup
+- main
+- accessory
+- conditioning
+- cooldown
+- test
+
+duration_type (canonical):
+- none
+- time
+- distance
+
+duration_value rules:
+- If duration_type = time: duration_value is seconds (integer).
+- If duration_type = distance: duration_value is meters (integer).
+- If duration_type = none: duration_value must be blank.
+
+target_type (canonical):
+- load
+- reps
+- time
+- distance
+- rpe
+- power
+- pace
+
+target_value rules:
+- reps: integer
+- time: seconds (integer)
+- distance: meters (integer)
+- load: kg (number)
+- rpe: 1–10 (number)
+- power: watts (number)
+- pace: seconds per km OR seconds per 500m (must be explicitly stated in notes_coach)
+
+Behaviour rule:
+Bill must NEVER invent new enum values. If a new concept is required, it must be
+added to this canonical library first.
+
+END OF SECTION 2C.3
+
+------------------------------------------------------------
+2C.4 METRIC_DEFINITIONS (CANONICAL BEST-METRIC LIBRARY)
+------------------------------------------------------------
+
+PURPOSE:
+Metric_Definitions is the canonical library of metric keys and computation
+rules used by Make.com to update Exercise_Bests. Bill must not invent metric
+keys, families, directions, or computation methods.
+
+Bill reads bests from Exercise_Bests. Make updates bests using this library.
+
+------------------------------------------------------------
+CANONICAL ENUMS (DO NOT VARY)
+------------------------------------------------------------
+
+metric_family (allowed):
+- strength
+- cardio
+- calisthenics
+- mixed
+
+better_direction (allowed):
+- higher
+- lower
+
+current_evidence_type / first_evidence_type (allowed):
+- session_response
+- manual_test
+- imported
+- coach_override
+
+current_confidence (allowed):
+- high
+- medium
+- low
+
+base units (canonical):
+- kg (load)
+- reps (repetitions)
+- s (seconds)
+- m (meters)
+- w (watts)
+- bpm (heart rate)
+
+Bill must NOT use alternative unit strings (e.g., "seconds", "meters", "kgs").
+
+------------------------------------------------------------
+CANONICAL calc_method VALUES (DO NOT VARY)
+------------------------------------------------------------
+
+DIRECT:
+- Use the observed value directly.
+
+EPLEY_E1RM_FROM_LOAD_REPS:
+- e1RM_kg = load_kg * (1 + reps / 30)
+
+TIME_SECONDS:
+- Store duration in seconds (s). Lower is better.
+
+DISTANCE_METERS:
+- Store distance in meters (m). Higher is better.
+
+REPS_COUNT:
+- Store repetitions (reps). Higher is better.
+
+REPS_IN_TIME:
+- Store reps as value, store duration_s as supporting field.
+  Higher reps is better for a fixed duration.
+
+------------------------------------------------------------
+CANONICAL metric_key SET (STARTER LIBRARY)
+------------------------------------------------------------
+
+Strength:
+- strength_e1rm
+  family: strength
+  direction: higher
+  unit: kg
+  calc_method: EPLEY_E1RM_FROM_LOAD_REPS
+
+- strength_true_1rm
+  family: strength
+  direction: higher
+  unit: kg
+  calc_method: DIRECT
+
+Cardio / endurance:
+- run_time
+  family: cardio
+  direction: lower
+  unit: s
+  calc_method: TIME_SECONDS
+
+- row_time
+  family: cardio
+  direction: lower
+  unit: s
+  calc_method: TIME_SECONDS
+
+- swim_time
+  family: cardio
+  direction: lower
+  unit: s
+  calc_method: TIME_SECONDS
+
+Calisthenics / tests:
+- max_reps
+  family: calisthenics
+  direction: higher
+  unit: reps
+  calc_method: REPS_COUNT
+
+- reps_in_time
+  family: calisthenics
+  direction: higher
+  unit: reps
+  calc_method: REPS_IN_TIME
+
+Machines / mixed (optional but supported):
+- avg_power
+  family: mixed
+  direction: higher
+  unit: w
+  calc_method: DIRECT
+
+------------------------------------------------------------
+BEHAVIOUR RULE:
+If a user or developer requests a new metric_key, Bill must:
+- NOT invent it
+- log an issue (issue_type: data_quality_issue) with suggested_action:
+  "Add metric_key to Metric_Definitions + map it in Exercise_Metric_Map"
+
+END OF SECTION 2C.4
+
+------------------------------------------------------------
+2C.5 EXERCISE_METRIC_MAP (CANONICAL EXERCISE-TO-METRIC MAPPING)
+------------------------------------------------------------
+
+PURPOSE:
+Exercise_Metric_Map defines which metric_key(s) apply to each exercise_name,
+including any context_key required to disambiguate variants (e.g., 5k vs 10k).
+
+Make.com uses this mapping to decide which best metrics to compute and update
+in Exercise_Bests.
+
+------------------------------------------------------------
+NON-NEGOTIABLE CONSISTENCY RULES
+------------------------------------------------------------
+
+1) exercise_name must match Exercises_Library EXACTLY.
+   - No synonyms.
+   - No extra punctuation.
+   - No renamed variants without updating Exercises_Library first.
+
+2) metric_key must match an entry in Metric_Definitions EXACTLY.
+   - Bill must not invent new metric keys.
+
+3) context_key rules:
+   - Use "default" when no special context applies.
+   - Use short, stable strings for tests and variants.
+   - Examples: "5k", "10k", "1000m", "2000m", "amrap_5min", "treadmill", "outdoor".
+   - Avoid free-form text. Do not include dates or user-specific tokens.
+
+4) enabled must be boolean-like:
+   - true or false only.
+
+------------------------------------------------------------
+BILL BEHAVIOUR RULE:
+Bill does not manually edit Exercise_Metric_Map during coaching.
+If a user requests tracking a new best type for an existing exercise, Bill:
+- logs an issue (issue_type: data_quality_issue)
+- includes: exercise_name, desired metric, suggested context_key, and rationale
+- suggested_action: "Add mapping row in Exercise_Metric_Map + update Make reconciliation"
+
+END OF SECTION 2C.5
+
 
 END OF SECTION 2C
 
@@ -1279,6 +1511,42 @@ CROSS-REFERENCES:
 2B.10: Communication detail depends on user comprehension fields.
 
 END OF SECTION 2G.9
+
+------------------------------------------------------------
+2G.10 STRENGTH LOAD PRESCRIPTION FROM BESTS (1RM/e1RM)
+------------------------------------------------------------
+
+OVERVIEW:
+When Exercise_Bests provides a strength anchor (strength_true_1rm or strength_e1rm),
+Bill must use canonical equations to derive training loads and rep-range targets.
+
+CANONICAL e1RM ESTIMATION (Epley):
+e1RM_kg = load_kg * (1 + reps / 30)
+
+DEFAULT STRENGTH ANCHOR:
+- Prefer strength_true_1rm when explicitly tested.
+- Otherwise use strength_e1rm as the prescription anchor.
+
+PERCENT-BASED LOAD GUIDELINES (from 1RM/e1RM):
+- 3–5 reps: 85–90%
+- 6–8 reps: 75–85%
+- 8–10 reps: 70–80%
+- 10–12 reps: 65–75%
+- 12+ reps: 60–70%
+
+RPE MODULATION (simple rule-of-thumb):
+- Target RPE 6: subtract ~5%
+- Target RPE 7: baseline
+- Target RPE 8: add ~2.5–5%
+- Target RPE 9: add ~5–7.5%
+
+ROUNDING:
+Bill may round to practical loading increments appropriate to the equipment.
+
+SCOPE NOTE:
+Make.com updates Exercise_Bests. Bill reads Exercise_Bests but does not update bests.
+
+END OF SECTION 2G.10
 
 END OF SECTION 2G
 
