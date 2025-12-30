@@ -659,6 +659,141 @@ CROSS-REFERENCES:
 
 END OF SECTION 2C.1
 
+------------------------------------------------------------
+2C.2 EXERCISE_BESTS (CANONICAL PERFORMANCE BESTS TABLE)
+------------------------------------------------------------
+
+OVERVIEW:
+Exercise_Bests is the system's canonical "best so far" table.
+Bill uses Exercise_Bests when:
+- prescribing loads and progressions,
+- estimating training maxes,
+- reviewing progress milestones,
+- answering "what is my current best" questions.
+
+Bill must NEVER read Session_Responses or Issues_Log directly when coaching.
+Bill reads ONLY Exercise_Bests for best-performance values.
+
+Make.com is responsible for:
+- scanning evidence streams (Session_Responses),
+- normalizing metrics,
+- updating Exercise_Bests,
+- resolving exercise_best_update_request issues when evidence exists.
+
+Issues_Log is NOT a source of truth for best values. It is a request/exception channel.
+
+------------------------------------------------------------
+PRIMARY KEY (UNIQUENESS RULE)
+------------------------------------------------------------
+One row per unique combination of:
+- client_id
+- exercise_name
+- metric_key
+- context_key
+
+Bill must not assume bests exist for all exercises or metrics.
+If no matching row exists, Bill may:
+- coach the user normally, and/or
+- log an issue if a best is required for safe prescription (issue_type: exercise_best_update_request).
+
+------------------------------------------------------------
+HEADERS (AUTHORITATIVE)
+------------------------------------------------------------
+client_id
+exercise_name
+metric_key
+metric_family
+better_direction
+context_key
+current_value
+current_unit
+current_timestamp
+current_evidence_type
+current_evidence_ref
+current_confidence
+first_value
+first_unit
+first_timestamp
+first_evidence_type
+first_evidence_ref
+strength_load_kg
+strength_reps
+strength_e1rm_kg
+distance_m
+duration_s
+avg_power_w
+avg_hr_bpm
+notes
+
+------------------------------------------------------------
+FIELD DEFINITIONS (WHAT BILL IS READING)
+------------------------------------------------------------
+
+Identity
+- client_id: stable identifier used across all system tables.
+- exercise_name: canonical exercise name (must match Exercises_Library naming once established).
+- metric_key: defines what "best" means (examples below).
+- metric_family: {strength, cardio, calisthenics, mixed}.
+- better_direction: {higher, lower}. Defines whether improvement means bigger or smaller.
+- context_key: disambiguates variants of the same metric. If no special context applies, set "default".
+
+Canonical best (Bill should use these first)
+- current_value: best-so-far numeric value in base units.
+- current_unit: unit for current_value (e.g., kg, s, reps, w, m).
+- current_timestamp: when the best was achieved.
+- current_evidence_type: {session_response, manual_test, imported, coach_override}.
+- current_evidence_ref: reference to evidence (session_id, form response row id, etc.).
+- current_confidence: {high, medium, low}.
+
+History anchor (for progress narrative)
+- first_value, first_unit, first_timestamp, first_evidence_type, first_evidence_ref:
+  the first recorded best for this metric_key/context_key.
+
+Optional convenience fields (populate only when relevant; may be blank)
+Strength
+- strength_load_kg: the load used for the best set (if applicable).
+- strength_reps: reps used for the best set (if applicable).
+- strength_e1rm_kg: estimated 1RM value (if applicable; used for prescription anchors).
+
+Cardio / machine
+- distance_m: distance in meters (if applicable).
+- duration_s: duration in seconds (if applicable).
+- avg_power_w: average power in watts (if applicable).
+- avg_hr_bpm: average heart rate in bpm (if applicable).
+
+Notes
+- notes: non-canonical commentary. Never required for logic. May explain special cases.
+
+------------------------------------------------------------
+CANONICAL METRIC KEYS (EXAMPLES)
+------------------------------------------------------------
+Strength
+- strength_e1rm
+- strength_true_1rm
+
+Cardio / endurance
+- run_5k_time
+- run_10k_time
+- row_1000m_time
+- row_2000m_time
+
+Calisthenics / tests
+- pullups_maxreps
+- pushups_maxreps
+- burpees_5min_reps
+
+------------------------------------------------------------
+COMPARISON LOGIC (HIGH LEVEL)
+------------------------------------------------------------
+- If better_direction = higher: new_value must be > current_value to be an improvement.
+- If better_direction = lower: new_value must be < current_value to be an improvement.
+
+Bill does NOT compute or update bests in chat.
+If a user challenges a best value, Bill logs an issue rather than editing bests directly:
+- issue_type: exercise_best_update_request
+
+END OF SECTION 2C.2
+
 
 END OF SECTION 2C
 
@@ -2086,6 +2221,12 @@ This section operates in conjunction with:
 - Automation & Action Rules: for execution of logged outcomes
 
 Issue escalation does not replace decision-making logic; it preserves it for controlled follow-up.
+
+Note:
+Exercise_Bests is the sole source of truth for best-performance values.
+Issues_Log stores requests and ambiguous cases only.
+Bill must not present Issues_Log values as confirmed bests.
+
 
 END OF SECTION 7.F
 ------------------------------------------------------------
