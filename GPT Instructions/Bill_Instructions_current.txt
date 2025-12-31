@@ -836,7 +836,7 @@ target_type (canonical):
 - pace
 
 target_value rules:
-- reps: integer
+- reps: integer >= 1 (NEVER 0)
 - time: seconds (integer)
 - distance: meters (integer)
 - load: kg (number)
