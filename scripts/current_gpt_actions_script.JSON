@@ -1,0 +1,830 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Bill - Make Actions",
+    "version": "2.1.0"
+  },
+  "servers": [
+    { "url": "https://hook.eu2.make.com" }
+  ],
+  "components": {
+    "schemas": {
+      "ResultBase": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "description": "ok|success|error" },
+          "action": { "type": "string" },
+          "message": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+
+      "ClientIdOnly": {
+        "type": "object",
+        "required": ["client_id"],
+        "properties": {
+          "client_id": { "type": "string", "description": "Stable client handle used across all Bill scenarios." }
+        },
+        "additionalProperties": false
+      },
+
+      "PlanContext": {
+        "type": "object",
+        "required": ["plan_id"],
+        "properties": {
+          "plan_id": { "type": "string" },
+          "block_id": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+
+      "WeekContext": {
+        "type": "object",
+        "required": ["plan_id", "week_number"],
+        "properties": {
+          "plan_id": { "type": "string" },
+          "block_id": { "type": "string" },
+          "week_id": { "type": "string" },
+          "week_number": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": false
+      },
+
+      "SessionRow": {
+        "type": "object",
+        "required": ["session_id"],
+        "properties": {
+          "plan_id": { "type": "string" },
+          "block_id": { "type": "string" },
+          "client_id": { "type": "string" },
+          "week": { "type": "string", "description": "Week label/number (Plans_Sessions.week)" },
+          "week_id": { "type": "string" },
+          "day": { "type": "string", "description": "Day label (Plans_Sessions.day)" },
+          "session_id": { "type": "string" },
+          "phase": { "type": "string" },
+          "location": { "type": "string" },
+          "focus": { "type": "string" },
+          "exercises": { "type": "string" },
+          "macros": { "type": "string" },
+          "supplements": { "type": "string" },
+          "notes": { "type": "string" },
+          "session_date": { "type": "string", "format": "date" },
+          "session_day_of_week": { "type": "string" },
+          "session_global_number": { "type": "string" },
+          "intended_intensity_rpe": { "type": "string" },
+          "intended_hr_zone": { "type": "string" },
+          "estimated_duration_minutes": { "type": "string" },
+          "linked_sport": { "type": "string" },
+          "session_status": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+
+      "StepRow": {
+        "type": "object",
+        "properties": {
+          "step_id": { "type": "string", "description": "Optional if Make generates it." },
+
+          "session_id": { "type": "string" },
+          "week_id": { "type": "string" },
+          "block_id": { "type": "string" },
+          "client_id": { "type": "string" },
+
+          "step_order": { "type": "integer", "minimum": 1 },
+
+          "segment_type": { "type": "string", "description": "Warmup|Main|Accessory|Conditioning|Cooldown etc." },
+          "step_type": { "type": "string", "description": "Strength|Hypertrophy|Intervals|Mobility|Skill etc." },
+
+          "duration_type": { "type": "string", "description": "time|distance|reps|rounds|none etc." },
+          "duration_value": { "type": "number" },
+
+          "target_type": { "type": "string", "description": "rpe|hr_zone|pace|power|none etc." },
+          "target_value": { "type": "number" },
+
+          "exercise_name": { "type": "string" },
+
+          "sets": { "type": "integer", "minimum": 0 },
+          "reps": { "type": "integer", "minimum": 1, "description": "Hard rule: reps must be >= 1 (never 0)." },
+
+          "load_kg": { "type": "number" },
+          "rest_seconds": { "type": "integer", "minimum": 0 },
+
+          "notes_coach": { "type": "string" },
+          "notes_athlete": { "type": "string" },
+
+          "status": { "type": "string", "description": "planned|complete|skipped|modified etc." },
+
+          "pattern_type": { "type": "string" },
+          "load_start_kg": { "type": "number" },
+          "load_increment_kg": { "type": "number" },
+          "load_peak_kg": { "type": "number" },
+
+          "reps_pattern": { "type": "string" },
+          "rpe_pattern": { "type": "string" },
+          "tempo_pattern": { "type": "string" },
+          "tempo_per_set_pattern": { "type": "string" },
+          "pattern_notes": { "type": "string" },
+
+          "interval_count": { "type": "integer", "minimum": 0 },
+          "interval_work_sec": { "type": "integer", "minimum": 0 },
+          "interval_rest_sec": { "type": "integer", "minimum": 0 },
+
+          "intensity_start": { "type": "number" },
+          "intensity_end": { "type": "number" }
+        },
+        "additionalProperties": false
+      },
+
+      "SessionWithSteps": {
+        "allOf": [
+          { "$ref": "#/components/schemas/SessionRow" },
+          {
+            "type": "object",
+            "properties": {
+              "steps": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/StepRow" },
+                "description": "Atomic steps for the session (Plans_Steps rows)."
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+
+      "ClientProfileData": {
+        "type": "object",
+        "description": "Partial or full client profile. Only provided fields will be updated.",
+        "properties": {
+          "first_name": { "type": "string" },
+          "last_name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "timezone": { "type": "string" },
+
+          "sex": { "type": "string" },
+          "age_years": { "type": "integer", "minimum": 0 },
+          "height_cm": { "type": "number" },
+          "weight_kg": { "type": "number" },
+          "waist_circumference_cm": { "type": "number" },
+
+          "training_experience": { "type": "string" },
+          "primary_background": { "type": "string" },
+          "last_trained_date": { "type": "string", "format": "date" },
+          "typical_sessions_per_week_last_3_months": { "type": "integer", "minimum": 0 },
+
+          "cardio_fitness_level": { "type": "string" },
+          "strength_level": { "type": "string" },
+          "movement_quality": { "type": "string" },
+
+          "goals": { "type": "string" },
+          "goal_primary": { "type": "string" },
+          "goal_secondary": { "type": "string" },
+          "goal_tertiary": { "type": "string" },
+          "goal_timeframe_months": { "type": "integer", "minimum": 0 },
+
+          "schedule": { "type": "string" },
+
+          "equipment": { "type": "string" },
+          "equipment_home": { "type": "string" },
+          "equipment_gym": { "type": "string" },
+          "equipment_preference": { "type": "string" },
+
+          "has_pool": { "type": "boolean" },
+          "has_track_or_safe_run": { "type": "boolean" },
+          "gym_travel_time_minutes": { "type": "integer", "minimum": 0 },
+
+          "chronic_contraindications": { "type": "string" },
+          "injuries": { "type": "string" },
+          "risk_summary": { "type": "string" },
+
+          "diet_style": { "type": "string" },
+          "calorie_target": { "type": "integer" },
+          "protein_min": { "type": "integer" },
+          "supplements": { "type": "string" },
+
+          "sleep_quality": { "type": "string" },
+          "stress_level": { "type": "string" },
+
+          "work_pattern": { "type": "string" },
+          "family_responsibilities": { "type": "string" },
+
+          "watch_platform": { "type": "string" },
+          "watch_user_id": { "type": "string" },
+
+          "preferences": { "type": "string" },
+          "notes": { "type": "string" },
+
+          "last_profile_update": { "type": "string", "format": "date-time" },
+          "home_location": { "type": "string" },
+          "upcoming_travel": { "type": "string" },
+
+          "undertands_tempo": { "type": "string" },
+          "understands_loading_patterns": { "type": "string" },
+          "detail_level_preference": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+
+  "paths": {
+    "/cwxh4f7a7akrfnr9ljilctodqm8355af": {
+      "post": {
+        "operationId": "post_user_upsert",
+        "summary": "Upsert a client profile",
+        "description": "Creates or updates a client's profile in Google Sheets via Make.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "data"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "data": { "$ref": "#/components/schemas/ClientProfileData" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Client profile upserted successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ResultBase" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "client_id": { "type": "string" },
+                        "row_index": { "type": "integer", "description": "1-based row index in Clients sheet." },
+                        "created": { "type": "boolean" }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/hvsvswhrdfacm7ag4flv1uhpb1nxbigh": {
+      "post": {
+        "operationId": "check_client_id_available",
+        "summary": "Check whether a client_id is available",
+        "description": "Checks if a client_id exists in the Clients sheet and returns availability.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientIdOnly" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Client ID availability result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["exists", "client_id"],
+                  "properties": {
+                    "exists": { "type": "boolean" },
+                    "client_id": { "type": "string" },
+                    "row_index": { "type": ["integer", "null"] }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/w8kw2yvyhvt2zh9lf5m8gkus4slywdjq": {
+      "post": {
+        "operationId": "fetch_client_context",
+        "summary": "Fetch consolidated training context for a client",
+        "description": "Loads client profile + plans + weeks + sessions + steps + contraindications from Google Sheets via Make.",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ClientIdOnly" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "Client context successfully loaded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "body": { "type": "string", "description": "JSON-encoded context payload." },
+                    "headers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": { "name": { "type": "string" }, "value": { "type": "string" } },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/v35x7s4w3ksju9e4jgjes5rpsoxb3a22": {
+      "post": {
+        "operationId": "full_training_block_generator",
+        "summary": "Generate a full multi-week training block",
+        "description": "Creates a training block with associated weeks, sessions, and steps in the Plans_* sheets.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "phase_name", "phase_goal", "week_start", "duration_weeks", "days_per_week"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "phase_name": { "type": "string" },
+                  "phase_goal": { "type": "string" },
+                  "week_start": { "type": "string", "format": "date", "description": "ISO date (YYYY-MM-DD) for start of block (week 1 Monday)." },
+                  "duration_weeks": { "type": "integer", "minimum": 1 },
+                  "days_per_week": { "type": "integer", "minimum": 1, "maximum": 7 },
+
+                  "constraints": { "type": "string" },
+                  "primary_locations": { "type": "string" },
+                  "nutrition_targets": { "type": "string" },
+                  "supplement_protocol": { "type": "string" },
+                  "notes": { "type": "string" },
+
+                  "weeks": {
+                    "type": "array",
+                    "description": "Optional override: explicit weeks to write (otherwise generated).",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "week_id": { "type": "string" },
+                        "week_number": { "type": "integer", "minimum": 1 },
+                        "week_type": { "type": "string" },
+                        "primary_focus": { "type": "string" },
+                        "secondary_focus": { "type": "string" },
+                        "intensity_pattern": { "type": "string" },
+                        "notes": { "type": "string" },
+                        "week_start_date": { "type": "string", "format": "date" },
+                        "week_end_date": { "type": "string", "format": "date" },
+                        "week_status": { "type": "string" }
+                      },
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Block generation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ResultBase" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "client_id": { "type": "string" },
+                        "plan_id": { "type": "string" },
+                        "block_id": { "type": "string" },
+                        "weeks_created": { "type": "integer" },
+                        "sessions_created": { "type": "integer" },
+                        "steps_created": { "type": "integer" }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/euifx4w0t1qayx4yd94pjfjcud6hxulb": {
+      "post": {
+        "operationId": "generate_training_plan",
+        "summary": "Generate or refresh a training plan header",
+        "description": "Creates/updates a plan and (optionally) its block header fields in Plans_Blocks.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "phase_name", "phase_goal", "week_start", "duration_weeks", "days_per_week"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "plan_id": { "type": "string", "description": "Optional existing plan_id; omit to create new." },
+                  "block_id": { "type": "string", "description": "Optional existing block_id; omit to create new." },
+
+                  "phase_name": { "type": "string" },
+                  "phase_goal": { "type": "string" },
+                  "week_start": { "type": "string", "format": "date" },
+                  "duration_weeks": { "type": "integer", "minimum": 1 },
+                  "days_per_week": { "type": "integer", "minimum": 1, "maximum": 7 },
+
+                  "constraints": { "type": "string" },
+                  "primary_locations": { "type": "string" },
+                  "nutrition_targets": { "type": "string" },
+                  "supplement_protocol": { "type": "string" },
+                  "notes": { "type": "string" },
+
+                  "plan_status": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plan generated/updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ResultBase" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "client_id": { "type": "string" },
+                        "plan_id": { "type": "string" },
+                        "block_id": { "type": "string" }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/2vs9htbixx68m2hdbxinro9tdp55arao": {
+      "post": {
+        "operationId": "populate_training_week",
+        "summary": "Generate or refresh a training week",
+        "description": "Creates or updates all sessions and steps for a specific plan week in Plans_Sessions and Plans_Steps.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "context"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "context": { "$ref": "#/components/schemas/WeekContext" },
+
+                  "regeneration_reason": { "type": "string" },
+
+                  "sessions": {
+                    "type": "array",
+                    "description": "If provided, Make writes these sessions and their steps. If omitted, Make generates sessions+steps based on plan+week.",
+                    "items": { "$ref": "#/components/schemas/SessionWithSteps" }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Training week populated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ResultBase" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "client_id": { "type": "string" },
+                        "plan_id": { "type": "string" },
+                        "block_id": { "type": "string" },
+                        "week_id": { "type": "string" },
+                        "week_number": { "type": "integer" },
+                        "sessions_updated": { "type": "integer" },
+                        "steps_created": { "type": "integer" },
+                        "details": { "type": "string" }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/hv7koluwt0mxtbj6m8exs4774oyk4e7g": {
+      "post": {
+        "operationId": "update_session",
+        "summary": "Update a single training session and optional steps",
+        "description": "Updates one session in Plans_Sessions and optionally upserts steps in Plans_Steps.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "session_id"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "session_id": { "type": "string" },
+
+                  "update_context": {
+                    "type": "object",
+                    "properties": {
+                      "reason": { "type": "string" },
+                      "source": { "type": "string" },
+                      "timestamp": { "type": "string", "format": "date-time" },
+                      "notes": { "type": "string" }
+                    },
+                    "additionalProperties": false
+                  },
+
+                  "session_updates": {
+                    "type": "object",
+                    "description": "Patch-like updates for a session row (Plans_Sessions).",
+                    "properties": {
+                      "location": { "type": "string" },
+                      "focus": { "type": "string" },
+                      "exercises": { "type": "string" },
+                      "macros": { "type": "string" },
+                      "supplements": { "type": "string" },
+                      "notes": { "type": "string" },
+                      "session_status": { "type": "string" },
+                      "intended_intensity_rpe": { "type": "string" },
+                      "intended_hr_zone": { "type": "string" },
+                      "estimated_duration_minutes": { "type": "string" }
+                    },
+                    "additionalProperties": false
+                  },
+
+                  "steps": {
+                    "type": "array",
+                    "description": "Optional step upserts/updates (Plans_Steps). Include step_id to update an existing step; omit to insert new.",
+                    "items": { "$ref": "#/components/schemas/StepRow" }
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session updated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ResultBase" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "client_id": { "type": "string" },
+                        "session_id": { "type": "string" },
+                        "plan_id": { "type": "string" },
+                        "week_id": { "type": "string" },
+                        "steps_updated": { "type": "integer" },
+                        "steps_inserted": { "type": "integer" }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/7n8m9rg7chlxjrtfcdrekx1qc12smsyn": {
+      "post": {
+        "operationId": "post_contraindication_temp",
+        "summary": "Log a temporary contraindication (injury, illness, travel)",
+        "description": "Creates a temporary contraindication record in Contraindications_Temp.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "type", "description"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "type": { "type": "string" },
+                  "description": { "type": "string" },
+                  "expected_duration": { "type": "string" },
+                  "status": { "type": "string" },
+                  "notes": { "type": "string" },
+                  "date_reported": { "type": "string", "format": "date" },
+                  "date_resolved": { "type": "string", "format": "date" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Temporary contraindication logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged": { "type": "boolean" },
+                    "record_id": { "type": "string" },
+                    "client_id": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/bkkygjml0fmc2rkguyesn4jeppg5ia9d": {
+      "post": {
+        "operationId": "update_contraindication_temp",
+        "summary": "Update or resolve a temporary contraindication",
+        "description": "Updates fields on an existing temporary contraindication in Contraindications_Temp.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["record_id", "client_id"],
+                "properties": {
+                  "record_id": { "type": "string" },
+                  "client_id": { "type": "string" },
+                  "status": { "type": "string" },
+                  "expected_duration": { "type": "string" },
+                  "notes": { "type": "string" },
+                  "date_resolved": { "type": "string", "format": "date" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Temporary contraindication updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": { "type": "boolean" },
+                    "record_id": { "type": "string" },
+                    "client_id": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/box83ye6ison8gbpsecr1pufermgdx0b": {
+      "post": {
+        "operationId": "add_chronic_condition",
+        "summary": "Add a chronic condition",
+        "description": "Adds a chronic condition record to Contraindications_Chronic.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["client_id", "condition"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "condition": { "type": "string" },
+                  "severity": { "type": "string" },
+                  "affected_system": { "type": "string" },
+                  "contraindicated_movements": { "type": "string" },
+                  "notes": { "type": "string" },
+                  "date_added": { "type": "string", "format": "date" },
+                  "last_reviewed": { "type": "string", "format": "date" },
+                  "status": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chronic condition recorded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logged": { "type": "boolean" },
+                    "record_id": { "type": "string" },
+                    "client_id": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/9cip80yob4ybt8qrkyaxsows81teldu5": {
+      "post": {
+        "operationId": "log_issue",
+        "summary": "Write a row to Issues_Log",
+        "description": "Logs a structured issue into Issues_Log via Make.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["issue_type", "entity_type", "description"],
+                "properties": {
+                  "client_id": { "type": "string" },
+                  "source": { "type": "string" },
+                  "issue_type": { "type": "string" },
+                  "entity_type": { "type": "string" },
+                  "entity_id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "context": { "type": "string" },
+                  "suggested_action": { "type": "string" },
+                  "priority": { "type": "string" },
+                  "status": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Issue logged successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/ResultBase" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "row_index": { "type": "integer" }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
