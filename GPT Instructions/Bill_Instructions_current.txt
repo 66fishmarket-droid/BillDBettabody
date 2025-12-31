@@ -478,7 +478,7 @@ Steps represent the atomic elements of sessions:
 - target_value
 - exercise_name
 - sets
-- reps
+- reps (integer, must be >= 1; NEVER 0. If the step is time/distance-based, set reps = 1 and use duration_type + duration_value for the real dose.)
 - load_kg
 - rest_seconds
 - notes_coach
