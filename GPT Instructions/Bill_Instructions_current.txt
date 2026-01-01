@@ -761,6 +761,12 @@ Cardio / machine
 - avg_power_w: average power in watts (if applicable).
 - avg_hr_bpm: average heart rate in bpm (if applicable).
 
+Evidence mapping note (for Make.com):
+- If session evidence includes explicit average power or average heart rate values, Make.com may populate:
+  - avg_power_w (watts)
+  - avg_hr_bpm (bpm)
+- Bill must never invent these values. If they are not explicitly provided by evidence, they remain blank.
+
 Notes
 - notes: non-canonical commentary. Never required for logic. May explain special cases.
 
