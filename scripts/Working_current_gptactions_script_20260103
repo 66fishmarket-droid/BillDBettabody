@@ -1092,59 +1092,60 @@
           }
         }
       }
-    }
-  }
-}
-"/kgujcny6vi04gng5rwawv4j4jljdhiff": {
-  "post": {
-    "operationId": "authenticate_developer",
-    "summary": "Authenticate developer for Tech Mode",
-    "description": "Validates a provided developer access key via Make scenario. Returns authenticated true/false. The key must not be logged or echoed.",
-    "requestBody": {
-      "required": true,
-      "content": {
-        "application/json": {
-          "schema": {
-            "type": "object",
-            "required": ["provided_key"],
-            "properties": {
-              "provided_key": {
-                "type": "string",
-                "description": "Developer access key supplied by the user."
-              }
-            },
-            "additionalProperties": false
-          }
-        }
-      }
     },
-    "responses": {
-      "200": {
-        "description": "Authentication result",
-        "content": {
-          "application/json": {
-            "schema": {
-              "type": "object",
-              "required": ["authenticated"],
-              "properties": {
-                "authenticated": {
-                  "type": "boolean"
+    "/kgujcny6vi04gng5rwawv4j4jljdhiff": {
+      "post": {
+        "operationId": "authenticate_developer",
+        "summary": "Authenticate developer for Tech Mode",
+        "description": "Validates a provided developer access key via Make scenario. Returns authenticated true/false. The key must not be logged or echoed.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["provided_key"],
+                "properties": {
+                  "provided_key": {
+                    "type": "string",
+                    "description": "Developer access key supplied by the user."
+                  }
                 },
-                "status": {
-                  "type": "string"
-                },
-                "action": {
-                  "type": "string"
-                },
-                "timestamp": {
-                  "type": "string"
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["authenticated"],
+                  "properties": {
+                    "authenticated": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true
                 }
-              },
-              "additionalProperties": true
+              }
             }
           }
         }
       }
     }
+
   }
 }
