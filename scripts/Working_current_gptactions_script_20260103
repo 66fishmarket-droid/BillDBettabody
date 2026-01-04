@@ -242,7 +242,19 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "required": ["status", "action", "client_id"],
+                  "properties": {
+                    "status": { "type": "string", "description": "ok|success|error" },
+                    "action": { "type": "string" },
+                    "message": { "type": "string" },
+                    "timestamp": { "type": "string", "format": "date-time" },
+                
+                    "client_id": { "type": "string" },
+                    "row_index": { "type": "integer", "nullable": true },
+                    "created": { "type": "boolean" }
+                  },
+                  "additionalProperties": true
                 }
               }
             }
