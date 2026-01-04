@@ -873,3 +873,50 @@ KNOWN-GOOD TEST PAYLOAD
 ============================================================
 
   
+============================================================
+SCENARIO: Bill - Authenticate Developer
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Authenticate Developer.blueprint.json)
+WEBHOOK PURPOSE:
+Validate a developer access key and return authenticated true/false.
+Used to gate access to Tech Mode and internal automation discussion.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- provided_key (string) REQUIRED
+
+No nesting. No other keys are referenced.
+
+Fragile bits / must-follow rules:
+- provided_key must be treated as sensitive input.
+- Do NOT echo provided_key back in any response.
+- Do NOT write provided_key to Google Sheets.
+- Do NOT log provided_key to Issues_Log or any debug output.
+- Scenario must always return a JSON response with an authenticated boolean.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+The scenario responds with a JSON object containing:
+
+- authenticated (boolean) REQUIRED
+- status (string) OPTIONAL (e.g. "ok")
+- action (string) OPTIONAL (e.g. "developer_auth")
+- timestamp (string date-time) OPTIONAL
+
+At minimum, authenticated must be present and boolean.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A (expect authenticated true):
+{
+  "provided_key": "<correct_developer_key>"
+}
+
+Test B (expect authenticated false):
+{
+  "provided_key": "incorrect_key"
+}
+============================================================
