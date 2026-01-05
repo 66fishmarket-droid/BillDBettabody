@@ -1,0 +1,1136 @@
+============================================================
+SCENARIO: Bill - User Upsert
+CANONICAL SOURCE: Make Blueprint JSON (Bill - User Upsert.blueprint (4).json)
+WEBHOOK LABEL: POST/user/upsert
+PURPOSE: Create or update a client profile row in Google Sheets. If client_id exists -> update row. If not -> add row.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED
+- data (object) REQUIRED (scenario references data.* fields in mappers and formulas)
+
+Critical behaviors / fragile bits:
+- The scenario looks up an existing row by client_id using an exact match filter.
+- On update, chronic contraindications are merged:
+  - If existing chronic value is empty string "", it uses data.chronic_contraindications as-is.
+  - Otherwise it appends ", " + data.chronic_contraindications.
+  - Therefore: when no new chronic contraindications exist, send data.chronic_contraindications as "" (empty string), not null.
+
+Required inside data to avoid formula/mapping breakage:
+- chronic_contraindications (string) REQUIRED (can be "")
+
+All other data fields are mapped into the sheet. If missing, the sheet cell will be blank (but you should populate as many as possible for best coaching).
+
+data fields used by this scenario (all strings/numbers as shown; if unknown, send "" unless noted):
+- client_id (string)
+- first_name (string)
+- last_name (string)
+- email (string)
+- sex (string)
+- age_years (number or string)
+- weight_kg (number or string)
+- waist_circumference_cm (number or string)
+- training_experience (string)
+- strength_level (string)
+- cardio_fitness_level (string)
+- sleep_quality (string)
+- stress_level (string)
+- goal_primary (string)
+- goal_secondary (string)
+- goal_tertiary (string)
+- goal_timeframe_months (number or string)
+- goals (string) [note: scenario maps both goals and goal_primary/secondary/tertiary]
+- schedule (string)
+- work_pattern (string)
+- family_responsibilities (string)
+- timezone (string)
+- equipment_preference (string)
+- equipment_home (string)
+- equipment_gym (string)
+- equipment (string)
+- gym_travel_time_minutes (number or string)
+- has_pool (string or boolean-like text)
+- has_track_or_safe_run (string or boolean-like text)
+- injuries_current (string)
+- injuries_history (string)
+- movement_restrictions (string)
+- medications (string)
+- supplements (string)
+- diet_style (string)
+- calorie_target (number or string)
+- protein_min (number or string)
+- risk_summary (string)
+- watch_platform (string)
+- watch_user_id (string)
+- typical_sessions_per_week_last_3_months (number or string)
+- home_location (string, optional) Free-text: home base / city / region, If not provided: do not change existing sheet value
+- upcoming_travel (string, optional) Free-text: travel notes/dates/locations (short) If not provided: do not change existing sheet value
+- understands_tempo (string, optional) Allowed: "yes" | "somewhat" | "no" If not provided: do not change existing sheet value
+- understands_loading_patterns (string, optional) Allowed: "yes" | "somewhat" | "no" If not provided: do not change existing sheet value
+- detail_level_preference (string, optional) Allowed: "minimal" | "standard" | "detailed" If not provided: do not change existing sheet value
+
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+This scenario responds with these keys:
+- status (string) "ok"
+- action (string) "created" OR "updated"
+- client_id (string)
+- timestamp (string date-time)
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "version": "1.0",
+  "event": "user.upsert",
+  "source": "gpt.bill",
+  "client_id": "cli_001",
+  "data": {
+    "first_name": "Test",
+    "last_name": "User",
+    "email": "test@example.com",
+    "timezone": "Europe/London",
+
+    "sex": "",
+    "age_years": 35,
+    "height_cm": "",
+    "weight_kg": 80,
+    "waist_circumference_cm": "",
+
+    "training_experience": "intermediate",
+    "primary_background": "",
+    "last_trained_date": "",
+    "typical_sessions_per_week_last_3_months": 3,
+
+    "cardio_fitness_level": "moderate",
+    "strength_level": "intermediate",
+    "movement_quality": "",
+
+    "goals": "",
+    "goal_primary": "fat_loss",
+    "goal_secondary": "",
+    "goal_tertiary": "",
+    "goal_timeframe_months": 3,
+
+    "schedule": "Mon/Wed/Fri",
+    "work_pattern": "9-5",
+    "family_responsibilities": "",
+
+    "equipment_preference": "home",
+    "equipment_home": "dumbbells, bands",
+    "equipment_gym": "",
+    "equipment": "",
+    "gym_travel_time_minutes": "",
+    "has_pool": "",
+    "has_track_or_safe_run": "",
+
+    "chronic_contraindications": "",
+    "injuries": "",
+    "risk_summary": "",
+
+    "diet_style": "",
+    "calorie_target": "",
+    "protein_min": "",
+    "supplements": "",
+
+    "sleep_quality": "good",
+    "stress_level": "medium",
+
+    "watch_platform": "",
+    "watch_user_id": "",
+
+    "home_location": "London",
+    "upcoming_travel": "",
+
+    "understands_tempo": "somewhat",
+    "understands_loading_patterns": "no",
+    "detail_level_preference": "standard",
+
+    "preferences": "",
+    "notes": "",
+    "last_profile_update": "2026-01-05T12:00:00Z"
+  }
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - UserID Check
+CANONICAL SOURCE: Make Blueprint JSON (Bill - UserID Check.blueprint.json)
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+
+WEBHOOK PURPOSE:
+Check whether a client_id already exists in the Clients sheet, returning exists true/false.
+Used as a gate before upsert / plan generation flows.
+
+GOOGLE SHEETS EVIDENCE:
+- Sheet: Clients
+- Column A header is "client_id"
+- Scenario filters column A case-insensitive equals to the webhook client_id.
+(So client_id must be the exact ID string used in Clients.)
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED
+
+No nesting. No other keys are referenced.
+
+Fragile bits / must-follow rules:
+- The Google Sheets Filter Rows step searches Clients!Column A for client_id using a case-insensitive text equal operator.
+- maxResults/limit is 1, so it only returns the first match.
+- If client_id is missing, the filter expression will be invalid and the scenario will fail.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Two possible response shapes:
+
+1) If found (exists true):
+{
+  "exists": true,
+  "client_id": "<string>",
+  "row_index": <number>
+}
+
+Important: client_id in this branch is returned from the sheet row (not echoed from input).
+row_index is the Google Sheets row number returned by the search module.
+
+2) If not found (exists false):
+{
+  "exists": false,
+  "client_id": "<string>"
+}
+
+Important: in this branch client_id is echoed from the webhook input.
+row_index is NOT included.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A (expect exists true if cli_001 already in Clients sheet):
+{
+  "client_id": "cli_001"
+}
+
+Test B (expect exists false):
+{
+  "client_id": "cli_999999"
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - Load Client Context
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Load Client Context.blueprint (4).json)
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+WEBHOOK PURPOSE:
+Return a full client context JSON bundle: client profile + active/completed plan context + weeks/sessions/steps + nutrition + exercise bests.
+
+WEBHOOK RESPONSE MECHANISM:
+- Module 20: json:CreateJSON (builds the full context object)
+- Module 27: gateway:WebhookRespond returns body = {{20.json}} with Content-Type application/json
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED
+
+No nesting. No other keys are referenced from webhook input.
+
+Fragile bits / break conditions:
+- Client lookup is done in Clients sheet using Column A equals (case-insensitive) client_id.
+- If client_id missing, scenario fails.
+- If no matching client row, router takes the "not found" route (separate WebhookRespond branch).
+
+-----------------------------
+GOOGLE SHEETS TOUCHPOINTS (WITH HEADER ALIGNMENT)
+-----------------------------
+These are the sheets queried by filterRows modules, aligned to headers file:
+
+1) Clients
+- Key column: A = client_id
+- Output "client_profile" is built from this row using header-based keys (matches Clients headers).
+
+2) Plans_Blocks
+- Key column: C = client_id
+- Status column: N = plan_status (per headers overview: plan_status exists on Plans_Blocks)
+- The scenario pulls:
+  - Active block(s): plan_status == "Active"
+  - Completed block(s): plan_status == "Completed"
+
+3) Plans_Weeks
+- Used to build active/current week context and history lists (active/completed week groupings).
+
+4) Plans_Sessions
+- Used to build sessions arrays (active/completed groupings).
+
+5) Plans_Steps
+- Used to build steps arrays (active/completed groupings).
+
+6) Exercise_Bests
+- Used to build Exercise Bests array (aggregated list per client).
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Response body is JSON (not string-wrapped) with these top-level keys exactly:
+
+- status (string) e.g. "OK"
+- client_id (string)
+- timestamp (string)
+
+- client_engagement_state (string)
+- context_validity (object)
+  - completed_blocks_count (number-like)
+  - total_blocks (number-like)
+  - has_active_block (boolean-like or string)
+  - has_active_week (boolean-like or string)
+  - has_upcoming_sessions (boolean-like or string)
+  (Exact internal typing here is whatever Make variable modules set; treat as "mixed" but always present in successful response.)
+
+- client_profile (object)
+  - Keys mirror the Clients sheet headers (from headers overview), including:
+    client_id, first_name, last_name, email, timezone, sex, age_years, height_cm, weight_kg, ...
+  - This object is populated from the single Clients row (limit 1).
+
+- plan_context (object)
+  - active_block (object) derived from active Plans_Blocks lookup
+  - completed_blocks (array) derived from completed Plans_Blocks lookup
+  (Exact nested keys are produced by the JSON builder; treat as stable since module 20 explicitly defines them.)
+
+- weeks (object)
+  - active (object)
+  - completed (array)
+
+- sessions (object)
+  - active (array)
+  - completed (array)
+
+- steps (object)
+  - active (array)
+  - completed (array)
+
+- nutrition (object)
+  - nutrition_targets
+  - supplement_protocol
+  - (and any other nutrition vars set in the SetVariables module)
+
+- history_summary (object)
+  - completed_blocks
+  - total_blocks
+  - (and other summary fields set in SetVariable modules)
+
+- Exercise Bests (array)
+  IMPORTANT: key name includes a space and capital letters: "Exercise Bests"
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A (expect full JSON if cli_001 exists in Clients):
+{
+  "client_id": "cli_001"
+}
+
+Test B (expect "not found" route response if no row):
+{
+  "client_id": "cli_999999"
+}
+============================================================
+
+
+============================================================
+SCENARIO: Bill - Full Training Block Generator
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Full Training Block Generator.blueprint (1).json)
+WEBHOOK PATH: /v35x7s4w3ksju9e4jgjes5rpsoxb3a22
+PURPOSE: Create a full training block in Google Sheets: Blocks, Weeks, Sessions.
+NOTES: Blueprint is canonical. Do not invent fields. Do not flatten nesting.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- plan_action (string) REQUIRED
+- client (object) REQUIRED
+- plan (object) REQUIRED
+
+plan_action:
+- Required string.
+- Router condition expects plan_action == "create_full_block" (case-insensitive compare used in Make).
+- If plan_action is missing or different, scenario may not enter main route.
+
+client (object):
+- client_id (string) REQUIRED
+No other client fields are used by this scenario.
+
+plan (object):
+Required fields:
+- phase_name (string) REQUIRED
+- phase_goal (string) REQUIRED
+- week_start (string, format YYYY-MM-DD) REQUIRED
+- duration_weeks (number/integer) REQUIRED, minimum 1
+- days_per_week (number/integer) REQUIRED, range 1-7
+
+Optional fields:
+- plan_id (string) OPTIONAL but IMPORTANT behavior:
+  - If passed as empty string "", scenario auto-generates plan_id using timestamp + client_id.
+  - If omitted entirely, behavior depends on Make mapping; prefer passing "" when you want auto-generation.
+- constraints (string) optional
+- primary_locations (string) optional
+- nutrition_targets (string) optional
+- supplement_protocol (string) optional
+- notes (string) optional
+
+goals (object) OPTIONAL:
+- primary (string) optional, can be "".
+- secondary (string) optional, can be "".
+Used for weekly/session focus fallback logic.
+
+availability (object) OPTIONAL:
+- default_session_minutes (number OR empty string "")
+  - If empty string "", scenario defaults to 60 minutes.
+(If you pass a number, it is used as default session length.)
+
+Defaults and fragile behaviors:
+- Several checks in Make explicitly test for empty string "" (not null). When "auto" or "default" is desired, send "" rather than null.
+- week_start must be YYYY-MM-DD because Make uses addDays() and formatDate().
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+The scenario responds with these keys (no extras):
+- status (string) e.g. "ok"
+- action (string) e.g. "plan_created"
+- client_id (string)
+- plan_id (string)
+- block_id (string)
+- weeks_created (number)
+- sessions_created (number)
+- timestamp (string date-time)
+
+IMPORTANT:
+- This scenario does NOT return steps_created.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "plan_action": "create_full_block",
+  "client": {
+    "client_id": "cli_001"
+  },
+  "plan": {
+    "plan_id": "",
+    "phase_name": "Base Build",
+    "phase_goal": "General fitness",
+    "week_start": "2026-01-05",
+    "duration_weeks": 4,
+    "days_per_week": 3,
+    "constraints": "",
+    "primary_locations": "Home",
+    "nutrition_targets": "",
+    "supplement_protocol": "",
+    "notes": "Test block generation"
+  },
+  "goals": {
+    "primary": "",
+    "secondary": ""
+  },
+  "availability": {
+    "default_session_minutes": ""
+  }
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - Populate Training Week
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Populate Training Week.blueprint (3).json)
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+WEBHOOK PURPOSE:
+Populate one week by updating existing Plans_Sessions rows for the supplied session_id values,
+and writing new rows to Plans_Steps for each step in each session.
+
+GOOGLE SHEETS EVIDENCE (from headers overview):
+- Plans_Sessions has session_id in column G (A plan_id, B block_id, C client_id, D week, E week_id, F day, G session_id).
+  The scenario searches Plans_Sessions where column G == session_id (limit 1) and then updates that row.
+- Plans_Steps headers begin: step_id, session_id, week_id, block_id, client_id, step_order, segment_type, step_type, ...
+  The scenario writes one Plans_Steps row per step.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED
+- context (object) REQUIRED
+- sessions (array) REQUIRED (must be an array; can be empty but then nothing happens)
+
+context (object) REQUIRED keys:
+- plan_id (string) REQUIRED (used in response)
+- block_id (string) REQUIRED (written into Plans_Steps)
+- week_id (string) REQUIRED (written into Plans_Steps; also in response)
+- week_number (number/integer) REQUIRED (used in response)
+
+sessions (array) REQUIRED:
+Each item is a session object. Required keys per session:
+- session_id (string) REQUIRED
+  CRITICAL: used to find the existing row in Plans_Sessions. If no matching row is found, updateRow can fail.
+- steps (array) REQUIRED
+  CRITICAL: Step iterator expects this to be an array (can be empty).
+
+Other session keys are mapped into Plans_Sessions (if missing they become blank cells):
+- week (number/integer)
+- day (number/integer)
+- phase (string)
+- location (string)
+- focus (string)
+- exercises (string)
+- macros (string)
+- supplements (string)
+- notes (string)
+- session_date (string, ideally YYYY-MM-DD)
+- session_day_of_week (string)
+- session_global_number (number/integer)
+- intended_intensity_rpe (string or number)
+- intended_hr_zone (string)
+- estimated_duration_minutes (number/integer)
+- linked_sport (string)
+
+steps (array) REQUIRED:
+Each item is a step object. These fields are mapped into Plans_Steps (missing -> blank cells):
+- step_order
+- segment_type
+- step_type
+- duration_type
+- duration_value
+- target_type
+- target_value
+- exercise_name
+- sets
+- reps
+- load_kg
+- rest_seconds
+- notes_coach
+- notes_athlete
+
+IMPORTANT AUTO-GENERATION:
+- step_id is generated inside Make as: st_<session_id>_<timestamp>.
+  Do NOT send step_id; it is not used from input.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+The scenario responds with:
+- status (string) "success"
+- client_id (string)
+- plan_id (string) from context.plan_id
+- week_id (string) from context.week_id
+- week_number (number) from context.week_number
+- sessions_updated (number) = count of sessions processed
+- steps_created (number) = count of steps written
+- timestamp (string date-time)
+- details (string) "Week populated successfully."
+
+-----------------------------
+FRAGILE BITS / BREAK CONDITIONS
+-----------------------------
+- If sessions is not an array, the Session Iterator module fails.
+- If a session item lacks steps array, the Step Iterator module fails.
+- If session_id does not exist in Plans_Sessions column G, the Find Session Row returns nothing and Update Session Row may error.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "context": {
+    "plan_id": "plan_test_001",
+    "block_id": "block_test_001",
+    "week_id": "week_test_001",
+    "week_number": 1
+  },
+  "sessions": [
+    {
+      "session_id": "sess_test_001",
+      "week": 1,
+      "day": 1,
+      "phase": "Base Build",
+      "location": "Home",
+      "focus": "Strength",
+      "exercises": "Goblet squat; Push-up",
+      "macros": "",
+      "supplements": "",
+      "notes": "Test populate week",
+      "session_date": "2026-01-05",
+      "session_day_of_week": "Monday",
+      "session_global_number": 1,
+      "intended_intensity_rpe": "7",
+      "intended_hr_zone": "",
+      "estimated_duration_minutes": 60,
+      "linked_sport": "",
+      "steps": [
+        {
+          "step_order": 1,
+          "segment_type": "main",
+          "step_type": "strength",
+          "duration_type": "",
+          "duration_value": "",
+          "target_type": "",
+          "target_value": "",
+          "exercise_name": "Goblet Squat",
+          "sets": 3,
+          "reps": 8,
+          "load_kg": 20,
+          "rest_seconds": 90,
+          "notes_coach": "",
+          "notes_athlete": ""
+        }
+      ]
+    }
+  ]
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - Session Update
+CANONICAL SOURCE: Make Scenario (Bill - Session Update) updated to map notes_athlete in Update Steps module
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+WEBHOOK PURPOSE:
+Patch one existing Plans_Sessions row (by client_id + session_id) and patch existing Plans_Steps rows (by client_id + step_id).
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required:
+- client_id (string) REQUIRED
+- session_id (string) REQUIRED
+
+Optional:
+- session_updates (object) OPTIONAL (patch fields mapped into Plans_Sessions)
+  - location (string)
+  - focus (string)
+  - exercises (string)
+  - macros (string)
+  - supplements (string)
+  - notes (string)
+  - session_status (string)
+
+- steps_upsert (array) OPTIONAL but preferred to send as [] when none
+  Each item MUST include:
+  - step_id (string) REQUIRED
+
+  Patch fields supported (all optional):
+  - step_order (number)
+  - segment_type (string)
+  - step_type (string)
+  - duration_type (string)
+  - duration_value (number)
+  - target_type (string)
+  - target_value (number)
+  - exercise_name (string)
+  - sets (number)
+  - reps (number) [minimum 1; never 0]
+  - load_kg (number)
+  - rest_seconds (number)
+  - notes_coach (string)
+  - notes_athlete (string)  <-- supported (added in Make scenario)
+  - status (string)
+
+  Pattern + progression fields supported:
+  - pattern_type (string)
+  - load_start_kg (number)
+  - load_increment_kg (number)
+  - load_peak_kg (number)
+  - reps_pattern (string)
+  - rpe_pattern (string)
+  - tempo_pattern (string)
+  - tempo_per_set_pattern (string)
+  - pattern_notes (string)
+
+  Interval fields supported:
+  - interval_count (number)
+  - interval_work_sec (number)
+  - interval_rest_sec (number)
+
+  Intensity ramp fields supported:
+  - intensity_start (number)
+  - intensity_end (number)
+
+BREAK CONDITIONS (WILL FAIL OR MISBEHAVE IF MISSING)
+- client_id missing: session lookup and step lookup cannot run.
+- session_id missing: session lookup cannot run.
+- steps_upsert items missing step_id: step lookup cannot match rows.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+- status (string) "ok"
+- action (string) "session_updated"
+- client_id (string)
+- session_id (string)
+- sessions_updated (number)
+- steps_requested (number)
+- steps_updated (number)
+- Step_IDs (string)
+- timestamp (string date-time)
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A (minimal trigger, no step updates):
+{
+  "client_id": "cli_001",
+  "session_id": "ses_example_001",
+  "steps_upsert": []
+}
+
+Test B (athlete note only, does not alter other step fields):
+{
+  "client_id": "cli_001",
+  "session_id": "ses_example_001",
+  "steps_upsert": [
+    {
+      "step_id": "st_example_001",
+      "notes_athlete": "Felt great. Slight elbow niggle on last set."
+    }
+  ]
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - Add Injury
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Add Injury.blueprint (1).json)
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+WEBHOOK PURPOSE:
+Log a temporary contraindication (injury) row into Contraindications_Temp.
+
+GOOGLE SHEETS TARGET (headers overview):
+Sheet: Contraindications_Temp
+Headers (in order):
+client_id, date_reported, type, description, expected_duration, status, notes, date_resolved
+
+Blueprint evidence:
+- Scenario writes a single new row to Contraindications_Temp using the 8 fields above.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Webhook expects a flat JSON object (no nesting) with these keys:
+
+Required for correct logging (should always be provided):
+- client_id (string) REQUIRED
+- date_reported (string) REQUIRED (recommended format YYYY-MM-DD)
+- type (string) REQUIRED (for injury logging, value is typically "injury")
+- description (string) REQUIRED
+- status (string) REQUIRED (typically "active")
+
+Optional (can be "" / omitted but recommended to send as "" for consistency):
+- expected_duration (string) OPTIONAL (eg "7-14 days")
+- notes (string) OPTIONAL
+- date_resolved (string) OPTIONAL (YYYY-MM-DD or "")
+
+Important:
+- The scenario does not validate enums. It just writes whatever strings you send into the sheet.
+- For "unknown" values, prefer empty string "" rather than null.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+The scenario responds with:
+{
+  "logged": true,
+  "record_id": "row_<rowNumber>",
+  "client_id": "<client_id echoed from input>"
+}
+
+Where rowNumber is the Google Sheets row number created.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "date_reported": "2026-01-02",
+  "type": "injury",
+  "description": "Right knee strain (mild), sore on stairs",
+  "expected_duration": "7-14 days",
+  "status": "active",
+  "notes": "Avoid deep knee flexion, monitor swelling",
+  "date_resolved": ""
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - Update Injury Status
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Update Injury Status.blueprint.json)
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+WEBHOOK PURPOSE:
+Update an existing Contraindications_Temp record (injury) by row id, typically to set status resolved and add date_resolved.
+
+GOOGLE SHEETS TARGET (headers overview):
+Sheet: Contraindications_Temp
+Headers:
+client_id, date_reported, type, description, expected_duration, status, notes, date_resolved
+
+Blueprint evidence:
+- UpdateRow writes ONLY these columns:
+  - client_id (col 0)
+  - expected_duration (col 4)
+  - status (col 5)
+  - notes (col 6)
+  - date_resolved (col 7)
+- It does NOT update date_reported, type, description.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object (no nesting) with these keys:
+
+Required:
+- record_id (string) REQUIRED
+  MUST be in the format "row_<number>" (eg "row_42").
+  The scenario parses row number using:
+  replace(record_id; "row_"; "") then parseNumber(...)
+  If record_id is not in that pattern, updateRow will fail.
+- client_id (string) REQUIRED
+- status (string) REQUIRED
+  Typical values: "active" or "resolved" (scenario does not enforce enum, but downstream logic expects these).
+
+Optional (recommended to send "" if unknown):
+- expected_duration (string) OPTIONAL
+- notes (string) OPTIONAL
+- date_resolved (string) OPTIONAL (recommended YYYY-MM-DD or "")
+
+Null handling:
+- Prefer empty string "" rather than null for optional strings.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+The scenario responds with:
+{
+  "updated": true,
+  "record_id": "<record_id echoed from input>",
+  "client_id": "<client_id echoed from input>"
+}
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "record_id": "row_42",
+  "client_id": "cli_001",
+  "expected_duration": "",
+  "status": "resolved",
+  "notes": "Symptoms resolved; returning to full training gradually.",
+  "date_resolved": "2026-01-02"
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - Add Chronic Condition
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Add Chronic Condition.blueprint (1).json)
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+WEBHOOK PURPOSE:
+Log a chronic contraindication row into Contraindications_Chronic, and generate a record_id.
+
+GOOGLE SHEETS TARGET (headers overview):
+Sheet: Contraindications_Chronic
+Headers (in order):
+record_id, client_id, condition, severity, affected_system, contraindicated_movements, notes, date_added, last_reviewed, status
+
+Blueprint evidence:
+- Step 1: Add Row writes columns 1..9 from webhook inputs (client_id..status)
+- Step 2: Set Variable generates record_id like:
+  chr_YYYYMMDDHHmmss_<client_id>
+- Step 3: Update Row writes column 0 (record_id) into the same row just created
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object (no nesting) with these keys:
+
+Required (should always be provided):
+- client_id (string) REQUIRED
+- condition (string) REQUIRED
+- status (string) REQUIRED (typical values: "active" or "resolved")
+
+Optional (send "" if unknown):
+- severity (string) OPTIONAL
+- affected_system (string) OPTIONAL
+- contraindicated_movements (string) OPTIONAL
+- notes (string) OPTIONAL
+- date_added (string) OPTIONAL (recommended YYYY-MM-DD or "")
+- last_reviewed (string) OPTIONAL (recommended YYYY-MM-DD or "")
+
+Important:
+- Do NOT send record_id. It is generated inside Make and then written into the sheet.
+- Scenario does not validate enums; it writes whatever strings you send.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+The scenario responds with:
+{
+  "logged": true,
+  "record_id": "<generated record_id>",
+  "client_id": "<client_id echoed from input>"
+}
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "condition": "Hypertension (controlled)",
+  "severity": "moderate",
+  "affected_system": "cardiovascular",
+  "contraindicated_movements": "avoid sustained Valsalva; cap heavy sets at RPE 8",
+  "notes": "Monitor BP; emphasize controlled breathing and longer rests",
+  "date_added": "2026-01-02",
+  "last_reviewed": "",
+  "status": "active"
+}
+============================================================
+
+  
+============================================================
+SCENARIO: Bill - Authenticate Developer
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Authenticate Developer.blueprint.json)
+WEBHOOK PURPOSE:
+Validate a developer access key and return authenticated true/false.
+Used to gate access to Tech Mode and internal automation discussion.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- provided_key (string) REQUIRED
+
+No nesting. No other keys are referenced.
+
+Fragile bits / must-follow rules:
+- provided_key must be treated as sensitive input.
+- Do NOT echo provided_key back in any response.
+- Do NOT write provided_key to Google Sheets.
+- Do NOT log provided_key to Issues_Log or any debug output.
+- Scenario must always return a JSON response with an authenticated boolean.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+The scenario responds with a JSON object containing:
+
+- authenticated (boolean) REQUIRED
+- status (string) OPTIONAL (e.g. "ok")
+- action (string) OPTIONAL (e.g. "developer_auth")
+- timestamp (string date-time) OPTIONAL
+
+At minimum, authenticated must be present and boolean.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A (expect authenticated true):
+{
+  "provided_key": "<correct_developer_key>"
+}
+
+Test B (expect authenticated false):
+{
+  "provided_key": "incorrect_key"
+}
+============================================================
+
+============================================================
+SCENARIO: Bill - Build Session Form URLs (Webhook)
+CANONICAL SOURCE: Make Scenario (Webhook copy of timed "Bill - Build Session Form URLs")
+WEBHOOK URL: https://hook.eu2.make.com/lboa7oywn2f3qhkd0ljtcyuudqpp40yg
+WEBHOOK PURPOSE:
+Rebuild and persist Google Form prefill URLs for a specific session, using session_id
+as the sole selector. Intended for day-of/session-change regeneration after steps are
+updated.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- session_id (string) REQUIRED
+
+No nesting. No other keys are required.
+
+Fragile bits / must-follow rules:
+- This webhook must be called ONLY AFTER the session/steps have been updated, otherwise
+  it will regenerate URLs against the old session state.
+- If session_id is missing or empty, scenario must fail fast and respond with an error.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Scenario should respond with a JSON object containing at minimum:
+- status (string) "ok" | "error"
+- action (string) "build_session_form_urls"
+- session_id (string)
+- timestamp (string date-time) OPTIONAL but recommended
+
+Optional (if available in the scenario):
+- updated_count (number) count of URLs/rows updated
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "session_id": "ses_example_001"
+}
+============================================================
+
+============================================================
+SCENARIO: Bill - Daily Email Generator Webhook
+CANONICAL SOURCE: Make Scenario Blueprint (Bill - Daily Email Generator Webhook.blueprint.json)
+SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
+WEBHOOK PURPOSE:
+Regenerate and send the session email for one specific session_id on-demand (webhook-triggered), using the same session_id-driven build logic as the scheduled version.
+
+-----------------------------
+WEBHOOK TRIGGER
+-----------------------------
+Make Webhook URL:
+https://hook.eu2.make.com/now7dmk2fw5rcae3kxet5mtakwkcyyyu
+
+Trigger module (Make):
+- gateway:CustomWebHook (Module 27) "B-WebhookEmail | Send Sess ID"
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required:
+- session_id (string) REQUIRED
+- client_id (string) REQUIRED
+
+Notes:
+- Scenario searches Plans_Sessions by session_id first.
+- Client lookup uses OR logic:
+  - client_id from the session row (if available)
+  - OR the client_id provided in the webhook payload
+- For reliability, ALWAYS provide both session_id and client_id in the webhook payload.
+
+-----------------------------
+CANONICAL ORDER OF OPERATIONS
+-----------------------------
+1) Validate session exists
+   - Search Plans_Sessions by session_id
+2) Load client info
+   - Search Clients for the client record (by client_id from session row OR payload)
+3) Route by client level
+   - Beginner vs Intermediate vs Expert
+4) Load steps + exercise detail
+   - Search Plans_Steps for the session
+   - Lookup each exercise in Exercises_Library as needed
+5) Build the email body
+   - Aggregate text blocks
+6) Send email
+7) Respond to webhook caller with success JSON
+
+IMPORTANT DEPENDENCY NOTE:
+- This scenario assumes the session content already exists in Sheets.
+- If Bill has just updated a session (steps/notes/macros/etc), Bill MUST run Session Update first, then call this webhook, otherwise the email will reflect the older data.
+
+-----------------------------
+SHEETS USED
+-----------------------------
+- Plans_Sessions
+  Used to validate session_id and pull session context.
+- Clients
+  Used to determine client "level" for routing (Beginner/Intermediate/Expert).
+- Plans_Steps
+  Used to pull the session steps that will be described in the email.
+- Exercises_Library
+  Used to enrich exercise text and keep exercise naming canonical.
+
+-----------------------------
+ROUTING LOGIC (CLIENT LEVEL)
+-----------------------------
+The scenario routes based on the client level field:
+- Beginner route: if Clients level equals "Beginner" (case-insensitive)
+- Intermediate route: if Clients level equals "Intermediate" (case-insensitive)
+- Expert route: if Clients level equals "Expert" (case-insensitive)
+
+If client level is missing or unexpected:
+- V1 expectation: treat as Intermediate (recommended future hardening)
+- Current blueprint behavior: route matching depends on exact filters; non-matching may result in no email branch firing.
+- If this occurs, log an issue (do NOT attempt schema changes mid-run).
+
+-----------------------------
+WEBHOOK RESPONSE (SUCCESS)
+-----------------------------
+If session_id is found (Plans_Sessions search returns > 0 rows), scenario returns HTTP 200 with body:
+
+{
+  "status": "success",
+  "action": "daily_email_generator",
+  "session_id": "<session_id>",
+  "client_id": "<client_id>"
+}
+
+-----------------------------
+WEBHOOK RESPONSE (FAILURE)
+-----------------------------
+If session_id is NOT found (Plans_Sessions search returns 0 rows), scenario returns HTTP 200 with body:
+
+{
+  "status": "error",
+  "action": "daily_email_generator",
+  "session_id": "<session_id>",
+  "client_id": "<client_id>",
+  "message": "Missing session_id or client_id"
+}
+
+Interpretation note:
+- The failure message is slightly generic, but the actual gate is: session lookup returned 0 rows.
+- For Bill: treat this as "session_id not found in Plans_Sessions" and do not retry unless you have confirmed the session_id exists.
+
+-----------------------------
+MODULE MAP (HIGH LEVEL)
+-----------------------------
+Top level:
+- Module 27: Webhook trigger (expects session_id + client_id)
+- Module 1: Search Plans_Sessions by session_id
+- Module 28: Router
+  - Branch A (Has Sess ID): continue build + send email + respond success
+  - Branch B (No Sess ID): respond error
+
+Within "Has Sess ID":
+- Module 3: Get Client Info (Clients lookup)
+- Module 16: Router by client level (Beginner / Intermediate / Expert)
+  Each branch performs:
+  - Get Steps (Plans_Steps)
+  - Lookup Exercises (Exercises_Library)
+  - Aggregate Output + Aggregate Text
+  - Send Email
+  - Webhook Respond Success
+
+-----------------------------
+BILL BEHAVIORAL RULES (CALLER SIDE)
+-----------------------------
+- Bill must only call this webhook when:
+  - session_id is known and confirmed to exist in client context, AND
+  - client_id is known.
+- Bill should only call this webhook after he has called the Bill - Build Session Form URLs (Webhook)
+- Bill must not call this webhook as a substitute for writing/updating training data.
+  This webhook is for rendering/sending the email after the underlying session is already correct in Sheets.
+- If the webhook responds with status "error":
+  - Bill should not attempt repeated calls.
+  - Bill should prompt the user / log an issue: session_id was not found in Plans_Sessions.
+============================================================
+
+
