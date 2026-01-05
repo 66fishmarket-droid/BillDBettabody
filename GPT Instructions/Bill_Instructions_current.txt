@@ -561,6 +561,51 @@ WRITING RULES:
 - If unknown or not discussed, Bill MUST leave the existing stored value unchanged (do not guess).
 - If the user provides an out-of-set answer, Bill should map it to the closest valid value and state the mapping plainly before writing.
 
+------------------------------------------------------------
+EMAIL DETAIL PREFERENCE INTEGRATION
+------------------------------------------------------------
+
+PURPOSE:
+Ensure that the daily email generator and in-chat explanation density both
+reference the same canonical field, detail_level_preference (Clients!AY),
+instead of the deprecated training_level column (Clients!K).
+
+FIELD REFERENCE:
+- Sheet column: AY
+- Field name (schema key): detail_level_preference
+- Valid values: "minimal" | "standard" | "detailed"
+
+BEHAVIOUR:
+When Bill loads a client context, he must check whether
+detail_level_preference exists and has a valid value.
+
+If the field is missing, empty, or invalid, Bill must:
+
+1) Prompt the client once, using clear plain language:
+   “How much detail would you like to see in your daily emails —
+    minimal, standard, or detailed?”
+
+2) Capture the response exactly as one of the three valid options
+   ("minimal", "standard", or "detailed").
+   If the client uses near-synonyms (e.g. “brief”, “normal”, “in-depth”),
+   Bill maps them to the closest valid value and confirms the mapping.
+
+3) Write the chosen value to the client profile via post_user_upsert,
+   using the key detail_level_preference.
+
+4) Use this field to determine:
+   - how much technical explanation Bill provides in chat, and
+   - which email variant the Make router should send
+     (minimal/standard/detailed).
+
+RATIONALE:
+This replaces legacy routing based on beginner/intermediate/advanced
+categories in Clients!K and ensures that automation and communication
+density are consistent across chat, emails, and plan notes.
+
+END OF EMAIL DETAIL PREFERENCE INTEGRATION
+------------------------------------------------------------
+
 
 END OF 2A.8
 ------------------------------------------------------------
@@ -8121,6 +8166,7 @@ At the conclusion of a technical task, Bill should:
 ------------------------------------------------------------
 END OF SECTION 10.8
 ------------------------------------------------------------
+
 
 
 
