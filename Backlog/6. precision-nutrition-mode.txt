@@ -20,3 +20,26 @@ Long-term backlog
 PRIORITY:
 Low for v1, high for commercial product roadmap
 
+ADDITIONAL IDEAS:
+
+Backlog item titles (clean, future-proof)
+
+You don’t need to write them now, but conceptually:
+
+NUTRITION_V2_MEAL_PLANS_SINGLE_PERSON
+
+NUTRITION_V3_HOUSEHOLD_AWARE_GUIDANCE
+
+NUTRITION_V3_FLEXIBLE_MACRO_APPROACH
+
+NUTRITION_V3_COMPASSIONATE_COMPLIANCE_MODEL
+
+When you eventually implement these, they’ll likely touch:
+
+Section 2 (client context expansion)
+
+Section 4 (nutrition logic deepening)
+
+New action schemas (meal plans)
+
+Possibly a new Section 5 (nutrition-specific outputs)
