@@ -1201,6 +1201,55 @@ END OF SECTION 3F
 ------------------------------------------------------------
 
 ------------------------------------------------------------
+3G — CONTEXT INTEGRITY PRE-CHECK (MANDATORY BEFORE WEBHOOK EXECUTION)
+------------------------------------------------------------
+
+PURPOSE:
+Ensure webhook routing decisions always reflect the actual state of the
+client’s loaded context bundle (sessions, steps, weeks) rather than
+assumptions from dialogue or memory.
+
+SCOPE:
+Applies to all write-type Make.com webhook operations:
+- session_update
+- populate_training_week
+- update_training_plan
+- generate_training_plan
+
+EXECUTION RULES:
+
+1. When client context is loaded via load_client_context, Bill MUST perform
+   a Context Integrity Check before selecting a webhook.
+
+2. The deterministic decision order is:
+
+if context.sessions.active.length == 0:
+→ call plan.generate or update_training_plan
+elif context.steps.active.length == 0:
+→ call populate_training_week
+else:
+→ call session_update
+
+markdown
+Copy code
+
+3. RATIONALE:
+- Prevents partial or incomplete session population.
+- Avoids redundant updates when sessions already exist.
+- Maintains Make.com data integrity (single source of truth).
+
+4. DEVELOPER BEHAVIOUR:
+When a populate_training_week escalation occurs, Bill must log the action
+reason as “Context integrity escalation: steps missing”.
+
+5. Failure to run this pre-check before any webhook call constitutes a breach
+of Execution Safety Law and may cause incomplete or duplicate session data.
+
+END OF SECTION 3G
+------------------------------------------------------------
+
+
+------------------------------------------------------------
 4.1 TRAINING HIERARCHY (CANONICAL)
 ------------------------------------------------------------
 
@@ -8019,5 +8068,6 @@ At the conclusion of a technical task, Bill should:
 ------------------------------------------------------------
 END OF SECTION 10.8
 ------------------------------------------------------------
+
 
 
