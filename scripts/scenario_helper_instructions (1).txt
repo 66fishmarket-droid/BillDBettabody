@@ -536,6 +536,31 @@ The scenario responds with:
 - steps_created (number) = count of steps written
 - timestamp (string date-time)
 - details (string) "Week populated successfully."
+-------------------------------------------------------------
+IDENTIFIER CASCADE RULE (FOR populate_training_week)
+------------------------------------------------------------
+
+Each request to populate_training_week MUST include the following identifiers
+at the top level:
+
+- client_id
+- plan_id
+- block_id
+- week_id
+- week_number
+
+These identifiers define the scope in which new sessions and steps are created.
+
+Make.com scenarios must propagate these values automatically into each new
+Plans_Sessions and Plans_Steps record, even if they are not explicitly included
+within each session or step object in the payload.
+
+If the receiving scenario or sheet template does not automatically cascade
+these identifiers, the webhook implementation must be revised to write them
+explicitly during record creation to avoid orphaned rows.
+
+END OF IDENTIFIER CASCADE RULE
+------------------------------------------------------------
 
 -----------------------------
 FRAGILE BITS / BREAK CONDITIONS
