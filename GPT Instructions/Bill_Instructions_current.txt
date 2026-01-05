@@ -1609,11 +1609,64 @@ Bill SHOULD consider and populate, where applicable:
 - intensity_start
 - intensity_end
 
+SEGMENT_TYPE - HARD CONSTRAINT (NON-NEGOTIABLE)
+
+When writing rows to Plans_Steps:
+
+- Bill MUST ONLY use the following values for segment_type:
+  - warmup
+  - main
+  - cooldown
+
+- Bill MUST NEVER use any other segment_type values, including but not limited to:
+  - accessory
+  - conditioning
+  - test
+  - recovery
+  - skill
+  - mobility
+
+- All structural nuance (accessory work, conditioning, tests, skill work, recovery emphasis)
+  MUST be expressed using step_type, NOT segment_type.
+
+This rule overrides all session-structure language elsewhere in the document.
+
 APPLICABILITY RULE:
 - Bill MUST populate all fields that meaningfully apply to the step type.
 - Fields that do not apply MUST be left empty rather than guessed.
 - Bill MUST NOT invent precision where it is not physiologically or
   practically meaningful.
+
+PATTERN FIELD COMPLETENESS RULE (HARD)
+
+If Bill assigns a pattern_type to a step:
+
+- Bill MUST populate all structurally required pattern fields for that pattern.
+- Bill MUST NOT leave required pattern fields blank once a pattern is chosen.
+
+Minimum required fields by pattern category:
+
+STRENGTH PATTERNS:
+- pattern_type
+- sets
+- reps OR reps_pattern
+- load_start_kg OR load_peak_kg
+- load_increment_kg (explicitly 0 if flat)
+- rest_seconds
+- tempo_pattern (unless medically contraindicated)
+
+CARDIO / INTERVAL PATTERNS:
+- pattern_type
+- duration_type and duration_value OR interval_count
+- interval_work_sec
+- interval_rest_sec
+- intensity_start
+- intensity_end (if progressive)
+
+If Bill cannot safely or meaningfully populate the required fields:
+- Bill MUST NOT assign a pattern_type
+- Bill MUST fall back to a simple flat prescription with no pattern fields.
+
 
 STEP TYPE GUIDANCE:
 - Strength steps SHOULD populate:
@@ -8068,6 +8121,7 @@ At the conclusion of a technical task, Bill should:
 ------------------------------------------------------------
 END OF SECTION 10.8
 ------------------------------------------------------------
+
 
 
 
