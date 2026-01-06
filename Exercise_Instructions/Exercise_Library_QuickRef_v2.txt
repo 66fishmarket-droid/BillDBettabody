@@ -1,0 +1,1906 @@
+# Exercise Library - Quick Reference
+# Purpose: Fast lookup for Bill D'Bettabody (production)
+# Contains: names, key cues, YouTube links, Garmin primary, segment_type.
+
+# WARMUP
+
+---
+EXERCISE: Ankle and Calf Mobility Set
+EQUIPMENT: bodyweight, wall
+MOVEMENT_PATTERN: gait, plyometric
+SEGMENT_TYPE: warmup
+
+KEY_CUES:
+- Smooth, small range
+- controlled balance
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=J9YA1_f_juA
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Full-Body Dynamic Flow
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: general
+SEGMENT_TYPE: warmup
+
+KEY_CUES:
+- Flow continuously
+- Keep breathing steady
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=uLVt6u15L98
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Lower Body Dynamic Prep
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: squat, hinge, lunge
+SEGMENT_TYPE: warmup
+
+KEY_CUES:
+- Smooth controlled range
+- 30 to 60s per drill
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=-CiWQ2IvY34
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Posterior Chain Primer
+EQUIPMENT: bands, bodyweight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: warmup
+
+KEY_CUES:
+- Squeeze glutes
+- control the hinge
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=Xp33YgPZgns
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Upper Body Activation
+EQUIPMENT: bands, bodyweight
+MOVEMENT_PATTERN: push_horizontal, pull_horizontal
+SEGMENT_TYPE: warmup
+
+KEY_CUES:
+- Light tension, full control
+- Smooth scapular movement
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=MnDpmNYUjbc
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Warmup - Elliptical
+EQUIPMENT: elliptical
+MOVEMENT_PATTERN: cyclical
+SEGMENT_TYPE: warmup
+
+KEY_CUES:
+- Light resistance
+- Smooth, rhythmic stride
+
+YOUTUBE_URL: 
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Warmup - Treadmill
+EQUIPMENT: treadmill
+MOVEMENT_PATTERN: gait
+SEGMENT_TYPE: warmup
+
+KEY_CUES:
+- Start easy, finish warm
+- Smooth rhythm, upright posture
+
+YOUTUBE_URL: 
+
+GARMIN_PRIMARY:
+
+# MAIN
+
+---
+EXERCISE: 6-1-6 Drill
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Rotate smoothly
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=ShRT_dQxgEs
+
+GARMIN_PRIMARY: Leg Lowering Drill
+
+---
+EXERCISE: Ab Wheel Rollout
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: anti_extension
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Brace hard
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=4HZCJLM5wBk
+
+GARMIN_PRIMARY: Kneeling Ab Wheel
+
+---
+EXERCISE: Air Squat
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Sit between hips
+
+YOUTUBE_URL: https://youtu.be/aclHkVaku9U
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Aqua Jogging
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Drive knees
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=fiUzT-s93sg
+
+GARMIN_PRIMARY: Run
+
+---
+EXERCISE: Arnold Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Rotate smoothly
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=jeJttN2EWCo
+
+GARMIN_PRIMARY: Arnold Press
+
+---
+EXERCISE: Assisted Pull-Up Machine
+EQUIPMENT: fixed_machine
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Full range
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=wFj808u2HWU
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Assisted Squat
+EQUIPMENT: household
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Use support
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=CcnyxSe_H9g
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Back Extension
+EQUIPMENT: machine
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Neutral spine
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=ph3pddpKzzw
+
+GARMIN_PRIMARY: Static Back Extension
+
+---
+EXERCISE: Back Squat
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Brace core
+
+YOUTUBE_URL: https://youtu.be/ultWZbUMPL8
+
+GARMIN_PRIMARY: Barbell Back Squat
+
+---
+EXERCISE: Backstroke Kick Drill
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hips up
+
+YOUTUBE_URL: https://www.youtube.com/shorts/fiSTMCcfezM
+
+GARMIN_PRIMARY: Cable Kick-back
+
+---
+EXERCISE: Backstroke Swim
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hips up
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=89HxafulzyI
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Band Pulldown
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull elbows down
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=X_E7iiSsklI
+
+GARMIN_PRIMARY: Squats with Band
+
+---
+EXERCISE: Band Row
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull elbows back
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=JP2xq33lNF0
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Band-Assisted Pull-Up
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Drive elbows
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=5rR_bzBc1NA
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Barbell Bent-Over Row
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hinge and pull
+
+YOUTUBE_URL: https://www.youtube.com/shorts/UL8ZcK64KxA
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Barbell Overhead Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Head through
+
+YOUTUBE_URL: https://youtu.be/cGnhixvC8uA?si=M6Sr2Vv-ZGDRzrN1
+
+GARMIN_PRIMARY: Overhead Barbell Press
+
+---
+EXERCISE: Bench Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Feet planted
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=SCVCLChPQFY
+
+GARMIN_PRIMARY: Bench Press
+
+---
+EXERCISE: Bird Dog
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: anti_rotation
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Reach long
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=wiFNA3sqjCA
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Box Squat
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control to box
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=MSMFgsK-dbY
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Breaststroke Kick Drill
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Compact kick
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=dI5cDhA7sis
+
+GARMIN_PRIMARY: Cable Kick-back
+
+---
+EXERCISE: Breaststroke Swim
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Glide and kick
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=mFFxTuaMpDQ
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Bulgarian Split Squat
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: lunge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control descent
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=2C-uNgKwPLE
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Butterfly Swim
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Wave from core
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=UffZn_-lU54
+
+GARMIN_PRIMARY: Butterfly Sit-up
+
+---
+EXERCISE: Cable Chop
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: rotation
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Rotate under control
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=gcGNypjIQDo
+
+GARMIN_PRIMARY: Chop
+
+---
+EXERCISE: Cable Lift
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: rotation
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Drive from hips
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=dDYLiE2tOFM
+
+GARMIN_PRIMARY: Cable Rotational Lift
+
+---
+EXERCISE: Cable Pull-Through
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hips back
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=4oZ_0_bQcOg
+
+GARMIN_PRIMARY: Cable Pull-through
+
+---
+EXERCISE: Chest Press Machine
+EQUIPMENT: fixed_machine
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control return
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=sqNwDkUU_Ps
+
+GARMIN_PRIMARY: Bench Press
+
+---
+EXERCISE: Chest-Supported Row
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Squeeze back
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=nl2MnK1i504
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Chin-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Elbows down
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=8mryJ3w2S78
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Close-Grip Push-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Elbows close
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=2cdIRe5tcqI
+
+GARMIN_PRIMARY: Push-up
+
+---
+EXERCISE: Cossack Squat
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Sit into hip
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=W-KbaAOpMhM
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Dead Bug
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: anti_extension
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Ribs down
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=jbWmbhElf3Q
+
+GARMIN_PRIMARY: Dead Bug
+
+---
+EXERCISE: Dead Hang
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Relax shoulders
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=0Bx_Ap7-EwU
+
+GARMIN_PRIMARY: Dead-hang Biceps Curl
+
+---
+EXERCISE: Decline Push-Up
+EQUIPMENT: household
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Chest to floor
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=aq2xZxfrQlM
+
+GARMIN_PRIMARY: Decline Push-up
+
+---
+EXERCISE: Dolphin Kick (Surface)
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Small kicks
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=FjAR1zjnjKA
+
+GARMIN_PRIMARY: Cable Kick-back
+
+---
+EXERCISE: Dolphin Kick (Underwater)
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Wave body
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=x0S1qpvdTNM
+
+GARMIN_PRIMARY: Cable Kick-back
+
+---
+EXERCISE: Dumbbell Bench Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control path
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=ZaDlbm8E8Tg
+
+GARMIN_PRIMARY: Dumbbell Bench Press
+
+---
+EXERCISE: Dumbbell RDL
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Reach hips back
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=FQKfr1YDhEk
+
+GARMIN_PRIMARY: Deadlift
+
+---
+EXERCISE: Dumbbell Row
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull to hip
+
+YOUTUBE_URL: https://www.youtube.com/shorts/WkFX6_GxAs8
+
+GARMIN_PRIMARY: Dumbbell Row
+
+---
+EXERCISE: Dumbbell Shoulder Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Press overhead
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=qEwKCR5JCog
+
+GARMIN_PRIMARY: Dumbbell Shoulder Press
+
+---
+EXERCISE: Elliptical Intervals
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Push then recover
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=E15Q3Z9J-Zg
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Elliptical Trainer
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Smooth stride
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=E15Q3Z9J-Zg
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Face Pull
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull to face
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=0Po47vvj9g4
+
+GARMIN_PRIMARY: Face Pull
+
+---
+EXERCISE: Farmer Carry
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: anti_lateral_flexion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Tall posture
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=8OtwXwrJizk
+
+GARMIN_PRIMARY: Carry
+
+---
+EXERCISE: Fingertip Drag Drill
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Light touch
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=O_muRVVNpaQ
+
+GARMIN_PRIMARY: Leg Lowering Drill
+
+---
+EXERCISE: Floor Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Elbows to floor
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=uUGDRwge4F8
+
+GARMIN_PRIMARY: Barbell Floor Press
+
+---
+EXERCISE: Freestyle Catch-Up Drill
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- One arm waits
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=qpczzwoXbyQ
+
+GARMIN_PRIMARY: Leg Lowering Drill
+
+---
+EXERCISE: Freestyle Intervals
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Quality reps
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=fLDF38IMaAM&t=403s
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Freestyle Pull Drill
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- High elbow
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=6FNa8mrifms
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Freestyle Swim
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Long body
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=AQy_c30lNjI
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Front Squat
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Elbows high
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=uYumuL_G_V0
+
+GARMIN_PRIMARY: Barbell Front Squat
+
+---
+EXERCISE: Glute Bridge
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Drive heels
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=YRqoIM0u0PY&t=9s
+
+GARMIN_PRIMARY: Clam Bridge
+
+---
+EXERCISE: Goblet Squat
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Chest tall
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=6xwGFn-J_Q4
+
+GARMIN_PRIMARY: Goblet Squat
+
+---
+EXERCISE: Good Morning
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hinge under load
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=0Syp9iyINZ4
+
+GARMIN_PRIMARY: Good Morning
+
+---
+EXERCISE: Hand Cycling
+EQUIPMENT: human_powered_vehicle
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Smooth pulls
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=pnv4D5PfFBU
+
+GARMIN_PRIMARY: Cycling Russian Twist
+
+---
+EXERCISE: Hand Erg Intervals
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Even rhythm
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=Kt3PwXFuCgI
+
+GARMIN_PRIMARY: Hand Release Push-up
+
+---
+EXERCISE: Hand Ergometer
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Smooth pulls
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=Kt3PwXFuCgI
+
+GARMIN_PRIMARY: Hand Release Push-up
+
+---
+EXERCISE: Handstand Hold (Wall)
+EQUIPMENT: household
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Stack joints
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=hLYXOP-rFk8
+
+GARMIN_PRIMARY: Wall Ball
+
+---
+EXERCISE: Hill Walking
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Lean slightly
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=kohoA918qGg
+
+GARMIN_PRIMARY: Walking Lunge
+
+---
+EXERCISE: Hip Hinge Drill
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hips back
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=sinpFajtRPw
+
+GARMIN_PRIMARY: Hip Circles
+
+---
+EXERCISE: Hip Hinge with Support
+EQUIPMENT: household
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Use support
+
+YOUTUBE_URL: https://www.youtube.com/shorts/xH3VNqscMWk
+
+GARMIN_PRIMARY: Hip Circles
+
+---
+EXERCISE: Hip Thrust
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Lockout squeeze
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=pUdIL5x0fWg
+
+GARMIN_PRIMARY: Barbell Hip Thrust on Floor
+
+---
+EXERCISE: Hollow Body Hold
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: anti_extension
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Lower back down
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=EsnM8eBtazU
+
+GARMIN_PRIMARY: Hollow, Hold, and Roll
+
+---
+EXERCISE: Incline Pike Push-Up
+EQUIPMENT: household
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control descent
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=Dh5r4KMEKgo
+
+GARMIN_PRIMARY: Push-up
+
+---
+EXERCISE: Incline Push-Up
+EQUIPMENT: household
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Brace core
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=yAbg3_pJKvw
+
+GARMIN_PRIMARY: Incline Push-up
+
+---
+EXERCISE: Inverted Row
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Body straight
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=9fItzuh9Iok
+
+GARMIN_PRIMARY: Inverted Row
+
+---
+EXERCISE: Isometric Carry Hold
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: anti_lateral_flexion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hold tall
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=psMQmwlhiSs
+
+GARMIN_PRIMARY: Carry
+
+---
+EXERCISE: Isometric Hip Hinge Hold
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hold position
+
+YOUTUBE_URL: https://www.youtube.com/shorts/hi6T9-znK84
+
+GARMIN_PRIMARY: Single-leg Hip Raise with Knee Hold
+
+---
+EXERCISE: Isometric Overhead Hold
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hold lockout
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=ufQx8CGUsyw
+
+GARMIN_PRIMARY: Overhead Carry
+
+---
+EXERCISE: Isometric Pull-Up Hold
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hold top
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=UB22l7yYhTM
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Isometric Push-Up Hold
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hold tension
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=mmTAFhFpdY8
+
+GARMIN_PRIMARY: Push-up
+
+---
+EXERCISE: Isometric Row Hold
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hold squeeze
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=ZVo4tLD49oA
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Jogging
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Light steps
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=brFHyOtTwH4
+
+GARMIN_PRIMARY: Run
+
+---
+EXERCISE: Jump Rope
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Light feet
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=IFgQfVQT_68
+
+GARMIN_PRIMARY: Jump Rope
+
+---
+EXERCISE: Kettlebell Deadlift
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Crush handle
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=aYZDE2t7Rrs
+
+GARMIN_PRIMARY: Deadlift
+
+---
+EXERCISE: Kettlebell Swing
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Snap hips
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=YSxHifyI6s8
+
+GARMIN_PRIMARY: Kettlebell Swing
+
+---
+EXERCISE: Kick Scooter
+EQUIPMENT: human_powered_vehicle
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Switch legs
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=I0J9nfTo-_A
+
+GARMIN_PRIMARY: Cable Kick-back
+
+---
+EXERCISE: Kick on Side
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Long body
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=1VQVfo0icr0
+
+GARMIN_PRIMARY: Pretzel Side Kick
+
+---
+EXERCISE: Kickboard Flutter Kick
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Small fast kicks
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=xOf-Nhq-hhc
+
+GARMIN_PRIMARY: Flutter Kicks
+
+---
+EXERCISE: Knee Push-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control descent
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=WcHtt6zT3Go
+
+GARMIN_PRIMARY: Push-up
+
+---
+EXERCISE: Landmine Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Press forward-up
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=6cSTRPhpubs
+
+GARMIN_PRIMARY: Frog Press
+
+---
+EXERCISE: Lat Pulldown
+EQUIPMENT: fixed_machine
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull to chest
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=JGeRYIZdojU
+
+GARMIN_PRIMARY: Lat Pull-down
+
+---
+EXERCISE: Lateral Step-Up
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: lunge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control knee
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=XYoLTmcr2oA
+
+GARMIN_PRIMARY: Step-up
+
+---
+EXERCISE: Neutral-Grip Pull-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull smoothly
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=cd_38C6LuvY
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Outdoor Cycling
+EQUIPMENT: human_powered_vehicle
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Spin smooth
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=4ssLDk1eX9w
+
+GARMIN_PRIMARY: Cycling Russian Twist
+
+---
+EXERCISE: Overhead Reach Press
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Reach tall
+
+YOUTUBE_URL: https://www.youtube.com/shorts/9MRHDz6WYd8
+
+GARMIN_PRIMARY: Overhead Barbell Press
+
+---
+EXERCISE: Pallof Press
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: anti_rotation
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Resist rotation
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=HXrLaqNIkTs
+
+GARMIN_PRIMARY: Frog Press
+
+---
+EXERCISE: Pause Squat
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pause under control
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=nknf16JJTZo
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Pike Push-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hips high
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=XckEEwa1BPI
+
+GARMIN_PRIMARY: Push-up
+
+---
+EXERCISE: Plank
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: anti_extension
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Brace and breathe
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=pvIjsG5Svck
+
+GARMIN_PRIMARY: Plank
+
+---
+EXERCISE: Pool Walking
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Controlled steps
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=e92GzjsiofU
+
+GARMIN_PRIMARY: Walking Lunge
+
+---
+EXERCISE: Pull Buoy Freestyle
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- High elbow catch
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=ITK0chbKegI
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Pull-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Chest to bar
+
+YOUTUBE_URL: https://www.youtube.com/shorts/9rckBLbVe8c
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Push Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Use legs
+
+YOUTUBE_URL: https://youtu.be/ODwyDtlXnXk?si=DV8SBmyWFJHrZdDK
+
+GARMIN_PRIMARY: Barbell Push Press
+
+---
+EXERCISE: Push-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Elbows 45Â°
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=TzPB7pq_gRc
+
+GARMIN_PRIMARY: Push-up
+
+---
+EXERCISE: Push-Up Plus
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Reach at top
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=RFbjeyq_ZPc
+
+GARMIN_PRIMARY: Push-up Plus
+
+---
+EXERCISE: Resistance Band Press
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Press forward
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=9NGo4lZd65o
+
+GARMIN_PRIMARY: Chest Press with Band
+
+---
+EXERCISE: Resistance Band Pull-Apart
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Open chest
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=stwYTTPXubo
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Ring Row
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Body rigid
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=sEAOZc77wk8
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Romanian Deadlift
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Push hips back
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=7j-2w4-P14I
+
+GARMIN_PRIMARY: Deadlift
+
+---
+EXERCISE: Rowing Erg
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Legs then arms
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=6_eLpWiNijE
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Running
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Tall posture
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=brFHyOtTwH4
+
+GARMIN_PRIMARY: Run
+
+---
+EXERCISE: Scapular Pull-Up
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull shoulders
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=pE8PJsWEV7k
+
+GARMIN_PRIMARY: Pull-up
+
+---
+EXERCISE: Sculling Back
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Steady pressure
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=cD8Qr5uvz9s
+
+GARMIN_PRIMARY: Back Squats
+
+---
+EXERCISE: Sculling Front
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Feel water
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=o1ex2GbQ9WI
+
+GARMIN_PRIMARY: Front Raise
+
+---
+EXERCISE: Sculling Mid
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Soft hands
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=O5IbdYxj-hU
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Seated Band Row
+EQUIPMENT: portable_accessory
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Chest tall
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=Jy-WCFAofBY
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Seated Row Machine
+EQUIPMENT: fixed_machine
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control return
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=TeFo51Q_Nsc
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Shadow Boxing
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Stay light
+
+YOUTUBE_URL: https://www.youtube.com/shorts/tUjqUmIbEX8
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Shoulder Press Machine
+EQUIPMENT: fixed_machine
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Seat height
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=GcY6TZxfS0k
+
+GARMIN_PRIMARY: Overhead Barbell Press
+
+---
+EXERCISE: Side Plank
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: anti_lateral_flexion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hips stacked
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=NXr4Fw8q60o
+
+GARMIN_PRIMARY: Side Plank
+
+---
+EXERCISE: Single-Arm Cable Row
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Anti-rotate
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=1jN6qeXdvWA
+
+GARMIN_PRIMARY: Single-arm Cable Row
+
+---
+EXERCISE: Single-Arm Dumbbell Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Resist rotation
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=FUwme_oBDsA
+
+GARMIN_PRIMARY: Single-arm Dumbbell Bench Press
+
+---
+EXERCISE: Single-Arm Freestyle
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Stable body
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=6YXOT_HQtjM
+
+GARMIN_PRIMARY: Single-arm Deadlift
+
+---
+EXERCISE: Single-Arm Lat Pulldown
+EQUIPMENT: fixed_machine
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Control rotation
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=HBC5s98wXko
+
+GARMIN_PRIMARY: Single-arm Deadlift
+
+---
+EXERCISE: Single-Leg RDL
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: hinge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Hips square
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=lI8-igvsnVQ
+
+GARMIN_PRIMARY: Deadlift
+
+---
+EXERCISE: Split Squat
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: lunge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Knee tracks toes
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=la0pLPq-3A8
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Stair Climb
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Drive through feet
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=gzj4980UvzY
+
+GARMIN_PRIMARY: Rope Climb
+
+---
+EXERCISE: Stair Climber Intervals
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Drive legs
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=Zn1O9LcKW9E
+
+GARMIN_PRIMARY: Mountain Climber
+
+---
+EXERCISE: Stair Climber Machine
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Full foot
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=Zn1O9LcKW9E
+
+GARMIN_PRIMARY: Mountain Climber
+
+---
+EXERCISE: Stationary Bike
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Smooth cadence
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=NwwDBARCGgo
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Step-Up
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: lunge
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Drive through heel
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=WCFCdxzFBa4
+
+GARMIN_PRIMARY: Step-up
+
+---
+EXERCISE: Suitcase Carry
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: anti_lateral_flexion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Stay upright
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=BaRMAhD7SP4
+
+GARMIN_PRIMARY: Carry
+
+---
+EXERCISE: Table Row
+EQUIPMENT: household
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull chest to edge
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=FKKZRwBJDxE
+
+GARMIN_PRIMARY: Row
+
+---
+EXERCISE: Tempo Squat
+EQUIPMENT: bodyweight
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Slow down
+
+YOUTUBE_URL: https://youtu.be/YaXPRqUwItQ
+
+GARMIN_PRIMARY: Squat
+
+---
+EXERCISE: Towel Pulldown
+EQUIPMENT: household
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Pull down
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=WGWHKXmrVYo
+
+GARMIN_PRIMARY: Towel Pull-up
+
+---
+EXERCISE: Treading Water
+EQUIPMENT: pool
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Stay tall
+
+YOUTUBE_URL: https://www.youtube.com/shorts/_V0o0AcpDuc
+
+GARMIN_PRIMARY: 30-degree Lat Pull-down
+
+---
+EXERCISE: Treadmill Run
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Even cadence
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=HxsFneJFM2c
+
+GARMIN_PRIMARY: Run
+
+---
+EXERCISE: Treadmill Walk
+EQUIPMENT: cardio_machine
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Posture tall
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=HxsFneJFM2c
+
+GARMIN_PRIMARY: Walk
+
+---
+EXERCISE: Walking
+EQUIPMENT: environmental
+MOVEMENT_PATTERN: locomotion
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Easy pace
+
+YOUTUBE_URL: https://www.youtube.com/shorts/VL0AOiZt_lg
+
+GARMIN_PRIMARY: Walking Lunge
+
+---
+EXERCISE: Wall Push-Up
+EQUIPMENT: household
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Body straight
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=-KVhapnEtuk
+
+GARMIN_PRIMARY: Push-up
+
+---
+EXERCISE: Wall Sit
+EQUIPMENT: household
+MOVEMENT_PATTERN: squat
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Press into wall
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=y-wV4Venusw
+
+GARMIN_PRIMARY: Sit-up
+
+---
+EXERCISE: Warmup - Exercise Bike
+EQUIPMENT: exercise_bike
+MOVEMENT_PATTERN: cyclical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Light resistance, full pedal stroke
+- Stay upright, Smooth cadence
+
+YOUTUBE_URL: 
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Weighted Pull-Up
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: pull_vertical
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Add load
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=HuuyDNGrCI8
+
+GARMIN_PRIMARY: Weighted Pull-up
+
+# COOLDOWN
+
+---
+EXERCISE: Full Body Downshift
+EQUIPMENT: mat
+MOVEMENT_PATTERN: general
+SEGMENT_TYPE: cooldown
+
+KEY_CUES:
+- Calm breathing
+- Relax and unwind
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=SLIaql7h6RQ
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Lower Body Reset
+EQUIPMENT: mat, wall
+MOVEMENT_PATTERN: squat, hinge
+SEGMENT_TYPE: cooldown
+
+KEY_CUES:
+- Slow breathing
+- Ease tension, no bouncing
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=q4N8QxQPYDw
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Pool Cooldown Flow
+EQUIPMENT: pool
+MOVEMENT_PATTERN: swim, general
+SEGMENT_TYPE: cooldown
+
+KEY_CUES:
+- Stay moving, breathe easy
+- Gentle range, no strain
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=ZgxniVfKT4I
+
+GARMIN_PRIMARY: 
+
+---
+EXERCISE: Upper Body Stretch Flow
+EQUIPMENT: mat, wall
+MOVEMENT_PATTERN: push_horizontal, pull_horizontal
+SEGMENT_TYPE: cooldown
+
+KEY_CUES:
+- Relax shoulders
+- steady breathing
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=M850sCj9LHQ
+
+GARMIN_PRIMARY:
