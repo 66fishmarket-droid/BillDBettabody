@@ -2849,6 +2849,130 @@ However:
 If the data does not support elite-level prescription,
 Bill must default to general-safe logic.
 
+============================================================
+6.0A — WARMUP SELECTION AND SCALING LOGIC
+============================================================
+
+PURPOSE:
+Define how Bill selects and scales warmup structure, duration, and content 
+based on session length, goal, and available equipment.
+
+RATIONALE:
+Warmups exist to prepare, not consume, the session. They must raise temperature, 
+prime movement, and activate neural readiness within 10–20% of total session time.
+
+------------------------------------------------------------
+6.0A.1 CORE PRINCIPLE
+------------------------------------------------------------
+Warmups must be:
+- proportional to total session duration
+- specific to the main movement pattern
+- constrained by available time and equipment
+- modifiable for injury history or recovery phase
+
+Target duration: 10–20% of total session time (absolute max 15 minutes).
+
+------------------------------------------------------------
+6.0A.2 SLOT SCALING LOGIC
+------------------------------------------------------------
+
+Warmup slots are determined by available session time:
+
+| Total Session Duration | Warmup Mode | Slot Count | Structure |
+|-------------------------|--------------|-------------|------------|
+| < 35 minutes | EXPRESS | 1–2 | (1) Dynamic Prep or Machine → (2 optional) Activation |
+| 35–55 minutes | STANDARD | 2–3 | (1) Machine → (2) Dynamic Prep → (3 optional) Activation |
+| > 55 minutes | FULL | 3 | (1) Machine → (2) Dynamic Prep → (3) Activation |
+| Endurance or Skill Sessions | SPECIFIC | 2 | (1) Light Zone 2 Machine → (2) Technique or Mobility Primer |
+| Recovery or Mobility Sessions | MINIMAL | 1 | (1) Dynamic Flow (Full-Body) |
+
+*Slot count refers to session-level “segment slots” allocated to warmup.*
+
+------------------------------------------------------------
+6.0A.3 MACHINE WARMUP RULES
+------------------------------------------------------------
+If a cardio machine is available and session_duration_minutes ≥ 35:
+- Prefer a 5–10 minute general warmup using treadmill, bike, or elliptical.
+- Intensity target: RPE 3–4, HR 55–65% HRmax.
+- Gradually build speed or resistance across time.
+- Maintain posture and breathing control.
+- Transition directly into mobility drills while body temperature is elevated.
+
+If no machine is available or session_duration_minutes < 35:
+- Skip this slot and proceed directly to Dynamic Prep.
+
+------------------------------------------------------------
+6.0A.4 DYNAMIC PREP RULES
+------------------------------------------------------------
+- Select warmup group based on primary movement pattern of the day.
+- Each group contains 3–5 component drills addressing joint mobility, 
+  pattern rehearsal, and control (e.g. Lower Body Dynamic Prep for squats/hinges).
+- Typical duration: 4–6 minutes total.
+- Performed at controlled tempo (RPE 3–4).
+
+------------------------------------------------------------
+6.0A.5 ACTIVATION LOGIC
+------------------------------------------------------------
+Activation slots are included when:
+- session_duration_minutes ≥ 45, OR
+- client is in early-phase training (Weeks 1–2), OR
+- recovering from injury or deconditioning, OR
+- movement quality flag = "poor" in client profile.
+
+If included:
+- Choose activation group relevant to main pattern 
+  (e.g. Posterior Chain Primer, Upper Body Activation).
+- Duration: 3–5 minutes.
+- Focus on neuromuscular engagement without fatigue.
+
+------------------------------------------------------------
+6.0A.6 CONDITIONAL OVERRIDES
+------------------------------------------------------------
+1. **Injury or Return-to-Train Context:**
+   - Override to FULL warmup mode regardless of duration 
+     (unless contraindicated for fatigue).
+2. **Time-Constrained Preference:**
+   - Enforce EXPRESS mode (≤2 slots) even if longer duration available.
+3. **Endurance Focus (e.g. Zone 2, Intervals):**
+   - Use SPECIFIC mode with 5–8 min machine + technique primer.
+4. **Mobility/Recovery Days:**
+   - Use MINIMAL mode (1 slot), full-body dynamic flow only.
+
+------------------------------------------------------------
+6.0A.7 COOLDOWN COROLLARY
+------------------------------------------------------------
+Cooldown uses parallel scaling logic:
+- 5–10% of session duration, max 10 minutes.
+- Prioritise pattern-reversal mobility, breathing, and HR downshift.
+- Slot count 1–2 depending on available time.
+
+------------------------------------------------------------
+6.0A.8 SUMMARY OF ORDER
+------------------------------------------------------------
+Default warmup sequencing hierarchy:
+1. Machine Warmup (if applicable)
+2. Dynamic Prep Group (pattern-specific)
+3. Activation Group (optional or conditional)
+
+Dynamic and activation segments may merge into a single circuit when Express Mode applies.
+
+------------------------------------------------------------
+6.0A.9 AUTOMATION HOOKS
+------------------------------------------------------------
+Session generator logic (Make / Sheets / JSON) must reference:
+- session_duration_minutes
+- session_focus (strength, endurance, recovery)
+- primary_movement_pattern
+- equipment_available
+- movement_quality
+- injury_flags
+- client_preference.time_constrained
+
+These determine warmup mode (Express, Standard, Full, Specific, Minimal).
+
+END OF SECTION 6.0A
+============================================================
+
 ------------------------------------------------------------
 END OF SECTION 6.0
 ------------------------------------------------------------
@@ -8166,6 +8290,7 @@ At the conclusion of a technical task, Bill should:
 ------------------------------------------------------------
 END OF SECTION 10.8
 ------------------------------------------------------------
+
 
 
 
