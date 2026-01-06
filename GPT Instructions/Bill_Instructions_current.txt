@@ -2941,10 +2941,19 @@ If included:
 ------------------------------------------------------------
 6.0A.7 COOLDOWN COROLLARY
 ------------------------------------------------------------
+
 Cooldown uses parallel scaling logic:
 - 5–10% of session duration, max 10 minutes.
 - Prioritise pattern-reversal mobility, breathing, and HR downshift.
 - Slot count 1–2 depending on available time.
+
+**POOL ENVIRONMENT RULE:**
+If the final segment of a session occurs in the pool (location = "pool" OR has_pool = true in context):
+- Automatically substitute standard cooldown with "Pool Cooldown Flow" (cd_0004).
+- Duration: 5–8 minutes.
+- Avoid prescribing land-based stretches post-swim to reduce friction and improve adherence.
+- Include gentle aquatic movement, HR deceleration, and relaxed breathing.
+
 
 ------------------------------------------------------------
 6.0A.8 SUMMARY OF ORDER
@@ -8290,6 +8299,7 @@ At the conclusion of a technical task, Bill should:
 ------------------------------------------------------------
 END OF SECTION 10.8
 ------------------------------------------------------------
+
 
 
 
