@@ -8110,6 +8110,102 @@ METADATA:
 
 segment_type: main; warmup
 
+---
+EXERCISE: Incline Dumbbell Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Set bench to 30–45° incline
+- Keep wrists neutral, elbows at ~45° to torso
+- Lower under control (2–3 s eccentric)
+- Press through mid-chest line, avoid flaring elbows
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=5CECBjd7HLQ
+GARMIN_PRIMARY: Dumbbell Incline Press
+GARMIN_MAPPING_CONFIDENCE: close
+GARMIN_VARIATIONS: Dumbbell Incline Press; Incline Barbell Bench Press; Incline Dumbbell Fly; Seated Shoulder Press
+CATEGORY: strength
+BODY_REGION: upper
+EQUIPMENT_VARIANT: dumbbell_incline
+PRIMARY_MUSCLES: chest, shoulders, triceps
+COACHING_CUES_SHORT: Controlled press from 30–45° incline
+EXERCISE_DESCRIPTION_SHORT: Chest press with dumbbells on an incline bench.
+EXERCISE_DESCRIPTION_LONG: The incline dumbbell press targets the upper portion of the pectorals while also engaging the shoulders and triceps. Set an adjustable bench to about 30–45°. Sit with a dumbbell in each hand resting on the thighs; as you lie back, use the thighs to help bring the weights to chest height with palms forward. Brace your core and press the dumbbells upward until arms are nearly straight, without touching them together. Lower under control for 2–3 seconds until elbows reach just below shoulder height. Keep feet planted and upper back in contact with the bench throughout.
+SAFETY_NOTES: Maintain shoulder stability and avoid over-arching the lower back.
+COMMON_MISTAKES: Elbows flaring too wide; bouncing weights; uneven arm path.
+REGRESSION: Floor Press
+PROGRESSION: Barbell Bench Press
+SOURCE_URL: https://www.youtube.com/watch?v=8iPEnn-ltC8
+LAST_VERIFIED_DATE: 2026-01-08
+STATUS: active
+METRIC_FAMILY_DEFAULT: strength
+
+---
+EXERCISE: Cable Row
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: pull_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Sit tall with slight knee bend
+- Initiate from shoulder blades, not biceps
+- Pull handle to lower ribs, pause, control return
+- Keep chest lifted and spine neutral
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=lJoozxC0Rns
+GARMIN_PRIMARY: Seated Row
+GARMIN_MAPPING_CONFIDENCE: close
+GARMIN_VARIATIONS: Seated Row; Cable Wide-Grip Row; Narrow-Grip Cable Row; Single-Arm Cable Row
+CATEGORY: strength
+BODY_REGION: upper
+EQUIPMENT_VARIANT: neutral_grip
+PRIMARY_MUSCLES: lats, rhomboids, rear delts, biceps
+COACHING_CUES_SHORT: Controlled horizontal pull
+EXERCISE_DESCRIPTION_SHORT: Seated horizontal row using cable stack.
+EXERCISE_DESCRIPTION_LONG: The cable row is a controlled pulling exercise that develops the lats, rhomboids, rear delts and biceps. Sit on the bench or platform with knees slightly bent and feet secured. Grip the handle and begin from fully extended arms with tension in the cable. Engage your core and pull the handle toward your lower ribs, squeezing shoulder blades together. Pause briefly, then return forward under control without letting the torso rock. Keep chest lifted and avoid shrugging or using momentum.
+SAFETY_NOTES: Keep spine neutral and avoid rounding the lower back.
+COMMON_MISTAKES: Hunching shoulders; jerking the handle; leaning excessively.
+REGRESSION: Band Row
+PROGRESSION: Barbell Bent-Over Row
+SOURCE_URL: https://www.youtube.com/watch?v=HJSVR_3t0uM
+LAST_VERIFIED_DATE: 2026-01-08
+STATUS: active
+METRIC_FAMILY_DEFAULT: strength
+
+---
+EXERCISE: Supported Lateral Raise
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; accessory
+
+KEY_CUES:
+- Brace chest against incline bench for stability
+- Lead with elbows, keep a soft bend
+- Raise to shoulder height only
+- Lower slowly under full control
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=4DLSK5kious
+GARMIN_PRIMARY: Lateral Raise
+GARMIN_MAPPING_CONFIDENCE: close
+GARMIN_VARIATIONS: Lateral Raise; Seated Lateral Raise; Cable Lateral Raise; Machine Lateral Raise
+CATEGORY: strength
+BODY_REGION: upper
+EQUIPMENT_VARIANT: dumbbell_supported
+PRIMARY_MUSCLES: deltoids, upper traps, stabilizers
+COACHING_CUES_SHORT: Chest-supported dumbbell lateral raise
+EXERCISE_DESCRIPTION_SHORT: Side shoulder raise with chest support to reduce cheating.
+EXERCISE_DESCRIPTION_LONG: The supported lateral raise isolates the lateral deltoids while minimising momentum by bracing the torso. Set an incline bench to about 45–60° and lie chest-down holding a dumbbell in each hand with a neutral grip. From arms hanging straight below the shoulders, raise both arms out to the sides in an arc until they reach shoulder height, keeping elbows slightly bent and wrists neutral. Pause briefly at the top, then lower under control for 2–3 seconds. Focus on smooth movement initiated from the shoulders while keeping the neck relaxed and spine neutral.
+SAFETY_NOTES: Do not overload—use moderate weights to maintain form.
+COMMON_MISTAKES: Swinging arms; bending elbows excessively; shrugging shoulders.
+REGRESSION: Seated Lateral Raise
+PROGRESSION: Standing Dumbbell Lateral Raise
+SOURCE_URL: https://www.youtube.com/watch?v=Dp8UO_3C49U
+LAST_VERIFIED_DATE: 2026-01-08
+STATUS: active
+METRIC_FAMILY_DEFAULT: strength
+
 # ============================================================
 # COOLDOWN
 # ============================================================
