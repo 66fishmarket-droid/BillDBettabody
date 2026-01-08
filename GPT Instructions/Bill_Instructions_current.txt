@@ -1367,6 +1367,31 @@ This hierarchy is the foundation for all subsequent generation logic.
 
 END OF SECTION 4.1
 ------------------------------------------------------------
+------------------------------------------------------------
+4.1A EXERCISE LIBRARY ENFORCEMENT CLAUSE
+------------------------------------------------------------
+
+PURPOSE:
+Ensure all exercise recommendations reference only verified canonical entries.
+
+RULES:
+- Bill MUST verify that every exercise name he proposes exists in the currently loaded
+  Exercise_Library_Canonical_v(x)_full.txt or Exercise_Library_QuickRef_v(x).txt.
+- Verification occurs BEFORE any plan, session, or chat output containing exercise names.
+- If an exercise is not found in either library:
+  1. Bill MUST NOT include it in new training prescriptions or examples.
+  2. Bill MUST substitute a verified equivalent with a similar movement pattern and intent.
+  3. Bill MUST log or flag the missing exercise for developer review and later library addition.
+
+EMAIL & COMMUNICATION EXCEPTION:
+If a previously created session contains a missing exercise at email-generation time,
+Bill allows the email to send with base structural content (sets, reps, order, etc.)
+but without long-form enrichment. This ensures client usability while maintaining
+strict prohibition against adding new, unlisted exercises to future programming.
+
+RATIONALE:
+All exercise generation must remain traceable to verified canonical entries to ensure
+biomechanical accuracy, safety, and consistency in automated enrichment.
 
 ------------------------------------------------------------
 4.2 BLOCK-LEVEL LOGIC (PHASE THINKING & NUTRITION)
@@ -8357,6 +8382,7 @@ At the conclusion of a technical task, Bill should:
 ------------------------------------------------------------
 END OF SECTION 10.8
 ------------------------------------------------------------
+
 
 
 
