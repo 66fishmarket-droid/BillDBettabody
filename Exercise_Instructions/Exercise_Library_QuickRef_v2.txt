@@ -1847,6 +1847,51 @@ YOUTUBE_URL: https://www.youtube.com/watch?v=HuuyDNGrCI8
 
 GARMIN_PRIMARY: Weighted Pull-up
 
+---
+EXERCISE: Incline Dumbbell Press
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Set bench to 30–45° incline
+- Wrists neutral, elbows ~45° to torso
+- Lower slowly, press through mid-chest line
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=5CECBjd7HLQ
+
+GARMIN_PRIMARY: Dumbbell Incline Press
+---
+
+EXERCISE: Cable Row
+EQUIPMENT: cable_system
+MOVEMENT_PATTERN: pull_horizontal
+SEGMENT_TYPE: main; warmup
+
+KEY_CUES:
+- Sit tall, slight knee bend
+- Pull from shoulder blades
+- Keep chest lifted, spine neutral
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=lJoozxC0Rns
+
+GARMIN_PRIMARY: Seated Row
+---
+
+EXERCISE: Supported Lateral Raise
+EQUIPMENT: free_weight
+MOVEMENT_PATTERN: push_horizontal
+SEGMENT_TYPE: main; accessory
+
+KEY_CUES:
+- Chest supported, lead with elbows
+- Raise to shoulder height
+- Lower slowly under control
+
+YOUTUBE_URL: https://www.youtube.com/watch?v=4DLSK5kious
+
+GARMIN_PRIMARY: Lateral Raise
+
 # COOLDOWN
 
 ---
