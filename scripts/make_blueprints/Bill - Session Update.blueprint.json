@@ -1,0 +1,2661 @@
+{
+    "name": "Bill - Session Update",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 3693996,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0,
+                    "name": "B-SessUp | grab data"
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "Bill Session Updater"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTMETHOD__",
+                        "type": "text",
+                        "label": "Method"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "google-sheets:filterRows",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6600568
+            },
+            "mapper": {
+                "from": "drive",
+                "limit": "1",
+                "filter": [
+                    [
+                        {
+                            "a": "G",
+                            "b": "{{1.session_id}}",
+                            "o": "text:equal:ci"
+                        },
+                        {
+                            "a": "C",
+                            "b": "{{1.client_id}}",
+                            "o": "text:equal:ci"
+                        }
+                    ]
+                ],
+                "sheetId": "Plans_Sessions",
+                "sortOrder": "asc",
+                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "tableFirstRow": "A1:BZ1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0,
+                    "name": "B-SessUp | Find Session"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "Select from My Drive"
+                        },
+                        "orderBy": {
+                            "mode": "chose"
+                        },
+                        "sheetId": {
+                            "mode": "chose",
+                            "label": "Plans_Sessions"
+                        },
+                        "sortOrder": {
+                            "mode": "chose",
+                            "label": "Ascending"
+                        },
+                        "spreadsheetId": {
+                            "mode": "chose",
+                            "label": "Bill D'Bettabody System Core"
+                        },
+                        "tableFirstRow": {
+                            "label": "A-BZ"
+                        },
+                        "includesHeaders": {
+                            "mode": "chose",
+                            "label": "Yes"
+                        },
+                        "valueRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted value"
+                        },
+                        "dateTimeRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted string"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "66Fish (66fishmarket@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueRenderOption",
+                        "type": "select",
+                        "label": "Value render option",
+                        "validate": {
+                            "enum": [
+                                "FORMATTED_VALUE",
+                                "UNFORMATTED_VALUE",
+                                "FORMULA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateTimeRenderOption",
+                        "type": "select",
+                        "label": "Date and time render option",
+                        "validate": {
+                            "enum": [
+                                "SERIAL_NUMBER",
+                                "FORMATTED_STRING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "select",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tableFirstRow",
+                        "type": "select",
+                        "label": "Column range",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "A1:Z1",
+                                "A1:BZ1",
+                                "A1:CZ1",
+                                "A1:DZ1",
+                                "A1:MZ1",
+                                "A1:ZZ1",
+                                "A1:AZZ1",
+                                "A1:BZZ1",
+                                "A1:CZZ1",
+                                "A1:DZZ1",
+                                "A1:MZZ1",
+                                "A1:ZZZ1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                    },
+                    {
+                        "name": "orderBy",
+                        "type": "select",
+                        "label": "Order by"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "select",
+                        "label": "Sort order",
+                        "validate": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "__ROW_NUMBER__",
+                        "type": "number",
+                        "label": "Row number"
+                    },
+                    {
+                        "name": "__SPREADSHEET_ID__",
+                        "type": "text",
+                        "label": "Spreadsheet ID"
+                    },
+                    {
+                        "name": "__SHEET__",
+                        "type": "text",
+                        "label": "Sheet"
+                    },
+                    {
+                        "name": "0",
+                        "type": "text",
+                        "label": "plan_id (A)"
+                    },
+                    {
+                        "name": "1",
+                        "type": "text",
+                        "label": "block_id (B)"
+                    },
+                    {
+                        "name": "2",
+                        "type": "text",
+                        "label": "client_id (C)"
+                    },
+                    {
+                        "name": "3",
+                        "type": "text",
+                        "label": "week (D)"
+                    },
+                    {
+                        "name": "4",
+                        "type": "text",
+                        "label": "week_id (E)"
+                    },
+                    {
+                        "name": "5",
+                        "type": "text",
+                        "label": "day (F)"
+                    },
+                    {
+                        "name": "6",
+                        "type": "text",
+                        "label": "session_id (G)"
+                    },
+                    {
+                        "name": "7",
+                        "type": "text",
+                        "label": "phase (H)"
+                    },
+                    {
+                        "name": "8",
+                        "type": "text",
+                        "label": "location (I)"
+                    },
+                    {
+                        "name": "9",
+                        "type": "text",
+                        "label": "focus (J)"
+                    },
+                    {
+                        "name": "10",
+                        "type": "text",
+                        "label": "exercises (K)"
+                    },
+                    {
+                        "name": "11",
+                        "type": "text",
+                        "label": "macros (L)"
+                    },
+                    {
+                        "name": "12",
+                        "type": "text",
+                        "label": "supplements (M)"
+                    },
+                    {
+                        "name": "13",
+                        "type": "text",
+                        "label": "notes (N)"
+                    },
+                    {
+                        "name": "14",
+                        "type": "text",
+                        "label": "session_date (O)"
+                    },
+                    {
+                        "name": "15",
+                        "type": "text",
+                        "label": "session_day_of_week (P)"
+                    },
+                    {
+                        "name": "16",
+                        "type": "text",
+                        "label": "session_global_number (Q)"
+                    },
+                    {
+                        "name": "17",
+                        "type": "text",
+                        "label": "intended_intensity_rpe (R)"
+                    },
+                    {
+                        "name": "18",
+                        "type": "text",
+                        "label": "intended_hr_zone (S)"
+                    },
+                    {
+                        "name": "19",
+                        "type": "text",
+                        "label": "estimated_duration_minutes (T)"
+                    },
+                    {
+                        "name": "20",
+                        "type": "text",
+                        "label": "linked_sport (U)"
+                    },
+                    {
+                        "name": "21",
+                        "type": "text",
+                        "label": "session_status (V)"
+                    },
+                    {
+                        "name": "22",
+                        "type": "text",
+                        "label": "google_form_url (W)"
+                    },
+                    {
+                        "name": "23",
+                        "type": "text",
+                        "label": "(X)"
+                    },
+                    {
+                        "name": "24",
+                        "type": "text",
+                        "label": "(Y)"
+                    },
+                    {
+                        "name": "25",
+                        "type": "text",
+                        "label": "(Z)"
+                    },
+                    {
+                        "name": "26",
+                        "type": "text",
+                        "label": "(AA)"
+                    },
+                    {
+                        "name": "27",
+                        "type": "text",
+                        "label": "(AB)"
+                    },
+                    {
+                        "name": "28",
+                        "type": "text",
+                        "label": "(AC)"
+                    },
+                    {
+                        "name": "29",
+                        "type": "text",
+                        "label": "(AD)"
+                    },
+                    {
+                        "name": "30",
+                        "type": "text",
+                        "label": "(AE)"
+                    },
+                    {
+                        "name": "31",
+                        "type": "text",
+                        "label": "(AF)"
+                    },
+                    {
+                        "name": "32",
+                        "type": "text",
+                        "label": "(AG)"
+                    },
+                    {
+                        "name": "33",
+                        "type": "text",
+                        "label": "(AH)"
+                    },
+                    {
+                        "name": "34",
+                        "type": "text",
+                        "label": "(AI)"
+                    },
+                    {
+                        "name": "35",
+                        "type": "text",
+                        "label": "(AJ)"
+                    },
+                    {
+                        "name": "36",
+                        "type": "text",
+                        "label": "(AK)"
+                    },
+                    {
+                        "name": "37",
+                        "type": "text",
+                        "label": "(AL)"
+                    },
+                    {
+                        "name": "38",
+                        "type": "text",
+                        "label": "(AM)"
+                    },
+                    {
+                        "name": "39",
+                        "type": "text",
+                        "label": "(AN)"
+                    },
+                    {
+                        "name": "40",
+                        "type": "text",
+                        "label": "(AO)"
+                    },
+                    {
+                        "name": "41",
+                        "type": "text",
+                        "label": "(AP)"
+                    },
+                    {
+                        "name": "42",
+                        "type": "text",
+                        "label": "(AQ)"
+                    },
+                    {
+                        "name": "43",
+                        "type": "text",
+                        "label": "(AR)"
+                    },
+                    {
+                        "name": "44",
+                        "type": "text",
+                        "label": "(AS)"
+                    },
+                    {
+                        "name": "45",
+                        "type": "text",
+                        "label": "(AT)"
+                    },
+                    {
+                        "name": "46",
+                        "type": "text",
+                        "label": "(AU)"
+                    },
+                    {
+                        "name": "47",
+                        "type": "text",
+                        "label": "(AV)"
+                    },
+                    {
+                        "name": "48",
+                        "type": "text",
+                        "label": "(AW)"
+                    },
+                    {
+                        "name": "49",
+                        "type": "text",
+                        "label": "(AX)"
+                    },
+                    {
+                        "name": "50",
+                        "type": "text",
+                        "label": "(AY)"
+                    },
+                    {
+                        "name": "51",
+                        "type": "text",
+                        "label": "(AZ)"
+                    },
+                    {
+                        "name": "52",
+                        "type": "text",
+                        "label": "(BA)"
+                    },
+                    {
+                        "name": "53",
+                        "type": "text",
+                        "label": "(BB)"
+                    },
+                    {
+                        "name": "54",
+                        "type": "text",
+                        "label": "(BC)"
+                    },
+                    {
+                        "name": "55",
+                        "type": "text",
+                        "label": "(BD)"
+                    },
+                    {
+                        "name": "56",
+                        "type": "text",
+                        "label": "(BE)"
+                    },
+                    {
+                        "name": "57",
+                        "type": "text",
+                        "label": "(BF)"
+                    },
+                    {
+                        "name": "58",
+                        "type": "text",
+                        "label": "(BG)"
+                    },
+                    {
+                        "name": "59",
+                        "type": "text",
+                        "label": "(BH)"
+                    },
+                    {
+                        "name": "60",
+                        "type": "text",
+                        "label": "(BI)"
+                    },
+                    {
+                        "name": "61",
+                        "type": "text",
+                        "label": "(BJ)"
+                    },
+                    {
+                        "name": "62",
+                        "type": "text",
+                        "label": "(BK)"
+                    },
+                    {
+                        "name": "63",
+                        "type": "text",
+                        "label": "(BL)"
+                    },
+                    {
+                        "name": "64",
+                        "type": "text",
+                        "label": "(BM)"
+                    },
+                    {
+                        "name": "65",
+                        "type": "text",
+                        "label": "(BN)"
+                    },
+                    {
+                        "name": "66",
+                        "type": "text",
+                        "label": "(BO)"
+                    },
+                    {
+                        "name": "67",
+                        "type": "text",
+                        "label": "(BP)"
+                    },
+                    {
+                        "name": "68",
+                        "type": "text",
+                        "label": "(BQ)"
+                    },
+                    {
+                        "name": "69",
+                        "type": "text",
+                        "label": "(BR)"
+                    },
+                    {
+                        "name": "70",
+                        "type": "text",
+                        "label": "(BS)"
+                    },
+                    {
+                        "name": "71",
+                        "type": "text",
+                        "label": "(BT)"
+                    },
+                    {
+                        "name": "72",
+                        "type": "text",
+                        "label": "(BU)"
+                    },
+                    {
+                        "name": "73",
+                        "type": "text",
+                        "label": "(BV)"
+                    },
+                    {
+                        "name": "74",
+                        "type": "text",
+                        "label": "(BW)"
+                    },
+                    {
+                        "name": "75",
+                        "type": "text",
+                        "label": "(BX)"
+                    },
+                    {
+                        "name": "76",
+                        "type": "text",
+                        "label": "(BY)"
+                    },
+                    {
+                        "name": "77",
+                        "type": "text",
+                        "label": "(BZ)"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "google-sheets:updateRow",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6600568
+            },
+            "mapper": {
+                "from": "drive",
+                "mode": "select",
+                "values": {
+                    "7": "/",
+                    "8": "{{ifempty(1.session_updates.location; 2.`8`)}}",
+                    "9": "{{ifempty(1.session_updates.focus; 2.`9`)}}",
+                    "10": "{{ifempty(1.session_updates.exercises; 2.`10`)}}",
+                    "11": "{{ifempty(1.session_updates.macros; 2.`11`)}}",
+                    "12": "{{ifempty(1.session_updates.supplements; 2.`12`)}}",
+                    "13": "{{ifempty(1.session_updates.notes; 2.`13`)}}",
+                    "14": "{{ifempty(1.session_updates.session_date; 2.`14`)}}",
+                    "15": "{{ifempty(1.session_updates.session_day_of_week; 2.`15`)}}",
+                    "17": "{{ifempty(1.session_updates.intended_intensity_rpe; 2.`17`)}}",
+                    "18": "{{ifempty(1.session_updates.intended_hr_zone; 2.`18`)}}",
+                    "19": "{{ifempty(1.session_updates.estimated_duration_minutes; 2.`19`)}}",
+                    "20": "{{ifempty(1.session_updates.linked_sport; 2.`20`)}}",
+                    "21": "{{ifempty(1.session_updates.session_status; 2.`21`)}}"
+                },
+                "sheetId": "Plans_Sessions",
+                "rowNumber": "{{2.`__ROW_NUMBER__`}}",
+                "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "includesHeaders": true,
+                "valueInputOption": "USER_ENTERED"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 0,
+                    "name": "B-SessUp | Update Session"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "My Drive"
+                        },
+                        "mode": {
+                            "label": "Search by path"
+                        },
+                        "sheetId": {
+                            "label": "Plans_Sessions"
+                        },
+                        "spreadsheetId": {
+                            "path": [
+                                "Bill D'Bettabody",
+                                "Bill D'Bettabody System Core"
+                            ]
+                        },
+                        "includesHeaders": {
+                            "label": "Yes",
+                            "nested": [
+                                {
+                                    "name": "values",
+                                    "spec": [
+                                        {
+                                            "name": "0",
+                                            "type": "text",
+                                            "label": "plan_id (A)"
+                                        },
+                                        {
+                                            "name": "1",
+                                            "type": "text",
+                                            "label": "block_id (B)"
+                                        },
+                                        {
+                                            "name": "2",
+                                            "type": "text",
+                                            "label": "client_id (C)"
+                                        },
+                                        {
+                                            "name": "3",
+                                            "type": "text",
+                                            "label": "week (D)"
+                                        },
+                                        {
+                                            "name": "4",
+                                            "type": "text",
+                                            "label": "week_id (E)"
+                                        },
+                                        {
+                                            "name": "5",
+                                            "type": "text",
+                                            "label": "day (F)"
+                                        },
+                                        {
+                                            "name": "6",
+                                            "type": "text",
+                                            "label": "session_id (G)"
+                                        },
+                                        {
+                                            "name": "7",
+                                            "type": "text",
+                                            "label": "phase (H)"
+                                        },
+                                        {
+                                            "name": "8",
+                                            "type": "text",
+                                            "label": "location (I)"
+                                        },
+                                        {
+                                            "name": "9",
+                                            "type": "text",
+                                            "label": "focus (J)"
+                                        },
+                                        {
+                                            "name": "10",
+                                            "type": "text",
+                                            "label": "exercises (K)"
+                                        },
+                                        {
+                                            "name": "11",
+                                            "type": "text",
+                                            "label": "macros (L)"
+                                        },
+                                        {
+                                            "name": "12",
+                                            "type": "text",
+                                            "label": "supplements (M)"
+                                        },
+                                        {
+                                            "name": "13",
+                                            "type": "text",
+                                            "label": "notes (N)"
+                                        },
+                                        {
+                                            "name": "14",
+                                            "type": "text",
+                                            "label": "session_date (O)"
+                                        },
+                                        {
+                                            "name": "15",
+                                            "type": "text",
+                                            "label": "session_day_of_week (P)"
+                                        },
+                                        {
+                                            "name": "16",
+                                            "type": "text",
+                                            "label": "session_global_number (Q)"
+                                        },
+                                        {
+                                            "name": "17",
+                                            "type": "text",
+                                            "label": "intended_intensity_rpe (R)"
+                                        },
+                                        {
+                                            "name": "18",
+                                            "type": "text",
+                                            "label": "intended_hr_zone (S)"
+                                        },
+                                        {
+                                            "name": "19",
+                                            "type": "text",
+                                            "label": "estimated_duration_minutes (T)"
+                                        },
+                                        {
+                                            "name": "20",
+                                            "type": "text",
+                                            "label": "linked_sport (U)"
+                                        },
+                                        {
+                                            "name": "21",
+                                            "type": "text",
+                                            "label": "session_status (V)"
+                                        },
+                                        {
+                                            "name": "22",
+                                            "type": "text",
+                                            "label": "(W)"
+                                        },
+                                        {
+                                            "name": "23",
+                                            "type": "text",
+                                            "label": "(X)"
+                                        },
+                                        {
+                                            "name": "24",
+                                            "type": "text",
+                                            "label": "(Y)"
+                                        },
+                                        {
+                                            "name": "25",
+                                            "type": "text",
+                                            "label": "(Z)"
+                                        },
+                                        {
+                                            "name": "26",
+                                            "type": "text",
+                                            "label": "(AA)"
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "label": "Values"
+                                }
+                            ]
+                        },
+                        "valueInputOption": {
+                            "mode": "chose",
+                            "label": "User entered"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "66Fish (66fishmarket@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "mode",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueInputOption",
+                        "type": "select",
+                        "label": "Value input option",
+                        "validate": {
+                            "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "file",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "rowNumber",
+                        "type": "uinteger",
+                        "label": "Row number",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "values",
+                        "spec": [
+                            {
+                                "name": "0",
+                                "type": "text",
+                                "label": "plan_id (A)"
+                            },
+                            {
+                                "name": "1",
+                                "type": "text",
+                                "label": "block_id (B)"
+                            },
+                            {
+                                "name": "2",
+                                "type": "text",
+                                "label": "client_id (C)"
+                            },
+                            {
+                                "name": "3",
+                                "type": "text",
+                                "label": "week (D)"
+                            },
+                            {
+                                "name": "4",
+                                "type": "text",
+                                "label": "week_id (E)"
+                            },
+                            {
+                                "name": "5",
+                                "type": "text",
+                                "label": "day (F)"
+                            },
+                            {
+                                "name": "6",
+                                "type": "text",
+                                "label": "session_id (G)"
+                            },
+                            {
+                                "name": "7",
+                                "type": "text",
+                                "label": "phase (H)"
+                            },
+                            {
+                                "name": "8",
+                                "type": "text",
+                                "label": "location (I)"
+                            },
+                            {
+                                "name": "9",
+                                "type": "text",
+                                "label": "focus (J)"
+                            },
+                            {
+                                "name": "10",
+                                "type": "text",
+                                "label": "exercises (K)"
+                            },
+                            {
+                                "name": "11",
+                                "type": "text",
+                                "label": "macros (L)"
+                            },
+                            {
+                                "name": "12",
+                                "type": "text",
+                                "label": "supplements (M)"
+                            },
+                            {
+                                "name": "13",
+                                "type": "text",
+                                "label": "notes (N)"
+                            },
+                            {
+                                "name": "14",
+                                "type": "text",
+                                "label": "session_date (O)"
+                            },
+                            {
+                                "name": "15",
+                                "type": "text",
+                                "label": "session_day_of_week (P)"
+                            },
+                            {
+                                "name": "16",
+                                "type": "text",
+                                "label": "session_global_number (Q)"
+                            },
+                            {
+                                "name": "17",
+                                "type": "text",
+                                "label": "intended_intensity_rpe (R)"
+                            },
+                            {
+                                "name": "18",
+                                "type": "text",
+                                "label": "intended_hr_zone (S)"
+                            },
+                            {
+                                "name": "19",
+                                "type": "text",
+                                "label": "estimated_duration_minutes (T)"
+                            },
+                            {
+                                "name": "20",
+                                "type": "text",
+                                "label": "linked_sport (U)"
+                            },
+                            {
+                                "name": "21",
+                                "type": "text",
+                                "label": "session_status (V)"
+                            },
+                            {
+                                "name": "22",
+                                "type": "text",
+                                "label": "(W)"
+                            },
+                            {
+                                "name": "23",
+                                "type": "text",
+                                "label": "(X)"
+                            },
+                            {
+                                "name": "24",
+                                "type": "text",
+                                "label": "(Y)"
+                            },
+                            {
+                                "name": "25",
+                                "type": "text",
+                                "label": "(Z)"
+                            },
+                            {
+                                "name": "26",
+                                "type": "text",
+                                "label": "(AA)"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Values"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "builtin:BasicFeeder",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "array": "{{1.steps_upsert}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 0,
+                    "name": "B-SessUp | Steps Iterator"
+                },
+                "restore": {
+                    "expect": {
+                        "array": {
+                            "mode": "edit"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "mode": "edit",
+                        "name": "array",
+                        "spec": [],
+                        "type": "array",
+                        "label": "Array"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 7,
+            "module": "google-sheets:filterRows",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6600568
+            },
+            "mapper": {
+                "from": "drive",
+                "limit": "1",
+                "filter": [
+                    [
+                        {
+                            "a": "A",
+                            "b": "{{1.steps_upsert[].step_id}}",
+                            "o": "text:equal:ci"
+                        },
+                        {
+                            "a": "E",
+                            "b": "{{1.client_id}}",
+                            "o": "text:equal:ci"
+                        }
+                    ]
+                ],
+                "sheetId": "Plans_Steps",
+                "sortOrder": "asc",
+                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "tableFirstRow": "A1:CZ1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 0,
+                    "name": "B-SessUp | Find Step"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "Select from My Drive"
+                        },
+                        "orderBy": {
+                            "mode": "chose"
+                        },
+                        "sheetId": {
+                            "mode": "chose",
+                            "label": "Plans_Steps"
+                        },
+                        "sortOrder": {
+                            "mode": "chose",
+                            "label": "Ascending"
+                        },
+                        "spreadsheetId": {
+                            "mode": "chose",
+                            "label": "Bill D'Bettabody System Core"
+                        },
+                        "tableFirstRow": {
+                            "label": "A-CZ"
+                        },
+                        "includesHeaders": {
+                            "mode": "chose",
+                            "label": "Yes"
+                        },
+                        "valueRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted value"
+                        },
+                        "dateTimeRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted string"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "66Fish (66fishmarket@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueRenderOption",
+                        "type": "select",
+                        "label": "Value render option",
+                        "validate": {
+                            "enum": [
+                                "FORMATTED_VALUE",
+                                "UNFORMATTED_VALUE",
+                                "FORMULA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateTimeRenderOption",
+                        "type": "select",
+                        "label": "Date and time render option",
+                        "validate": {
+                            "enum": [
+                                "SERIAL_NUMBER",
+                                "FORMATTED_STRING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "select",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tableFirstRow",
+                        "type": "select",
+                        "label": "Column range",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "A1:Z1",
+                                "A1:BZ1",
+                                "A1:CZ1",
+                                "A1:DZ1",
+                                "A1:MZ1",
+                                "A1:ZZ1",
+                                "A1:AZZ1",
+                                "A1:BZZ1",
+                                "A1:CZZ1",
+                                "A1:DZZ1",
+                                "A1:MZZ1",
+                                "A1:ZZZ1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                    },
+                    {
+                        "name": "orderBy",
+                        "type": "select",
+                        "label": "Order by"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "select",
+                        "label": "Sort order",
+                        "validate": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "__ROW_NUMBER__",
+                        "type": "number",
+                        "label": "Row number"
+                    },
+                    {
+                        "name": "__SPREADSHEET_ID__",
+                        "type": "text",
+                        "label": "Spreadsheet ID"
+                    },
+                    {
+                        "name": "__SHEET__",
+                        "type": "text",
+                        "label": "Sheet"
+                    },
+                    {
+                        "name": "0",
+                        "type": "text",
+                        "label": "step_id (A)"
+                    },
+                    {
+                        "name": "1",
+                        "type": "text",
+                        "label": "session_id (B)"
+                    },
+                    {
+                        "name": "2",
+                        "type": "text",
+                        "label": "week_id (C)"
+                    },
+                    {
+                        "name": "3",
+                        "type": "text",
+                        "label": "block_id (D)"
+                    },
+                    {
+                        "name": "4",
+                        "type": "text",
+                        "label": "client_id (E)"
+                    },
+                    {
+                        "name": "5",
+                        "type": "text",
+                        "label": "step_order (F)"
+                    },
+                    {
+                        "name": "6",
+                        "type": "text",
+                        "label": "segment_type (G)"
+                    },
+                    {
+                        "name": "7",
+                        "type": "text",
+                        "label": "step_type (H)"
+                    },
+                    {
+                        "name": "8",
+                        "type": "text",
+                        "label": "duration_type (I)"
+                    },
+                    {
+                        "name": "9",
+                        "type": "text",
+                        "label": "duration_value (J)"
+                    },
+                    {
+                        "name": "10",
+                        "type": "text",
+                        "label": "target_type (K)"
+                    },
+                    {
+                        "name": "11",
+                        "type": "text",
+                        "label": "target_value (L)"
+                    },
+                    {
+                        "name": "12",
+                        "type": "text",
+                        "label": "exercise_name (M)"
+                    },
+                    {
+                        "name": "13",
+                        "type": "text",
+                        "label": "sets (N)"
+                    },
+                    {
+                        "name": "14",
+                        "type": "text",
+                        "label": "reps (O)"
+                    },
+                    {
+                        "name": "15",
+                        "type": "text",
+                        "label": "load_kg (P)"
+                    },
+                    {
+                        "name": "16",
+                        "type": "text",
+                        "label": "rest_seconds (Q)"
+                    },
+                    {
+                        "name": "17",
+                        "type": "text",
+                        "label": "notes_coach (R)"
+                    },
+                    {
+                        "name": "18",
+                        "type": "text",
+                        "label": "notes_athlete (S)"
+                    },
+                    {
+                        "name": "19",
+                        "type": "text",
+                        "label": "status (T)"
+                    },
+                    {
+                        "name": "20",
+                        "type": "text",
+                        "label": "pattern_type (U)"
+                    },
+                    {
+                        "name": "21",
+                        "type": "text",
+                        "label": "load_start_kg (V)"
+                    },
+                    {
+                        "name": "22",
+                        "type": "text",
+                        "label": "load_increment_kg (W)"
+                    },
+                    {
+                        "name": "23",
+                        "type": "text",
+                        "label": "load_peak_kg (X)"
+                    },
+                    {
+                        "name": "24",
+                        "type": "text",
+                        "label": "reps_pattern (Y)"
+                    },
+                    {
+                        "name": "25",
+                        "type": "text",
+                        "label": "rpe_pattern (Z)"
+                    },
+                    {
+                        "name": "26",
+                        "type": "text",
+                        "label": "tempo_pattern (AA)"
+                    },
+                    {
+                        "name": "27",
+                        "type": "text",
+                        "label": "tempo_per_set_pattern (AB)"
+                    },
+                    {
+                        "name": "28",
+                        "type": "text",
+                        "label": "pattern_notes (AC)"
+                    },
+                    {
+                        "name": "29",
+                        "type": "text",
+                        "label": "interval_count (AD)"
+                    },
+                    {
+                        "name": "30",
+                        "type": "text",
+                        "label": "interval_work_sec (AE)"
+                    },
+                    {
+                        "name": "31",
+                        "type": "text",
+                        "label": "interval_rest_sec (AF)"
+                    },
+                    {
+                        "name": "32",
+                        "type": "text",
+                        "label": "intensity_start (AG)"
+                    },
+                    {
+                        "name": "33",
+                        "type": "text",
+                        "label": "intensity_end (AH)"
+                    },
+                    {
+                        "name": "34",
+                        "type": "text",
+                        "label": "(AI)"
+                    },
+                    {
+                        "name": "35",
+                        "type": "text",
+                        "label": "(AJ)"
+                    },
+                    {
+                        "name": "36",
+                        "type": "text",
+                        "label": "(AK)"
+                    },
+                    {
+                        "name": "37",
+                        "type": "text",
+                        "label": "(AL)"
+                    },
+                    {
+                        "name": "38",
+                        "type": "text",
+                        "label": "(AM)"
+                    },
+                    {
+                        "name": "39",
+                        "type": "text",
+                        "label": "(AN)"
+                    },
+                    {
+                        "name": "40",
+                        "type": "text",
+                        "label": "(AO)"
+                    },
+                    {
+                        "name": "41",
+                        "type": "text",
+                        "label": "(AP)"
+                    },
+                    {
+                        "name": "42",
+                        "type": "text",
+                        "label": "(AQ)"
+                    },
+                    {
+                        "name": "43",
+                        "type": "text",
+                        "label": "(AR)"
+                    },
+                    {
+                        "name": "44",
+                        "type": "text",
+                        "label": "(AS)"
+                    },
+                    {
+                        "name": "45",
+                        "type": "text",
+                        "label": "(AT)"
+                    },
+                    {
+                        "name": "46",
+                        "type": "text",
+                        "label": "(AU)"
+                    },
+                    {
+                        "name": "47",
+                        "type": "text",
+                        "label": "(AV)"
+                    },
+                    {
+                        "name": "48",
+                        "type": "text",
+                        "label": "(AW)"
+                    },
+                    {
+                        "name": "49",
+                        "type": "text",
+                        "label": "(AX)"
+                    },
+                    {
+                        "name": "50",
+                        "type": "text",
+                        "label": "(AY)"
+                    },
+                    {
+                        "name": "51",
+                        "type": "text",
+                        "label": "(AZ)"
+                    },
+                    {
+                        "name": "52",
+                        "type": "text",
+                        "label": "(BA)"
+                    },
+                    {
+                        "name": "53",
+                        "type": "text",
+                        "label": "(BB)"
+                    },
+                    {
+                        "name": "54",
+                        "type": "text",
+                        "label": "(BC)"
+                    },
+                    {
+                        "name": "55",
+                        "type": "text",
+                        "label": "(BD)"
+                    },
+                    {
+                        "name": "56",
+                        "type": "text",
+                        "label": "(BE)"
+                    },
+                    {
+                        "name": "57",
+                        "type": "text",
+                        "label": "(BF)"
+                    },
+                    {
+                        "name": "58",
+                        "type": "text",
+                        "label": "(BG)"
+                    },
+                    {
+                        "name": "59",
+                        "type": "text",
+                        "label": "(BH)"
+                    },
+                    {
+                        "name": "60",
+                        "type": "text",
+                        "label": "(BI)"
+                    },
+                    {
+                        "name": "61",
+                        "type": "text",
+                        "label": "(BJ)"
+                    },
+                    {
+                        "name": "62",
+                        "type": "text",
+                        "label": "(BK)"
+                    },
+                    {
+                        "name": "63",
+                        "type": "text",
+                        "label": "(BL)"
+                    },
+                    {
+                        "name": "64",
+                        "type": "text",
+                        "label": "(BM)"
+                    },
+                    {
+                        "name": "65",
+                        "type": "text",
+                        "label": "(BN)"
+                    },
+                    {
+                        "name": "66",
+                        "type": "text",
+                        "label": "(BO)"
+                    },
+                    {
+                        "name": "67",
+                        "type": "text",
+                        "label": "(BP)"
+                    },
+                    {
+                        "name": "68",
+                        "type": "text",
+                        "label": "(BQ)"
+                    },
+                    {
+                        "name": "69",
+                        "type": "text",
+                        "label": "(BR)"
+                    },
+                    {
+                        "name": "70",
+                        "type": "text",
+                        "label": "(BS)"
+                    },
+                    {
+                        "name": "71",
+                        "type": "text",
+                        "label": "(BT)"
+                    },
+                    {
+                        "name": "72",
+                        "type": "text",
+                        "label": "(BU)"
+                    },
+                    {
+                        "name": "73",
+                        "type": "text",
+                        "label": "(BV)"
+                    },
+                    {
+                        "name": "74",
+                        "type": "text",
+                        "label": "(BW)"
+                    },
+                    {
+                        "name": "75",
+                        "type": "text",
+                        "label": "(BX)"
+                    },
+                    {
+                        "name": "76",
+                        "type": "text",
+                        "label": "(BY)"
+                    },
+                    {
+                        "name": "77",
+                        "type": "text",
+                        "label": "(BZ)"
+                    },
+                    {
+                        "name": "78",
+                        "type": "text",
+                        "label": "(CA)"
+                    },
+                    {
+                        "name": "79",
+                        "type": "text",
+                        "label": "(CB)"
+                    },
+                    {
+                        "name": "80",
+                        "type": "text",
+                        "label": "(CC)"
+                    },
+                    {
+                        "name": "81",
+                        "type": "text",
+                        "label": "(CD)"
+                    },
+                    {
+                        "name": "82",
+                        "type": "text",
+                        "label": "(CE)"
+                    },
+                    {
+                        "name": "83",
+                        "type": "text",
+                        "label": "(CF)"
+                    },
+                    {
+                        "name": "84",
+                        "type": "text",
+                        "label": "(CG)"
+                    },
+                    {
+                        "name": "85",
+                        "type": "text",
+                        "label": "(CH)"
+                    },
+                    {
+                        "name": "86",
+                        "type": "text",
+                        "label": "(CI)"
+                    },
+                    {
+                        "name": "87",
+                        "type": "text",
+                        "label": "(CJ)"
+                    },
+                    {
+                        "name": "88",
+                        "type": "text",
+                        "label": "(CK)"
+                    },
+                    {
+                        "name": "89",
+                        "type": "text",
+                        "label": "(CL)"
+                    },
+                    {
+                        "name": "90",
+                        "type": "text",
+                        "label": "(CM)"
+                    },
+                    {
+                        "name": "91",
+                        "type": "text",
+                        "label": "(CN)"
+                    },
+                    {
+                        "name": "92",
+                        "type": "text",
+                        "label": "(CO)"
+                    },
+                    {
+                        "name": "93",
+                        "type": "text",
+                        "label": "(CP)"
+                    },
+                    {
+                        "name": "94",
+                        "type": "text",
+                        "label": "(CQ)"
+                    },
+                    {
+                        "name": "95",
+                        "type": "text",
+                        "label": "(CR)"
+                    },
+                    {
+                        "name": "96",
+                        "type": "text",
+                        "label": "(CS)"
+                    },
+                    {
+                        "name": "97",
+                        "type": "text",
+                        "label": "(CT)"
+                    },
+                    {
+                        "name": "98",
+                        "type": "text",
+                        "label": "(CU)"
+                    },
+                    {
+                        "name": "99",
+                        "type": "text",
+                        "label": "(CV)"
+                    },
+                    {
+                        "name": "100",
+                        "type": "text",
+                        "label": "(CW)"
+                    },
+                    {
+                        "name": "101",
+                        "type": "text",
+                        "label": "(CX)"
+                    },
+                    {
+                        "name": "102",
+                        "type": "text",
+                        "label": "(CY)"
+                    },
+                    {
+                        "name": "103",
+                        "type": "text",
+                        "label": "(CZ)"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 10,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "filter": {
+                "name": "Valid Steps Only",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{7.`__IMTLENGTH__`}}",
+                            "b": "0",
+                            "o": "number:greater"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "name": "existing_notes_entry",
+                "scope": "roundtrip",
+                "value": "{{7.`18`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 0,
+                    "name": "B-SessUp | get athlete notes"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "existing_notes_entry",
+                        "type": "any",
+                        "label": "existing_notes_entry"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 11,
+            "module": "util:SetVariable2",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "name": "new_athlete_notes",
+                "scope": "roundtrip",
+                "value": "{{if(length(10.existing_notes_entry) = 0 & length(6.notes_athlete) = 0; emptystring; if(length(10.existing_notes_entry) = 0; formatDate(now; \"YYYY-MM-DDTHH:mm:ss[Z]\") + \": \" + 6.notes_athlete; 7.`18` + formatDate(now; \"YYYY-MM-DDTHH:mm:ss[Z]\") + \": \" + 6.notes_athlete))}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 0,
+                    "name": "B-SessUp | Combined athlete notes"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Variable name",
+                        "required": true
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "type": "any",
+                        "label": "Variable value"
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "new_athlete_notes",
+                        "type": "any",
+                        "label": "new_athlete_notes"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 8,
+            "module": "google-sheets:updateRow",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6600568
+            },
+            "mapper": {
+                "from": "drive",
+                "mode": "select",
+                "values": {
+                    "5": "{{ifempty(6.step_order; 7.`5`)}}",
+                    "6": "{{ifempty(6.segment_type; 7.`6`)}}",
+                    "7": "{{ifempty(6.step_type; 7.`7`)}}",
+                    "8": "{{ifempty(6.duration_type; 7.`8`)}}",
+                    "9": "{{ifempty(6.duration_value; 7.`9`)}}",
+                    "10": "{{ifempty(6.target_type; 7.`10`)}}",
+                    "11": "{{ifempty(6.target_value; 7.`11`)}}",
+                    "12": "{{ifempty(6.exercise_name; 7.`12`)}}",
+                    "13": "{{ifempty(6.sets; 7.`13`)}}",
+                    "14": "{{ifempty(6.reps; 7.`14`)}}",
+                    "15": "{{ifempty(6.load_kg; 7.`15`)}}",
+                    "16": "{{ifempty(6.rest_seconds; 7.`16`)}}",
+                    "17": "{{ifempty(6.notes_coach; 7.`17`)}}",
+                    "18": "{{11.new_athlete_notes}}",
+                    "19": "{{ifempty(6.status; 7.`19`)}}",
+                    "20": "{{ifempty(6.pattern_type; 7.`20`)}}",
+                    "21": "{{ifempty(6.load_start_kg; 7.`21`)}}",
+                    "22": "{{ifempty(6.load_increment_kg; 7.`22`)}}",
+                    "23": "{{ifempty(6.load_peak_kg; 7.`23`)}}",
+                    "24": "{{ifempty(6.reps_pattern; 7.`24`)}}",
+                    "25": "{{ifempty(6.rpe_pattern; 7.`25`)}}",
+                    "26": "{{ifempty(6.tempo_pattern; 7.`26`)}}",
+                    "27": "{{ifempty(6.tempo_per_set_pattern; 7.`27`)}}",
+                    "28": "{{ifempty(6.pattern_notes; 7.`28`)}}",
+                    "29": "{{ifempty(6.interval_count; 7.`29`)}}",
+                    "30": "{{ifempty(6.interval_work_sec; 7.`30`)}}",
+                    "31": "{{ifempty(6.interval_rest_sec; 7.`31`)}}",
+                    "32": "{{ifempty(6.intensity_start; 7.`32`)}}",
+                    "33": "{{ifempty(6.intensity_end; 7.`33`)}}"
+                },
+                "sheetId": "Plans_Steps",
+                "rowNumber": "{{7.`__ROW_NUMBER__`}}",
+                "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "includesHeaders": true,
+                "valueInputOption": "USER_ENTERED"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2100,
+                    "y": 0,
+                    "name": "B-SessUp | Update Steps"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "My Drive"
+                        },
+                        "mode": {
+                            "label": "Search by path"
+                        },
+                        "sheetId": {
+                            "label": "Plans_Steps"
+                        },
+                        "spreadsheetId": {
+                            "path": [
+                                "Bill D'Bettabody",
+                                "Bill D'Bettabody System Core"
+                            ]
+                        },
+                        "includesHeaders": {
+                            "label": "Yes",
+                            "nested": [
+                                {
+                                    "name": "values",
+                                    "spec": [
+                                        {
+                                            "name": "0",
+                                            "type": "text",
+                                            "label": "step_id (A)"
+                                        },
+                                        {
+                                            "name": "1",
+                                            "type": "text",
+                                            "label": "session_id (B)"
+                                        },
+                                        {
+                                            "name": "2",
+                                            "type": "text",
+                                            "label": "week_id (C)"
+                                        },
+                                        {
+                                            "name": "3",
+                                            "type": "text",
+                                            "label": "block_id (D)"
+                                        },
+                                        {
+                                            "name": "4",
+                                            "type": "text",
+                                            "label": "client_id (E)"
+                                        },
+                                        {
+                                            "name": "5",
+                                            "type": "text",
+                                            "label": "step_order (F)"
+                                        },
+                                        {
+                                            "name": "6",
+                                            "type": "text",
+                                            "label": "segment_type (G)"
+                                        },
+                                        {
+                                            "name": "7",
+                                            "type": "text",
+                                            "label": "step_type (H)"
+                                        },
+                                        {
+                                            "name": "8",
+                                            "type": "text",
+                                            "label": "duration_type (I)"
+                                        },
+                                        {
+                                            "name": "9",
+                                            "type": "text",
+                                            "label": "duration_value (J)"
+                                        },
+                                        {
+                                            "name": "10",
+                                            "type": "text",
+                                            "label": "target_type (K)"
+                                        },
+                                        {
+                                            "name": "11",
+                                            "type": "text",
+                                            "label": "target_value (L)"
+                                        },
+                                        {
+                                            "name": "12",
+                                            "type": "text",
+                                            "label": "exercise_name (M)"
+                                        },
+                                        {
+                                            "name": "13",
+                                            "type": "text",
+                                            "label": "sets (N)"
+                                        },
+                                        {
+                                            "name": "14",
+                                            "type": "text",
+                                            "label": "reps (O)"
+                                        },
+                                        {
+                                            "name": "15",
+                                            "type": "text",
+                                            "label": "load_kg (P)"
+                                        },
+                                        {
+                                            "name": "16",
+                                            "type": "text",
+                                            "label": "rest_seconds (Q)"
+                                        },
+                                        {
+                                            "name": "17",
+                                            "type": "text",
+                                            "label": "notes_coach (R)"
+                                        },
+                                        {
+                                            "name": "18",
+                                            "type": "text",
+                                            "label": "notes_athlete (S)"
+                                        },
+                                        {
+                                            "name": "19",
+                                            "type": "text",
+                                            "label": "status (T)"
+                                        },
+                                        {
+                                            "name": "20",
+                                            "type": "text",
+                                            "label": "pattern_type (U)"
+                                        },
+                                        {
+                                            "name": "21",
+                                            "type": "text",
+                                            "label": "load_start_kg (V)"
+                                        },
+                                        {
+                                            "name": "22",
+                                            "type": "text",
+                                            "label": "load_increment_kg (W)"
+                                        },
+                                        {
+                                            "name": "23",
+                                            "type": "text",
+                                            "label": "load_peak_kg (X)"
+                                        },
+                                        {
+                                            "name": "24",
+                                            "type": "text",
+                                            "label": "reps_pattern (Y)"
+                                        },
+                                        {
+                                            "name": "25",
+                                            "type": "text",
+                                            "label": "rpe_pattern (Z)"
+                                        },
+                                        {
+                                            "name": "26",
+                                            "type": "text",
+                                            "label": "tempo_pattern (AA)"
+                                        },
+                                        {
+                                            "name": "27",
+                                            "type": "text",
+                                            "label": "tempo_per_set_pattern (AB)"
+                                        },
+                                        {
+                                            "name": "28",
+                                            "type": "text",
+                                            "label": "pattern_notes (AC)"
+                                        },
+                                        {
+                                            "name": "29",
+                                            "type": "text",
+                                            "label": "interval_count (AD)"
+                                        },
+                                        {
+                                            "name": "30",
+                                            "type": "text",
+                                            "label": "interval_work_sec (AE)"
+                                        },
+                                        {
+                                            "name": "31",
+                                            "type": "text",
+                                            "label": "interval_rest_sec (AF)"
+                                        },
+                                        {
+                                            "name": "32",
+                                            "type": "text",
+                                            "label": "intensity_start (AG)"
+                                        },
+                                        {
+                                            "name": "33",
+                                            "type": "text",
+                                            "label": "intensity_end (AH)"
+                                        }
+                                    ],
+                                    "type": "collection",
+                                    "label": "Values"
+                                }
+                            ]
+                        },
+                        "valueInputOption": {
+                            "mode": "chose",
+                            "label": "User entered"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "66Fish (66fishmarket@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "mode",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "select",
+                                "fromAll",
+                                "map"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueInputOption",
+                        "type": "select",
+                        "label": "Value input option",
+                        "validate": {
+                            "enum": [
+                                "USER_ENTERED",
+                                "RAW"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "file",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "rowNumber",
+                        "type": "uinteger",
+                        "label": "Row number",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "values",
+                        "spec": [
+                            {
+                                "name": "0",
+                                "type": "text",
+                                "label": "step_id (A)"
+                            },
+                            {
+                                "name": "1",
+                                "type": "text",
+                                "label": "session_id (B)"
+                            },
+                            {
+                                "name": "2",
+                                "type": "text",
+                                "label": "week_id (C)"
+                            },
+                            {
+                                "name": "3",
+                                "type": "text",
+                                "label": "block_id (D)"
+                            },
+                            {
+                                "name": "4",
+                                "type": "text",
+                                "label": "client_id (E)"
+                            },
+                            {
+                                "name": "5",
+                                "type": "text",
+                                "label": "step_order (F)"
+                            },
+                            {
+                                "name": "6",
+                                "type": "text",
+                                "label": "segment_type (G)"
+                            },
+                            {
+                                "name": "7",
+                                "type": "text",
+                                "label": "step_type (H)"
+                            },
+                            {
+                                "name": "8",
+                                "type": "text",
+                                "label": "duration_type (I)"
+                            },
+                            {
+                                "name": "9",
+                                "type": "text",
+                                "label": "duration_value (J)"
+                            },
+                            {
+                                "name": "10",
+                                "type": "text",
+                                "label": "target_type (K)"
+                            },
+                            {
+                                "name": "11",
+                                "type": "text",
+                                "label": "target_value (L)"
+                            },
+                            {
+                                "name": "12",
+                                "type": "text",
+                                "label": "exercise_name (M)"
+                            },
+                            {
+                                "name": "13",
+                                "type": "text",
+                                "label": "sets (N)"
+                            },
+                            {
+                                "name": "14",
+                                "type": "text",
+                                "label": "reps (O)"
+                            },
+                            {
+                                "name": "15",
+                                "type": "text",
+                                "label": "load_kg (P)"
+                            },
+                            {
+                                "name": "16",
+                                "type": "text",
+                                "label": "rest_seconds (Q)"
+                            },
+                            {
+                                "name": "17",
+                                "type": "text",
+                                "label": "notes_coach (R)"
+                            },
+                            {
+                                "name": "18",
+                                "type": "text",
+                                "label": "notes_athlete (S)"
+                            },
+                            {
+                                "name": "19",
+                                "type": "text",
+                                "label": "status (T)"
+                            },
+                            {
+                                "name": "20",
+                                "type": "text",
+                                "label": "pattern_type (U)"
+                            },
+                            {
+                                "name": "21",
+                                "type": "text",
+                                "label": "load_start_kg (V)"
+                            },
+                            {
+                                "name": "22",
+                                "type": "text",
+                                "label": "load_increment_kg (W)"
+                            },
+                            {
+                                "name": "23",
+                                "type": "text",
+                                "label": "load_peak_kg (X)"
+                            },
+                            {
+                                "name": "24",
+                                "type": "text",
+                                "label": "reps_pattern (Y)"
+                            },
+                            {
+                                "name": "25",
+                                "type": "text",
+                                "label": "rpe_pattern (Z)"
+                            },
+                            {
+                                "name": "26",
+                                "type": "text",
+                                "label": "tempo_pattern (AA)"
+                            },
+                            {
+                                "name": "27",
+                                "type": "text",
+                                "label": "tempo_per_set_pattern (AB)"
+                            },
+                            {
+                                "name": "28",
+                                "type": "text",
+                                "label": "pattern_notes (AC)"
+                            },
+                            {
+                                "name": "29",
+                                "type": "text",
+                                "label": "interval_count (AD)"
+                            },
+                            {
+                                "name": "30",
+                                "type": "text",
+                                "label": "interval_work_sec (AE)"
+                            },
+                            {
+                                "name": "31",
+                                "type": "text",
+                                "label": "interval_rest_sec (AF)"
+                            },
+                            {
+                                "name": "32",
+                                "type": "text",
+                                "label": "intensity_start (AG)"
+                            },
+                            {
+                                "name": "33",
+                                "type": "text",
+                                "label": "intensity_end (AH)"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Values"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 9,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 6
+            },
+            "mapper": {
+                "0": "{{7.`0`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2400,
+                    "y": 0,
+                    "name": "B-SessUp | finish iterating"
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "B-SessUp | Steps Iterator [6]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 4,
+            "module": "gateway:WebhookRespond",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "body": "{\r\n  \"status\": \"ok\",\r\n  \"action\": \"session_updated\",\r\n  \"client_id\": \"{{1.client_id}}\",\r\n  \"session_id\": \"{{1.session_id}}\",\r\n  \"sessions_updated\": {{if(2.__IMTLENGTH__ > 0; 1; 0)}},\r\n  \"steps_requested\": {{ifempty(length(1.steps_upsert); 0)}},\r\n  \"steps_updated\": {{9.`__IMTAGGLENGTH__`}},\n\"timestamp\": \"{{formatDate(now; \"YYYY-MM-DD'T'HH:mm:ssX\")}}\"\r\n}",
+                "status": "200",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2700,
+                    "y": 0,
+                    "name": "B-SessUp | Respond"
+                },
+                "restore": {
+                    "expect": {
+                        "headers": {
+                            "mode": "chose"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "status",
+                        "type": "uinteger",
+                        "label": "Status",
+                        "required": true,
+                        "validate": {
+                            "min": 100
+                        }
+                    },
+                    {
+                        "name": "body",
+                        "type": "any",
+                        "label": "Body"
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key",
+                                "required": true,
+                                "validate": {
+                                    "max": 256
+                                }
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value",
+                                "required": true,
+                                "validate": {
+                                    "max": 4096
+                                }
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Custom headers",
+                        "validate": {
+                            "maxItems": 16
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu2.make.com",
+        "notes": []
+    }
+}

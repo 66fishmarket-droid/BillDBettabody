@@ -1,0 +1,2777 @@
+{
+    "name": "Bill - Build Session Form URLs",
+    "flow": [
+        {
+            "id": 1,
+            "module": "google-sheets:filterRows",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6600568
+            },
+            "mapper": {
+                "from": "drive",
+                "limit": "5",
+                "filter": [
+                    [
+                        {
+                            "a": "O",
+                            "b": "{{formatDate(addDays(now; 1); \"YYYY-MM-DD\")}}",
+                            "o": "text:equal"
+                        }
+                    ]
+                ],
+                "sheetId": "Plans_Sessions",
+                "sortOrder": "asc",
+                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "tableFirstRow": "A1:Z1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0,
+                    "name": "B-FormFill | Search Session"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "Select from My Drive"
+                        },
+                        "orderBy": {
+                            "mode": "chose"
+                        },
+                        "sheetId": {
+                            "mode": "chose",
+                            "label": "Plans_Sessions"
+                        },
+                        "sortOrder": {
+                            "mode": "chose",
+                            "label": "Ascending"
+                        },
+                        "spreadsheetId": {
+                            "mode": "chose",
+                            "label": "Bill D'Bettabody System Core"
+                        },
+                        "tableFirstRow": {
+                            "label": "A-Z"
+                        },
+                        "includesHeaders": {
+                            "mode": "chose",
+                            "label": "Yes"
+                        },
+                        "valueRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted value"
+                        },
+                        "dateTimeRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted string"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "66Fish (66fishmarket@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueRenderOption",
+                        "type": "select",
+                        "label": "Value render option",
+                        "validate": {
+                            "enum": [
+                                "FORMATTED_VALUE",
+                                "UNFORMATTED_VALUE",
+                                "FORMULA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateTimeRenderOption",
+                        "type": "select",
+                        "label": "Date and time render option",
+                        "validate": {
+                            "enum": [
+                                "SERIAL_NUMBER",
+                                "FORMATTED_STRING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "select",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tableFirstRow",
+                        "type": "select",
+                        "label": "Column range",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "A1:Z1",
+                                "A1:BZ1",
+                                "A1:CZ1",
+                                "A1:DZ1",
+                                "A1:MZ1",
+                                "A1:ZZ1",
+                                "A1:AZZ1",
+                                "A1:BZZ1",
+                                "A1:CZZ1",
+                                "A1:DZZ1",
+                                "A1:MZZ1",
+                                "A1:ZZZ1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                    },
+                    {
+                        "name": "orderBy",
+                        "type": "select",
+                        "label": "Order by"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "select",
+                        "label": "Sort order",
+                        "validate": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "__ROW_NUMBER__",
+                        "type": "number",
+                        "label": "Row number"
+                    },
+                    {
+                        "name": "__SPREADSHEET_ID__",
+                        "type": "text",
+                        "label": "Spreadsheet ID"
+                    },
+                    {
+                        "name": "__SHEET__",
+                        "type": "text",
+                        "label": "Sheet"
+                    },
+                    {
+                        "name": "0",
+                        "type": "text",
+                        "label": "plan_id (A)"
+                    },
+                    {
+                        "name": "1",
+                        "type": "text",
+                        "label": "block_id (B)"
+                    },
+                    {
+                        "name": "2",
+                        "type": "text",
+                        "label": "client_id (C)"
+                    },
+                    {
+                        "name": "3",
+                        "type": "text",
+                        "label": "week (D)"
+                    },
+                    {
+                        "name": "4",
+                        "type": "text",
+                        "label": "week_id (E)"
+                    },
+                    {
+                        "name": "5",
+                        "type": "text",
+                        "label": "day (F)"
+                    },
+                    {
+                        "name": "6",
+                        "type": "text",
+                        "label": "session_id (G)"
+                    },
+                    {
+                        "name": "7",
+                        "type": "text",
+                        "label": "phase (H)"
+                    },
+                    {
+                        "name": "8",
+                        "type": "text",
+                        "label": "location (I)"
+                    },
+                    {
+                        "name": "9",
+                        "type": "text",
+                        "label": "focus (J)"
+                    },
+                    {
+                        "name": "10",
+                        "type": "text",
+                        "label": "exercises (K)"
+                    },
+                    {
+                        "name": "11",
+                        "type": "text",
+                        "label": "macros (L)"
+                    },
+                    {
+                        "name": "12",
+                        "type": "text",
+                        "label": "supplements (M)"
+                    },
+                    {
+                        "name": "13",
+                        "type": "text",
+                        "label": "notes (N)"
+                    },
+                    {
+                        "name": "14",
+                        "type": "text",
+                        "label": "session_date (O)"
+                    },
+                    {
+                        "name": "15",
+                        "type": "text",
+                        "label": "session_day_of_week (P)"
+                    },
+                    {
+                        "name": "16",
+                        "type": "text",
+                        "label": "session_global_number (Q)"
+                    },
+                    {
+                        "name": "17",
+                        "type": "text",
+                        "label": "intended_intensity_rpe (R)"
+                    },
+                    {
+                        "name": "18",
+                        "type": "text",
+                        "label": "intended_hr_zone (S)"
+                    },
+                    {
+                        "name": "19",
+                        "type": "text",
+                        "label": "estimated_duration_minutes (T)"
+                    },
+                    {
+                        "name": "20",
+                        "type": "text",
+                        "label": "linked_sport (U)"
+                    },
+                    {
+                        "name": "21",
+                        "type": "text",
+                        "label": "session_status (V)"
+                    },
+                    {
+                        "name": "22",
+                        "type": "text",
+                        "label": "google_form_url (W)"
+                    },
+                    {
+                        "name": "23",
+                        "type": "text",
+                        "label": "(X)"
+                    },
+                    {
+                        "name": "24",
+                        "type": "text",
+                        "label": "(Y)"
+                    },
+                    {
+                        "name": "25",
+                        "type": "text",
+                        "label": "(Z)"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 34,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "parameters": {
+                "else": 1
+            },
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 4,
+                            "module": "google-sheets:filterRows",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 6600568
+                            },
+                            "filter": {
+                                "name": "Has Session",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.`__IMTLENGTH__`}}",
+                                            "b": "0",
+                                            "o": "number:greater"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "from": "drive",
+                                "filter": [
+                                    [
+                                        {
+                                            "a": "B",
+                                            "b": "{{1.`6`}}",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ],
+                                "orderBy": "F",
+                                "sheetId": "Plans_Steps",
+                                "fieldType": "string",
+                                "sortOrder": "asc",
+                                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                                "tableFirstRow": "A1:BZ1",
+                                "includesHeaders": true,
+                                "valueRenderOption": "FORMATTED_VALUE",
+                                "dateTimeRenderOption": "FORMATTED_STRING"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 594,
+                                    "y": 0,
+                                    "name": "B-FormFill | Get Steps"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "from": {
+                                            "label": "Select from My Drive"
+                                        },
+                                        "orderBy": {
+                                            "mode": "chose",
+                                            "label": "step_order (F)"
+                                        },
+                                        "sheetId": {
+                                            "mode": "chose",
+                                            "label": "Plans_Steps"
+                                        },
+                                        "fieldType": {
+                                            "mode": "chose",
+                                            "label": "String"
+                                        },
+                                        "sortOrder": {
+                                            "mode": "chose",
+                                            "label": "Ascending"
+                                        },
+                                        "spreadsheetId": {
+                                            "mode": "chose",
+                                            "label": "Bill D'Bettabody System Core"
+                                        },
+                                        "tableFirstRow": {
+                                            "label": "A-BZ"
+                                        },
+                                        "includesHeaders": {
+                                            "mode": "chose",
+                                            "label": "Yes"
+                                        },
+                                        "valueRenderOption": {
+                                            "mode": "chose",
+                                            "label": "Formatted value"
+                                        },
+                                        "dateTimeRenderOption": {
+                                            "mode": "chose",
+                                            "label": "Formatted string"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google"
+                                            },
+                                            "label": "66Fish (66fishmarket@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "Search Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "drive",
+                                                "share"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "valueRenderOption",
+                                        "type": "select",
+                                        "label": "Value render option",
+                                        "validate": {
+                                            "enum": [
+                                                "FORMATTED_VALUE",
+                                                "UNFORMATTED_VALUE",
+                                                "FORMULA"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "dateTimeRenderOption",
+                                        "type": "select",
+                                        "label": "Date and time render option",
+                                        "validate": {
+                                            "enum": [
+                                                "SERIAL_NUMBER",
+                                                "FORMATTED_STRING"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "limit",
+                                        "type": "uinteger",
+                                        "label": "Limit"
+                                    },
+                                    {
+                                        "name": "spreadsheetId",
+                                        "type": "select",
+                                        "label": "Spreadsheet ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "sheetId",
+                                        "type": "select",
+                                        "label": "Sheet Name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "includesHeaders",
+                                        "type": "select",
+                                        "label": "Table contains headers",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                true,
+                                                false
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "tableFirstRow",
+                                        "type": "select",
+                                        "label": "Column range",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "A1:Z1",
+                                                "A1:BZ1",
+                                                "A1:CZ1",
+                                                "A1:DZ1",
+                                                "A1:MZ1",
+                                                "A1:ZZ1",
+                                                "A1:AZZ1",
+                                                "A1:BZZ1",
+                                                "A1:CZZ1",
+                                                "A1:DZZ1",
+                                                "A1:MZZ1",
+                                                "A1:ZZZ1"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "filter",
+                                        "type": "filter",
+                                        "label": "Filter",
+                                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                                    },
+                                    {
+                                        "name": "orderBy",
+                                        "type": "select",
+                                        "label": "Order by"
+                                    },
+                                    {
+                                        "name": "sortOrder",
+                                        "type": "select",
+                                        "label": "Sort order",
+                                        "validate": {
+                                            "enum": [
+                                                "asc",
+                                                "desc"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "fieldType",
+                                        "type": "select",
+                                        "label": "Field Type",
+                                        "validate": {
+                                            "enum": [
+                                                "string",
+                                                "number",
+                                                "date"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "__IMTLENGTH__",
+                                        "type": "uinteger",
+                                        "label": "Total number of bundles"
+                                    },
+                                    {
+                                        "name": "__IMTINDEX__",
+                                        "type": "uinteger",
+                                        "label": "Bundle order position"
+                                    },
+                                    {
+                                        "name": "__ROW_NUMBER__",
+                                        "type": "number",
+                                        "label": "Row number"
+                                    },
+                                    {
+                                        "name": "__SPREADSHEET_ID__",
+                                        "type": "text",
+                                        "label": "Spreadsheet ID"
+                                    },
+                                    {
+                                        "name": "__SHEET__",
+                                        "type": "text",
+                                        "label": "Sheet"
+                                    },
+                                    {
+                                        "name": "0",
+                                        "type": "text",
+                                        "label": "step_id (A)"
+                                    },
+                                    {
+                                        "name": "1",
+                                        "type": "text",
+                                        "label": "session_id (B)"
+                                    },
+                                    {
+                                        "name": "2",
+                                        "type": "text",
+                                        "label": "week_id (C)"
+                                    },
+                                    {
+                                        "name": "3",
+                                        "type": "text",
+                                        "label": "block_id (D)"
+                                    },
+                                    {
+                                        "name": "4",
+                                        "type": "text",
+                                        "label": "client_id (E)"
+                                    },
+                                    {
+                                        "name": "5",
+                                        "type": "text",
+                                        "label": "step_order (F)"
+                                    },
+                                    {
+                                        "name": "6",
+                                        "type": "text",
+                                        "label": "segment_type (G)"
+                                    },
+                                    {
+                                        "name": "7",
+                                        "type": "text",
+                                        "label": "step_type (H)"
+                                    },
+                                    {
+                                        "name": "8",
+                                        "type": "text",
+                                        "label": "duration_type (I)"
+                                    },
+                                    {
+                                        "name": "9",
+                                        "type": "text",
+                                        "label": "duration_value (J)"
+                                    },
+                                    {
+                                        "name": "10",
+                                        "type": "text",
+                                        "label": "target_type (K)"
+                                    },
+                                    {
+                                        "name": "11",
+                                        "type": "text",
+                                        "label": "target_value (L)"
+                                    },
+                                    {
+                                        "name": "12",
+                                        "type": "text",
+                                        "label": "exercise_name (M)"
+                                    },
+                                    {
+                                        "name": "13",
+                                        "type": "text",
+                                        "label": "sets (N)"
+                                    },
+                                    {
+                                        "name": "14",
+                                        "type": "text",
+                                        "label": "reps (O)"
+                                    },
+                                    {
+                                        "name": "15",
+                                        "type": "text",
+                                        "label": "load_kg (P)"
+                                    },
+                                    {
+                                        "name": "16",
+                                        "type": "text",
+                                        "label": "rest_seconds (Q)"
+                                    },
+                                    {
+                                        "name": "17",
+                                        "type": "text",
+                                        "label": "notes_coach (R)"
+                                    },
+                                    {
+                                        "name": "18",
+                                        "type": "text",
+                                        "label": "notes_athlete (S)"
+                                    },
+                                    {
+                                        "name": "19",
+                                        "type": "text",
+                                        "label": "status (T)"
+                                    },
+                                    {
+                                        "name": "20",
+                                        "type": "text",
+                                        "label": "pattern_type (U)"
+                                    },
+                                    {
+                                        "name": "21",
+                                        "type": "text",
+                                        "label": "load_start_kg (V)"
+                                    },
+                                    {
+                                        "name": "22",
+                                        "type": "text",
+                                        "label": "load_increment_kg (W)"
+                                    },
+                                    {
+                                        "name": "23",
+                                        "type": "text",
+                                        "label": "load_peak_kg (X)"
+                                    },
+                                    {
+                                        "name": "24",
+                                        "type": "text",
+                                        "label": "reps_pattern (Y)"
+                                    },
+                                    {
+                                        "name": "25",
+                                        "type": "text",
+                                        "label": "rpe_pattern (Z)"
+                                    },
+                                    {
+                                        "name": "26",
+                                        "type": "text",
+                                        "label": "tempo_pattern (AA)"
+                                    },
+                                    {
+                                        "name": "27",
+                                        "type": "text",
+                                        "label": "tempo_per_set_pattern (AB)"
+                                    },
+                                    {
+                                        "name": "28",
+                                        "type": "text",
+                                        "label": "pattern_notes (AC)"
+                                    },
+                                    {
+                                        "name": "29",
+                                        "type": "text",
+                                        "label": "interval_count (AD)"
+                                    },
+                                    {
+                                        "name": "30",
+                                        "type": "text",
+                                        "label": "interval_work_sec (AE)"
+                                    },
+                                    {
+                                        "name": "31",
+                                        "type": "text",
+                                        "label": "interval_rest_sec (AF)"
+                                    },
+                                    {
+                                        "name": "32",
+                                        "type": "text",
+                                        "label": "intensity_start (AG)"
+                                    },
+                                    {
+                                        "name": "33",
+                                        "type": "text",
+                                        "label": "intensity_end (AH)"
+                                    },
+                                    {
+                                        "name": "34",
+                                        "type": "text",
+                                        "label": "(AI)"
+                                    },
+                                    {
+                                        "name": "35",
+                                        "type": "text",
+                                        "label": "(AJ)"
+                                    },
+                                    {
+                                        "name": "36",
+                                        "type": "text",
+                                        "label": "(AK)"
+                                    },
+                                    {
+                                        "name": "37",
+                                        "type": "text",
+                                        "label": "(AL)"
+                                    },
+                                    {
+                                        "name": "38",
+                                        "type": "text",
+                                        "label": "(AM)"
+                                    },
+                                    {
+                                        "name": "39",
+                                        "type": "text",
+                                        "label": "(AN)"
+                                    },
+                                    {
+                                        "name": "40",
+                                        "type": "text",
+                                        "label": "(AO)"
+                                    },
+                                    {
+                                        "name": "41",
+                                        "type": "text",
+                                        "label": "(AP)"
+                                    },
+                                    {
+                                        "name": "42",
+                                        "type": "text",
+                                        "label": "(AQ)"
+                                    },
+                                    {
+                                        "name": "43",
+                                        "type": "text",
+                                        "label": "(AR)"
+                                    },
+                                    {
+                                        "name": "44",
+                                        "type": "text",
+                                        "label": "(AS)"
+                                    },
+                                    {
+                                        "name": "45",
+                                        "type": "text",
+                                        "label": "(AT)"
+                                    },
+                                    {
+                                        "name": "46",
+                                        "type": "text",
+                                        "label": "(AU)"
+                                    },
+                                    {
+                                        "name": "47",
+                                        "type": "text",
+                                        "label": "(AV)"
+                                    },
+                                    {
+                                        "name": "48",
+                                        "type": "text",
+                                        "label": "(AW)"
+                                    },
+                                    {
+                                        "name": "49",
+                                        "type": "text",
+                                        "label": "(AX)"
+                                    },
+                                    {
+                                        "name": "50",
+                                        "type": "text",
+                                        "label": "(AY)"
+                                    },
+                                    {
+                                        "name": "51",
+                                        "type": "text",
+                                        "label": "(AZ)"
+                                    },
+                                    {
+                                        "name": "52",
+                                        "type": "text",
+                                        "label": "(BA)"
+                                    },
+                                    {
+                                        "name": "53",
+                                        "type": "text",
+                                        "label": "(BB)"
+                                    },
+                                    {
+                                        "name": "54",
+                                        "type": "text",
+                                        "label": "(BC)"
+                                    },
+                                    {
+                                        "name": "55",
+                                        "type": "text",
+                                        "label": "(BD)"
+                                    },
+                                    {
+                                        "name": "56",
+                                        "type": "text",
+                                        "label": "(BE)"
+                                    },
+                                    {
+                                        "name": "57",
+                                        "type": "text",
+                                        "label": "(BF)"
+                                    },
+                                    {
+                                        "name": "58",
+                                        "type": "text",
+                                        "label": "(BG)"
+                                    },
+                                    {
+                                        "name": "59",
+                                        "type": "text",
+                                        "label": "(BH)"
+                                    },
+                                    {
+                                        "name": "60",
+                                        "type": "text",
+                                        "label": "(BI)"
+                                    },
+                                    {
+                                        "name": "61",
+                                        "type": "text",
+                                        "label": "(BJ)"
+                                    },
+                                    {
+                                        "name": "62",
+                                        "type": "text",
+                                        "label": "(BK)"
+                                    },
+                                    {
+                                        "name": "63",
+                                        "type": "text",
+                                        "label": "(BL)"
+                                    },
+                                    {
+                                        "name": "64",
+                                        "type": "text",
+                                        "label": "(BM)"
+                                    },
+                                    {
+                                        "name": "65",
+                                        "type": "text",
+                                        "label": "(BN)"
+                                    },
+                                    {
+                                        "name": "66",
+                                        "type": "text",
+                                        "label": "(BO)"
+                                    },
+                                    {
+                                        "name": "67",
+                                        "type": "text",
+                                        "label": "(BP)"
+                                    },
+                                    {
+                                        "name": "68",
+                                        "type": "text",
+                                        "label": "(BQ)"
+                                    },
+                                    {
+                                        "name": "69",
+                                        "type": "text",
+                                        "label": "(BR)"
+                                    },
+                                    {
+                                        "name": "70",
+                                        "type": "text",
+                                        "label": "(BS)"
+                                    },
+                                    {
+                                        "name": "71",
+                                        "type": "text",
+                                        "label": "(BT)"
+                                    },
+                                    {
+                                        "name": "72",
+                                        "type": "text",
+                                        "label": "(BU)"
+                                    },
+                                    {
+                                        "name": "73",
+                                        "type": "text",
+                                        "label": "(BV)"
+                                    },
+                                    {
+                                        "name": "74",
+                                        "type": "text",
+                                        "label": "(BW)"
+                                    },
+                                    {
+                                        "name": "75",
+                                        "type": "text",
+                                        "label": "(BX)"
+                                    },
+                                    {
+                                        "name": "76",
+                                        "type": "text",
+                                        "label": "(BY)"
+                                    },
+                                    {
+                                        "name": "77",
+                                        "type": "text",
+                                        "label": "(BZ)"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 7,
+                            "module": "google-sheets:filterRows",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 6600568
+                            },
+                            "mapper": {
+                                "from": "drive",
+                                "limit": "1",
+                                "filter": [
+                                    [
+                                        {
+                                            "a": "A",
+                                            "b": "{{4.`12`}}",
+                                            "o": "text:equal:ci"
+                                        }
+                                    ]
+                                ],
+                                "sheetId": "Exercises_Library",
+                                "sortOrder": "asc",
+                                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                                "tableFirstRow": "A1:BZ1",
+                                "includesHeaders": true,
+                                "valueRenderOption": "FORMATTED_VALUE",
+                                "dateTimeRenderOption": "FORMATTED_STRING"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 0,
+                                    "name": "B-FillForm | Lookup Exercises"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "from": {
+                                            "label": "Select from My Drive"
+                                        },
+                                        "orderBy": {
+                                            "mode": "chose"
+                                        },
+                                        "sheetId": {
+                                            "mode": "chose",
+                                            "label": "Exercises_Library"
+                                        },
+                                        "sortOrder": {
+                                            "mode": "chose",
+                                            "label": "Ascending"
+                                        },
+                                        "spreadsheetId": {
+                                            "mode": "chose",
+                                            "label": "Bill D'Bettabody System Core"
+                                        },
+                                        "tableFirstRow": {
+                                            "label": "A-BZ"
+                                        },
+                                        "includesHeaders": {
+                                            "mode": "chose",
+                                            "label": "Yes"
+                                        },
+                                        "valueRenderOption": {
+                                            "mode": "chose",
+                                            "label": "Formatted value"
+                                        },
+                                        "dateTimeRenderOption": {
+                                            "mode": "chose",
+                                            "label": "Formatted string"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google"
+                                            },
+                                            "label": "66Fish (66fishmarket@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "Search Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "drive",
+                                                "share"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "valueRenderOption",
+                                        "type": "select",
+                                        "label": "Value render option",
+                                        "validate": {
+                                            "enum": [
+                                                "FORMATTED_VALUE",
+                                                "UNFORMATTED_VALUE",
+                                                "FORMULA"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "dateTimeRenderOption",
+                                        "type": "select",
+                                        "label": "Date and time render option",
+                                        "validate": {
+                                            "enum": [
+                                                "SERIAL_NUMBER",
+                                                "FORMATTED_STRING"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "limit",
+                                        "type": "uinteger",
+                                        "label": "Limit"
+                                    },
+                                    {
+                                        "name": "spreadsheetId",
+                                        "type": "select",
+                                        "label": "Spreadsheet ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "sheetId",
+                                        "type": "select",
+                                        "label": "Sheet Name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "includesHeaders",
+                                        "type": "select",
+                                        "label": "Table contains headers",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                true,
+                                                false
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "tableFirstRow",
+                                        "type": "select",
+                                        "label": "Column range",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "A1:Z1",
+                                                "A1:BZ1",
+                                                "A1:CZ1",
+                                                "A1:DZ1",
+                                                "A1:MZ1",
+                                                "A1:ZZ1",
+                                                "A1:AZZ1",
+                                                "A1:BZZ1",
+                                                "A1:CZZ1",
+                                                "A1:DZZ1",
+                                                "A1:MZZ1",
+                                                "A1:ZZZ1"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "filter",
+                                        "type": "filter",
+                                        "label": "Filter",
+                                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                                    },
+                                    {
+                                        "name": "orderBy",
+                                        "type": "select",
+                                        "label": "Order by"
+                                    },
+                                    {
+                                        "name": "sortOrder",
+                                        "type": "select",
+                                        "label": "Sort order",
+                                        "validate": {
+                                            "enum": [
+                                                "asc",
+                                                "desc"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "__IMTLENGTH__",
+                                        "type": "uinteger",
+                                        "label": "Total number of bundles"
+                                    },
+                                    {
+                                        "name": "__IMTINDEX__",
+                                        "type": "uinteger",
+                                        "label": "Bundle order position"
+                                    },
+                                    {
+                                        "name": "__ROW_NUMBER__",
+                                        "type": "number",
+                                        "label": "Row number"
+                                    },
+                                    {
+                                        "name": "__SPREADSHEET_ID__",
+                                        "type": "text",
+                                        "label": "Spreadsheet ID"
+                                    },
+                                    {
+                                        "name": "__SHEET__",
+                                        "type": "text",
+                                        "label": "Sheet"
+                                    },
+                                    {
+                                        "name": "0",
+                                        "type": "text",
+                                        "label": "exercise_name (A)"
+                                    },
+                                    {
+                                        "name": "1",
+                                        "type": "text",
+                                        "label": "category (B)"
+                                    },
+                                    {
+                                        "name": "2",
+                                        "type": "text",
+                                        "label": "body_region (C)"
+                                    },
+                                    {
+                                        "name": "3",
+                                        "type": "text",
+                                        "label": "equipment (D)"
+                                    },
+                                    {
+                                        "name": "4",
+                                        "type": "text",
+                                        "label": "variant (E)"
+                                    },
+                                    {
+                                        "name": "5",
+                                        "type": "text",
+                                        "label": "video_url (F)"
+                                    },
+                                    {
+                                        "name": "6",
+                                        "type": "text",
+                                        "label": "image_url (G)"
+                                    },
+                                    {
+                                        "name": "7",
+                                        "type": "text",
+                                        "label": "coaching_cues_short (H)"
+                                    },
+                                    {
+                                        "name": "8",
+                                        "type": "text",
+                                        "label": "exercise_description_short (I)"
+                                    },
+                                    {
+                                        "name": "9",
+                                        "type": "text",
+                                        "label": "exercise_description_long (J)"
+                                    },
+                                    {
+                                        "name": "10",
+                                        "type": "text",
+                                        "label": "safety_notes (K)"
+                                    },
+                                    {
+                                        "name": "11",
+                                        "type": "text",
+                                        "label": "common_mistakes (L)"
+                                    },
+                                    {
+                                        "name": "12",
+                                        "type": "text",
+                                        "label": "regression (M)"
+                                    },
+                                    {
+                                        "name": "13",
+                                        "type": "text",
+                                        "label": "progression (N)"
+                                    },
+                                    {
+                                        "name": "14",
+                                        "type": "text",
+                                        "label": "status (O)"
+                                    },
+                                    {
+                                        "name": "15",
+                                        "type": "text",
+                                        "label": "(P)"
+                                    },
+                                    {
+                                        "name": "16",
+                                        "type": "text",
+                                        "label": "(Q)"
+                                    },
+                                    {
+                                        "name": "17",
+                                        "type": "text",
+                                        "label": "(R)"
+                                    },
+                                    {
+                                        "name": "18",
+                                        "type": "text",
+                                        "label": "(S)"
+                                    },
+                                    {
+                                        "name": "19",
+                                        "type": "text",
+                                        "label": "(T)"
+                                    },
+                                    {
+                                        "name": "20",
+                                        "type": "text",
+                                        "label": "(U)"
+                                    },
+                                    {
+                                        "name": "21",
+                                        "type": "text",
+                                        "label": "(V)"
+                                    },
+                                    {
+                                        "name": "22",
+                                        "type": "text",
+                                        "label": "(W)"
+                                    },
+                                    {
+                                        "name": "23",
+                                        "type": "text",
+                                        "label": "(X)"
+                                    },
+                                    {
+                                        "name": "24",
+                                        "type": "text",
+                                        "label": "(Y)"
+                                    },
+                                    {
+                                        "name": "25",
+                                        "type": "text",
+                                        "label": "(Z)"
+                                    },
+                                    {
+                                        "name": "26",
+                                        "type": "text",
+                                        "label": "(AA)"
+                                    },
+                                    {
+                                        "name": "27",
+                                        "type": "text",
+                                        "label": "(AB)"
+                                    },
+                                    {
+                                        "name": "28",
+                                        "type": "text",
+                                        "label": "(AC)"
+                                    },
+                                    {
+                                        "name": "29",
+                                        "type": "text",
+                                        "label": "(AD)"
+                                    },
+                                    {
+                                        "name": "30",
+                                        "type": "text",
+                                        "label": "(AE)"
+                                    },
+                                    {
+                                        "name": "31",
+                                        "type": "text",
+                                        "label": "(AF)"
+                                    },
+                                    {
+                                        "name": "32",
+                                        "type": "text",
+                                        "label": "(AG)"
+                                    },
+                                    {
+                                        "name": "33",
+                                        "type": "text",
+                                        "label": "(AH)"
+                                    },
+                                    {
+                                        "name": "34",
+                                        "type": "text",
+                                        "label": "(AI)"
+                                    },
+                                    {
+                                        "name": "35",
+                                        "type": "text",
+                                        "label": "(AJ)"
+                                    },
+                                    {
+                                        "name": "36",
+                                        "type": "text",
+                                        "label": "(AK)"
+                                    },
+                                    {
+                                        "name": "37",
+                                        "type": "text",
+                                        "label": "(AL)"
+                                    },
+                                    {
+                                        "name": "38",
+                                        "type": "text",
+                                        "label": "(AM)"
+                                    },
+                                    {
+                                        "name": "39",
+                                        "type": "text",
+                                        "label": "(AN)"
+                                    },
+                                    {
+                                        "name": "40",
+                                        "type": "text",
+                                        "label": "(AO)"
+                                    },
+                                    {
+                                        "name": "41",
+                                        "type": "text",
+                                        "label": "(AP)"
+                                    },
+                                    {
+                                        "name": "42",
+                                        "type": "text",
+                                        "label": "(AQ)"
+                                    },
+                                    {
+                                        "name": "43",
+                                        "type": "text",
+                                        "label": "(AR)"
+                                    },
+                                    {
+                                        "name": "44",
+                                        "type": "text",
+                                        "label": "(AS)"
+                                    },
+                                    {
+                                        "name": "45",
+                                        "type": "text",
+                                        "label": "(AT)"
+                                    },
+                                    {
+                                        "name": "46",
+                                        "type": "text",
+                                        "label": "(AU)"
+                                    },
+                                    {
+                                        "name": "47",
+                                        "type": "text",
+                                        "label": "(AV)"
+                                    },
+                                    {
+                                        "name": "48",
+                                        "type": "text",
+                                        "label": "(AW)"
+                                    },
+                                    {
+                                        "name": "49",
+                                        "type": "text",
+                                        "label": "(AX)"
+                                    },
+                                    {
+                                        "name": "50",
+                                        "type": "text",
+                                        "label": "(AY)"
+                                    },
+                                    {
+                                        "name": "51",
+                                        "type": "text",
+                                        "label": "(AZ)"
+                                    },
+                                    {
+                                        "name": "52",
+                                        "type": "text",
+                                        "label": "(BA)"
+                                    },
+                                    {
+                                        "name": "53",
+                                        "type": "text",
+                                        "label": "(BB)"
+                                    },
+                                    {
+                                        "name": "54",
+                                        "type": "text",
+                                        "label": "(BC)"
+                                    },
+                                    {
+                                        "name": "55",
+                                        "type": "text",
+                                        "label": "(BD)"
+                                    },
+                                    {
+                                        "name": "56",
+                                        "type": "text",
+                                        "label": "(BE)"
+                                    },
+                                    {
+                                        "name": "57",
+                                        "type": "text",
+                                        "label": "(BF)"
+                                    },
+                                    {
+                                        "name": "58",
+                                        "type": "text",
+                                        "label": "(BG)"
+                                    },
+                                    {
+                                        "name": "59",
+                                        "type": "text",
+                                        "label": "(BH)"
+                                    },
+                                    {
+                                        "name": "60",
+                                        "type": "text",
+                                        "label": "(BI)"
+                                    },
+                                    {
+                                        "name": "61",
+                                        "type": "text",
+                                        "label": "(BJ)"
+                                    },
+                                    {
+                                        "name": "62",
+                                        "type": "text",
+                                        "label": "(BK)"
+                                    },
+                                    {
+                                        "name": "63",
+                                        "type": "text",
+                                        "label": "(BL)"
+                                    },
+                                    {
+                                        "name": "64",
+                                        "type": "text",
+                                        "label": "(BM)"
+                                    },
+                                    {
+                                        "name": "65",
+                                        "type": "text",
+                                        "label": "(BN)"
+                                    },
+                                    {
+                                        "name": "66",
+                                        "type": "text",
+                                        "label": "(BO)"
+                                    },
+                                    {
+                                        "name": "67",
+                                        "type": "text",
+                                        "label": "(BP)"
+                                    },
+                                    {
+                                        "name": "68",
+                                        "type": "text",
+                                        "label": "(BQ)"
+                                    },
+                                    {
+                                        "name": "69",
+                                        "type": "text",
+                                        "label": "(BR)"
+                                    },
+                                    {
+                                        "name": "70",
+                                        "type": "text",
+                                        "label": "(BS)"
+                                    },
+                                    {
+                                        "name": "71",
+                                        "type": "text",
+                                        "label": "(BT)"
+                                    },
+                                    {
+                                        "name": "72",
+                                        "type": "text",
+                                        "label": "(BU)"
+                                    },
+                                    {
+                                        "name": "73",
+                                        "type": "text",
+                                        "label": "(BV)"
+                                    },
+                                    {
+                                        "name": "74",
+                                        "type": "text",
+                                        "label": "(BW)"
+                                    },
+                                    {
+                                        "name": "75",
+                                        "type": "text",
+                                        "label": "(BX)"
+                                    },
+                                    {
+                                        "name": "76",
+                                        "type": "text",
+                                        "label": "(BY)"
+                                    },
+                                    {
+                                        "name": "77",
+                                        "type": "text",
+                                        "label": "(BZ)"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 27,
+                            "module": "builtin:BasicAggregator",
+                            "version": 1,
+                            "parameters": {
+                                "feeder": 4
+                            },
+                            "mapper": {
+                                "0": "{{7.`0`}}",
+                                "1": "{{7.`1`}}",
+                                "3": "{{7.`3`}}",
+                                "4": "{{7.`4`}}",
+                                "5": "{{7.`5`}}",
+                                "6": "{{4.`6`}}",
+                                "7": "{{4.`7`}}",
+                                "8": "{{4.`8`}}",
+                                "9": "{{4.`9`}}",
+                                "10": "{{4.`10`}}",
+                                "11": "{{4.`11`}}",
+                                "12": "{{4.`12`}}",
+                                "13": "{{4.`13`}}",
+                                "14": "{{4.`14`}}",
+                                "15": "{{4.`15`}}",
+                                "16": "{{4.`16`}}",
+                                "17": "{{4.`17`}}",
+                                "19": "{{4.`19`}}",
+                                "20": "{{4.`20`}}",
+                                "21": "{{4.`21`}}",
+                                "22": "{{4.`22`}}",
+                                "23": "{{4.`23`}}",
+                                "24": "{{4.`24`}}",
+                                "25": "{{4.`25`}}",
+                                "26": "{{4.`26`}}",
+                                "27": "{{4.`27`}}",
+                                "28": "{{4.`28`}}",
+                                "29": "{{4.`29`}}",
+                                "30": "{{4.`30`}}",
+                                "31": "{{4.`31`}}",
+                                "32": "{{4.`32`}}",
+                                "33": "{{4.`33`}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 0,
+                                    "name": "B-FillForm | Aggregate Exercises"
+                                },
+                                "restore": {
+                                    "extra": {
+                                        "feeder": {
+                                            "label": "B-FormFill | Get Steps - Search Rows [4]"
+                                        },
+                                        "target": {
+                                            "label": "Custom"
+                                        }
+                                    }
+                                },
+                                "advanced": true
+                            },
+                            "flags": {
+                                "groupBy": "{{if(lower(trim(4.`6`)) = \"warmup\" | lower(trim(4.`6`)) = \"warm_up\"; \"WU\"; if(lower(trim(4.`6`)) = \"cooldown\" | lower(trim(4.`6`)) = \"cool_down\" | lower(trim(4.`6`)) = \"mobility\"; \"CD\"; \"MS\"))}}"
+                            }
+                        },
+                        {
+                            "id": 29,
+                            "module": "builtin:BasicAggregator",
+                            "version": 1,
+                            "parameters": {
+                                "feeder": 27
+                            },
+                            "mapper": {
+                                "array": "{{27.array}}",
+                                "__IMTKEY__": "{{27.`__IMTKEY__`}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 0,
+                                    "name": "B-FillForm | Aggregate Array"
+                                },
+                                "restore": {
+                                    "extra": {
+                                        "feeder": {
+                                            "label": "B-FillForm | Aggregate Exercises [27]"
+                                        },
+                                        "target": {
+                                            "label": "Custom"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "id": 30,
+                            "module": "util:SetVariables",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "scope": "roundtrip",
+                                "variables": [
+                                    {
+                                        "name": "wu_index",
+                                        "value": "{{if(29.array[1].`__IMTKEY__` = \"WU\"; 1; if(29.array[2].`__IMTKEY__` = \"WU\"; 2; 3))}}"
+                                    },
+                                    {
+                                        "name": "ms_index",
+                                        "value": "{{if(29.array[1].`__IMTKEY__` = \"MS\"; 1; if(29.array[2].`__IMTKEY__` = \"MS\"; 2; 3))}}"
+                                    },
+                                    {
+                                        "name": "cd_index",
+                                        "value": "{{if(29.array[1].`__IMTKEY__` = \"CD\"; 1; if(29.array[2].`__IMTKEY__` = \"CD\"; 2; 3))}}"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 0,
+                                    "name": "B-FillForm | Array Indexer"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        },
+                                        "variables": {
+                                            "items": [
+                                                null,
+                                                null,
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "variables",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Variable name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "any",
+                                                "label": "Variable value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Variables"
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "wu_index",
+                                        "type": "any",
+                                        "label": "wu_index"
+                                    },
+                                    {
+                                        "name": "ms_index",
+                                        "type": "any",
+                                        "label": "ms_index"
+                                    },
+                                    {
+                                        "name": "cd_index",
+                                        "type": "any",
+                                        "label": "cd_index"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 28,
+                            "module": "util:SetVariables",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "scope": "roundtrip",
+                                "variables": [
+                                    {
+                                        "name": "wu01_text",
+                                        "value": "{{if(length(29.array[30.wu_index].array) >= 1; if(29.array[30.wu_index].array[1].`7` = \"\"; 29.array[30.wu_index].array[1].`12`; 29.array[30.wu_index].array[1].`7` + \" - \" + 29.array[30.wu_index].array[1].`12`) + \"\\n\" + if(29.array[30.wu_index].array[1].`13` != \"\" & 29.array[30.wu_index].array[1].`14` != \"\"; 29.array[30.wu_index].array[1].`13` + \" x \" + 29.array[30.wu_index].array[1].`14` + if(ifempty(29.array[30.wu_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[1].`16` + \"s\"; \"\"); if(29.array[30.wu_index].array[1].`9` != \"\"; 29.array[30.wu_index].array[1].`9` + if(29.array[30.wu_index].array[1].`8` != \"\"; 29.array[30.wu_index].array[1].`8`; \"\") + if(ifempty(29.array[30.wu_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[1].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.wu_index].array[1].`17` != \"\"; \"\\nCoach: \" + 29.array[30.wu_index].array[1].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "wu02_text",
+                                        "value": "{{if(length(29.array[30.wu_index].array) >= 2; if(29.array[30.wu_index].array[1].`7` = \"\"; 29.array[30.wu_index].array[1].`12`; 29.array[30.wu_index].array[1].`7` + \" - \" + 29.array[30.wu_index].array[1].`12`) + \"\\n\" + if(29.array[30.wu_index].array[1].`13` != \"\" & 29.array[30.wu_index].array[1].`14` != \"\"; 29.array[30.wu_index].array[1].`13` + \" x \" + 29.array[30.wu_index].array[1].`14` + if(ifempty(29.array[30.wu_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[1].`16` + \"s\"; \"\"); if(29.array[30.wu_index].array[1].`9` != \"\"; 29.array[30.wu_index].array[1].`9` + if(29.array[30.wu_index].array[1].`8` != \"\"; 29.array[30.wu_index].array[1].`8`; \"\") + if(ifempty(29.array[30.wu_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[1].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.wu_index].array[1].`17` != \"\"; \"\\nCoach: \" + 29.array[30.wu_index].array[1].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "wu03_text",
+                                        "value": "{{if(length(29.array[30.wu_index].array) >= 3; if(29.array[30.wu_index].array[3].`7` = \"\"; 29.array[30.wu_index].array[3].`12`; 29.array[30.wu_index].array[3].`7` + \" - \" + 29.array[30.wu_index].array[3].`12`) + \"\\n\" + if(29.array[30.wu_index].array[3].`13` != \"\" & 29.array[30.wu_index].array[3].`14` != \"\"; 29.array[30.wu_index].array[3].`13` + \" x \" + 29.array[30.wu_index].array[3].`14` + if(ifempty(29.array[30.wu_index].array[3].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[3].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[3].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[3].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[3].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[3].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[3].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[3].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[3].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[3].`16` + \"s\"; \"\"); if(29.array[30.wu_index].array[3].`9` != \"\"; 29.array[30.wu_index].array[3].`9` + if(29.array[30.wu_index].array[3].`8` != \"\"; 29.array[30.wu_index].array[3].`8`; \"\") + if(ifempty(29.array[30.wu_index].array[3].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[3].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[3].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[3].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[3].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[3].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[3].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[3].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[3].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[3].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.wu_index].array[3].`17` != \"\"; \"\\nCoach: \" + 29.array[30.wu_index].array[3].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "wu04_text",
+                                        "value": "{{if(length(29.array[30.wu_index].array) >= 4; if(29.array[30.wu_index].array[4].`7` = \"\"; 29.array[30.wu_index].array[4].`12`; 29.array[30.wu_index].array[4].`7` + \" - \" + 29.array[30.wu_index].array[4].`12`) + \"\\n\" + if(29.array[30.wu_index].array[4].`13` != \"\" & 29.array[30.wu_index].array[4].`14` != \"\"; 29.array[30.wu_index].array[4].`13` + \" x \" + 29.array[30.wu_index].array[4].`14` + if(ifempty(29.array[30.wu_index].array[4].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[4].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[4].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[4].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[4].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[4].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[4].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[4].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[4].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[4].`16` + \"s\"; \"\"); if(29.array[30.wu_index].array[4].`9` != \"\"; 29.array[30.wu_index].array[4].`9` + if(29.array[30.wu_index].array[4].`8` != \"\"; 29.array[30.wu_index].array[4].`8`; \"\") + if(ifempty(29.array[30.wu_index].array[4].`29`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[4].`30`; \"\") != \"\" & ifempty(29.array[30.wu_index].array[4].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.wu_index].array[4].`29`; \"\") + \" x \" + ifempty(29.array[30.wu_index].array[4].`30`; \"\") + \"s / \" + ifempty(29.array[30.wu_index].array[4].`31`; \"\") + \"s\"; \"\") + if(29.array[30.wu_index].array[4].`15` != \"\"; \" | Weight: \" + 29.array[30.wu_index].array[4].`15` + \"kg\"; \"\") + if(29.array[30.wu_index].array[4].`16` != \"\"; \" | Rest: \" + 29.array[30.wu_index].array[4].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.wu_index].array[4].`17` != \"\"; \"\\nCoach: \" + 29.array[30.wu_index].array[4].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms01_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 1; if(29.array[30.ms_index].array[1].`7` = \"\"; 29.array[30.ms_index].array[1].`12`; 29.array[30.ms_index].array[1].`7` + \" - \" + 29.array[30.ms_index].array[1].`12`) + \"\\n\" + if(29.array[30.ms_index].array[1].`13` != \"\" & 29.array[30.ms_index].array[1].`14` != \"\"; 29.array[30.ms_index].array[1].`13` + \" x \" + 29.array[30.ms_index].array[1].`14` + if(ifempty(29.array[30.ms_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[1].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[1].`9` != \"\"; 29.array[30.ms_index].array[1].`9` + if(29.array[30.ms_index].array[1].`8` != \"\"; 29.array[30.ms_index].array[1].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[1].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[1].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[1].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms02_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 2; if(29.array[30.ms_index].array[2].`7` = \"\"; 29.array[30.ms_index].array[2].`12`; 29.array[30.ms_index].array[2].`7` + \" - \" + 29.array[30.ms_index].array[2].`12`) + \"\\n\" + if(29.array[30.ms_index].array[2].`13` != \"\" & 29.array[30.ms_index].array[2].`14` != \"\"; 29.array[30.ms_index].array[2].`13` + \" x \" + 29.array[30.ms_index].array[2].`14` + if(ifempty(29.array[30.ms_index].array[2].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[2].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[2].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[2].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[2].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[2].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[2].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[2].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[2].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[2].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[2].`9` != \"\"; 29.array[30.ms_index].array[2].`9` + if(29.array[30.ms_index].array[2].`8` != \"\"; 29.array[30.ms_index].array[2].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[2].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[2].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[2].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[2].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[2].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[2].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[2].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[2].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[2].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[2].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[2].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[2].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms03_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 3; if(29.array[30.ms_index].array[3].`7` = \"\"; 29.array[30.ms_index].array[3].`12`; 29.array[30.ms_index].array[3].`7` + \" - \" + 29.array[30.ms_index].array[3].`12`) + \"\\n\" + if(29.array[30.ms_index].array[3].`13` != \"\" & 29.array[30.ms_index].array[3].`14` != \"\"; 29.array[30.ms_index].array[3].`13` + \" x \" + 29.array[30.ms_index].array[3].`14` + if(ifempty(29.array[30.ms_index].array[3].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[3].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[3].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[3].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[3].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[3].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[3].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[3].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[3].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[3].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[3].`9` != \"\"; 29.array[30.ms_index].array[3].`9` + if(29.array[30.ms_index].array[3].`8` != \"\"; 29.array[30.ms_index].array[3].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[3].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[3].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[3].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[3].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[3].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[3].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[3].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[3].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[3].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[3].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[3].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[3].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms04_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 4; if(29.array[30.ms_index].array[4].`7` = \"\"; 29.array[30.ms_index].array[4].`12`; 29.array[30.ms_index].array[4].`7` + \" - \" + 29.array[30.ms_index].array[4].`12`) + \"\\n\" + if(29.array[30.ms_index].array[4].`13` != \"\" & 29.array[30.ms_index].array[4].`14` != \"\"; 29.array[30.ms_index].array[4].`13` + \" x \" + 29.array[30.ms_index].array[4].`14` + if(ifempty(29.array[30.ms_index].array[4].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[4].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[4].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[4].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[4].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[4].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[4].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[4].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[4].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[4].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[4].`9` != \"\"; 29.array[30.ms_index].array[4].`9` + if(29.array[30.ms_index].array[4].`8` != \"\"; 29.array[30.ms_index].array[4].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[4].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[4].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[4].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[4].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[4].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[4].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[4].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[4].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[4].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[4].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[4].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[4].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms05_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 5; if(29.array[30.ms_index].array[5].`7` = \"\"; 29.array[30.ms_index].array[5].`12`; 29.array[30.ms_index].array[5].`7` + \" - \" + 29.array[30.ms_index].array[5].`12`) + \"\\n\" + if(29.array[30.ms_index].array[5].`13` != \"\" & 29.array[30.ms_index].array[5].`14` != \"\"; 29.array[30.ms_index].array[5].`13` + \" x \" + 29.array[30.ms_index].array[5].`14` + if(ifempty(29.array[30.ms_index].array[5].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[5].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[5].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[5].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[5].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[5].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[5].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[5].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[5].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[5].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[5].`9` != \"\"; 29.array[30.ms_index].array[5].`9` + if(29.array[30.ms_index].array[5].`8` != \"\"; 29.array[30.ms_index].array[5].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[5].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[5].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[5].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[5].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[5].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[5].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[5].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[5].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[5].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[5].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[5].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[5].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms06_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 6; if(29.array[30.ms_index].array[6].`7` = \"\"; 29.array[30.ms_index].array[6].`12`; 29.array[30.ms_index].array[6].`7` + \" - \" + 29.array[30.ms_index].array[6].`12`) + \"\\n\" + if(29.array[30.ms_index].array[6].`13` != \"\" & 29.array[30.ms_index].array[6].`14` != \"\"; 29.array[30.ms_index].array[6].`13` + \" x \" + 29.array[30.ms_index].array[6].`14` + if(ifempty(29.array[30.ms_index].array[6].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[6].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[6].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[6].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[6].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[6].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[6].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[6].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[6].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[6].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[6].`9` != \"\"; 29.array[30.ms_index].array[6].`9` + if(29.array[30.ms_index].array[6].`8` != \"\"; 29.array[30.ms_index].array[6].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[6].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[6].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[6].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[6].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[6].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[6].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[6].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[6].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[6].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[6].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[6].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[6].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms07_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 7; if(29.array[30.ms_index].array[7].`7` = \"\"; 29.array[30.ms_index].array[7].`12`; 29.array[30.ms_index].array[7].`7` + \" - \" + 29.array[30.ms_index].array[7].`12`) + \"\\n\" + if(29.array[30.ms_index].array[7].`13` != \"\" & 29.array[30.ms_index].array[7].`14` != \"\"; 29.array[30.ms_index].array[7].`13` + \" x \" + 29.array[30.ms_index].array[7].`14` + if(ifempty(29.array[30.ms_index].array[7].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[7].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[7].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[7].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[7].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[7].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[7].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[7].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[7].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[7].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[7].`9` != \"\"; 29.array[30.ms_index].array[7].`9` + if(29.array[30.ms_index].array[7].`8` != \"\"; 29.array[30.ms_index].array[7].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[7].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[7].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[7].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[7].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[7].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[7].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[7].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[7].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[7].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[7].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[7].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[7].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "ms08_text",
+                                        "value": "{{if(length(29.array[30.ms_index].array) >= 8; if(29.array[30.ms_index].array[8].`7` = \"\"; 29.array[30.ms_index].array[8].`12`; 29.array[30.ms_index].array[8].`7` + \" - \" + 29.array[30.ms_index].array[8].`12`) + \"\\n\" + if(29.array[30.ms_index].array[8].`13` != \"\" & 29.array[30.ms_index].array[8].`14` != \"\"; 29.array[30.ms_index].array[8].`13` + \" x \" + 29.array[30.ms_index].array[8].`14` + if(ifempty(29.array[30.ms_index].array[8].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[8].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[8].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[8].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[8].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[8].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[8].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[8].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[8].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[8].`16` + \"s\"; \"\"); if(29.array[30.ms_index].array[8].`9` != \"\"; 29.array[30.ms_index].array[8].`9` + if(29.array[30.ms_index].array[8].`8` != \"\"; 29.array[30.ms_index].array[8].`8`; \"\") + if(ifempty(29.array[30.ms_index].array[8].`29`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[8].`30`; \"\") != \"\" & ifempty(29.array[30.ms_index].array[8].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.ms_index].array[8].`29`; \"\") + \" x \" + ifempty(29.array[30.ms_index].array[8].`30`; \"\") + \"s / \" + ifempty(29.array[30.ms_index].array[8].`31`; \"\") + \"s\"; \"\") + if(29.array[30.ms_index].array[8].`15` != \"\"; \" | Weight: \" + 29.array[30.ms_index].array[8].`15` + \"kg\"; \"\") + if(29.array[30.ms_index].array[8].`16` != \"\"; \" | Rest: \" + 29.array[30.ms_index].array[8].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.ms_index].array[8].`17` != \"\"; \"\\nCoach: \" + 29.array[30.ms_index].array[8].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "cd01_text",
+                                        "value": "{{if(length(29.array[30.cd_index].array) >= 1; if(29.array[30.cd_index].array[1].`7` = \"\"; 29.array[30.cd_index].array[1].`12`; 29.array[30.cd_index].array[1].`7` + \" - \" + 29.array[30.cd_index].array[1].`12`) + \"\\n\" + if(29.array[30.cd_index].array[1].`13` != \"\" & 29.array[30.cd_index].array[1].`14` != \"\"; 29.array[30.cd_index].array[1].`13` + \" x \" + 29.array[30.cd_index].array[1].`14` + if(ifempty(29.array[30.cd_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.cd_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.cd_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.cd_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.cd_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.cd_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.cd_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.cd_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.cd_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.cd_index].array[1].`16` + \"s\"; \"\"); if(29.array[30.cd_index].array[1].`9` != \"\"; 29.array[30.cd_index].array[1].`9` + if(29.array[30.cd_index].array[1].`8` != \"\"; 29.array[30.cd_index].array[1].`8`; \"\") + if(ifempty(29.array[30.cd_index].array[1].`29`; \"\") != \"\" & ifempty(29.array[30.cd_index].array[1].`30`; \"\") != \"\" & ifempty(29.array[30.cd_index].array[1].`31`; \"\") != \"\"; \" | Intervals: \" + ifempty(29.array[30.cd_index].array[1].`29`; \"\") + \" x \" + ifempty(29.array[30.cd_index].array[1].`30`; \"\") + \"s / \" + ifempty(29.array[30.cd_index].array[1].`31`; \"\") + \"s\"; \"\") + if(29.array[30.cd_index].array[1].`15` != \"\"; \" | Weight: \" + 29.array[30.cd_index].array[1].`15` + \"kg\"; \"\") + if(29.array[30.cd_index].array[1].`16` != \"\"; \" | Rest: \" + 29.array[30.cd_index].array[1].`16` + \"s\"; \"\"); \"\")) + if(29.array[30.cd_index].array[1].`17` != \"\"; \"\\nCoach: \" + 29.array[30.cd_index].array[1].`17`; \"\") + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "cd02_text",
+                                        "value": "{{if(length(29.array[30.cd_index].array) >= 2; if((29.array[30.cd_index].array[2].`7` = \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[2].`12`; 29.array[30.cd_index].array[2].`7` + \" - \" + 29.array[30.cd_index].array[2].`12`) + \"\\n\" + if((29.array[30.cd_index].array[2].`13` != \"\"\"\") + (\"\"\"\" & 29.array[30.cd_index].array[2].`14` != \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[2].`13` + \" x \" + 29.array[30.cd_index].array[2].`14` + if((ifempty(29.array[30.cd_index].array[2].`29`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[2].`30`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[2].`31`; ) != \"\"\"\") + \"\"\"\"; \" | Intervals: \" + ifempty(29.array[30.cd_index].array[2].`29`; ) + \" x \" + ifempty(29.array[30.cd_index].array[2].`30`; ) + \"s / \" + ifempty(29.array[30.cd_index].array[2].`31`; ) + \"s\"; ) + if((29.array[30.cd_index].array[2].`15` != \"\"\"\") + \"\"\"\"; \" | Weight: \" + 29.array[30.cd_index].array[2].`15` + \"kg\"; ) + if((29.array[30.cd_index].array[2].`16` != \"\"\"\") + \"\"\"\"; \" | Rest: \" + 29.array[30.cd_index].array[2].`16` + \"s\"; ); if((29.array[30.cd_index].array[2].`9` != \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[2].`9` + if((29.array[30.cd_index].array[2].`8` != \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[2].`8`; ) + if((ifempty(29.array[30.cd_index].array[2].`29`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[2].`30`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[2].`31`; ) != \"\"\"\") + \"\"\"\"; \" | Intervals: \" + ifempty(29.array[30.cd_index].array[2].`29`; ) + \" x \" + ifempty(29.array[30.cd_index].array[2].`30`; ) + \"s / \" + ifempty(29.array[30.cd_index].array[2].`31`; ) + \"s\"; ) + if((29.array[30.cd_index].array[2].`15` != \"\"\"\") + \"\"\"\"; \" | Weight: \" + 29.array[30.cd_index].array[2].`15` + \"kg\"; ) + if((29.array[30.cd_index].array[2].`16` != \"\"\"\") + \"\"\"\"; \" | Rest: \" + 29.array[30.cd_index].array[2].`16` + \"s\"; ); )) + if((29.array[30.cd_index].array[2].`17` != \"\"\"\") + \"\"\"\"; \"\\nCoach: \" + 29.array[30.cd_index].array[2].`17`; ) + \"\\n\\n\"; \"(skip)\")}}"
+                                    },
+                                    {
+                                        "name": "cd03_text",
+                                        "value": "{{if(length(29.array[30.cd_index].array) >= 3; if((29.array[30.cd_index].array[3].`7` = \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[3].`12`; 29.array[30.cd_index].array[3].`7` + \" - \" + 29.array[30.cd_index].array[3].`12`) + \"\\n\" + if((29.array[30.cd_index].array[3].`13` != \"\"\"\") + (\"\"\"\" & 29.array[30.cd_index].array[3].`14` != \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[3].`13` + \" x \" + 29.array[30.cd_index].array[3].`14` + if((ifempty(29.array[30.cd_index].array[3].`29`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[3].`30`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[3].`31`; ) != \"\"\"\") + \"\"\"\"; \" | Intervals: \" + ifempty(29.array[30.cd_index].array[3].`29`; ) + \" x \" + ifempty(29.array[30.cd_index].array[3].`30`; ) + \"s / \" + ifempty(29.array[30.cd_index].array[3].`31`; ) + \"s\"; ) + if((29.array[30.cd_index].array[3].`15` != \"\"\"\") + \"\"\"\"; \" | Weight: \" + 29.array[30.cd_index].array[3].`15` + \"kg\"; ) + if((29.array[30.cd_index].array[3].`16` != \"\"\"\") + \"\"\"\"; \" | Rest: \" + 29.array[30.cd_index].array[3].`16` + \"s\"; ); if((29.array[30.cd_index].array[3].`9` != \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[3].`9` + if((29.array[30.cd_index].array[3].`8` != \"\"\"\") + \"\"\"\"; 29.array[30.cd_index].array[3].`8`; ) + if((ifempty(29.array[30.cd_index].array[3].`29`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[3].`30`; ) != \"\"\"\") + (\"\"\"\" & ifempty(29.array[30.cd_index].array[3].`31`; ) != \"\"\"\") + \"\"\"\"; \" | Intervals: \" + ifempty(29.array[30.cd_index].array[3].`29`; ) + \" x \" + ifempty(29.array[30.cd_index].array[3].`30`; ) + \"s / \" + ifempty(29.array[30.cd_index].array[3].`31`; ) + \"s\"; ) + if((29.array[30.cd_index].array[3].`15` != \"\"\"\") + \"\"\"\"; \" | Weight: \" + 29.array[30.cd_index].array[3].`15` + \"kg\"; ) + if((29.array[30.cd_index].array[3].`16` != \"\"\"\") + \"\"\"\"; \" | Rest: \" + 29.array[30.cd_index].array[3].`16` + \"s\"; ); )) + if((29.array[30.cd_index].array[3].`17` != \"\"\"\") + \"\"\"\"; \"\\nCoach: \" + 29.array[30.cd_index].array[3].`17`; ) + \"\\n\\n\"; \"(skip)\")}}"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2100,
+                                    "y": 0,
+                                    "name": "B-FillForm | Text output Variables"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        },
+                                        "variables": {
+                                            "items": [
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "variables",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Variable name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "any",
+                                                "label": "Variable value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Variables"
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "wu01_text",
+                                        "type": "any",
+                                        "label": "wu01_text"
+                                    },
+                                    {
+                                        "name": "wu02_text",
+                                        "type": "any",
+                                        "label": "wu02_text"
+                                    },
+                                    {
+                                        "name": "wu03_text",
+                                        "type": "any",
+                                        "label": "wu03_text"
+                                    },
+                                    {
+                                        "name": "wu04_text",
+                                        "type": "any",
+                                        "label": "wu04_text"
+                                    },
+                                    {
+                                        "name": "ms01_text",
+                                        "type": "any",
+                                        "label": "ms01_text"
+                                    },
+                                    {
+                                        "name": "ms02_text",
+                                        "type": "any",
+                                        "label": "ms02_text"
+                                    },
+                                    {
+                                        "name": "ms03_text",
+                                        "type": "any",
+                                        "label": "ms03_text"
+                                    },
+                                    {
+                                        "name": "ms04_text",
+                                        "type": "any",
+                                        "label": "ms04_text"
+                                    },
+                                    {
+                                        "name": "ms05_text",
+                                        "type": "any",
+                                        "label": "ms05_text"
+                                    },
+                                    {
+                                        "name": "ms06_text",
+                                        "type": "any",
+                                        "label": "ms06_text"
+                                    },
+                                    {
+                                        "name": "ms07_text",
+                                        "type": "any",
+                                        "label": "ms07_text"
+                                    },
+                                    {
+                                        "name": "ms08_text",
+                                        "type": "any",
+                                        "label": "ms08_text"
+                                    },
+                                    {
+                                        "name": "cd01_text",
+                                        "type": "any",
+                                        "label": "cd01_text"
+                                    },
+                                    {
+                                        "name": "cd02_text",
+                                        "type": "any",
+                                        "label": "cd02_text"
+                                    },
+                                    {
+                                        "name": "cd03_text",
+                                        "type": "any",
+                                        "label": "cd03_text"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 31,
+                            "module": "util:SetVariables",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "scope": "roundtrip",
+                                "variables": [
+                                    {
+                                        "name": "ms01_details",
+                                        "value": "{{if(28.ms01_text = \"(skip)\"; \"\"; if(29.array[30.ms_index].array[1].`10` != \"\" & 29.array[30.ms_index].array[1].`11` != \"\"; \"Target: \" + 29.array[30.ms_index].array[1].`10` + \" - \" + 29.array[30.ms_index].array[1].`11` + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[1].`25`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[1].`25`; \"\") != \"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[1].`25`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[1].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[1].`25`; \"\") != \"\"; \" | Intensity: \"; \"Intensity: \") + if(ifempty(29.array[30.ms_index].array[1].`32`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[1].`32`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[1].`33`; \"\") != \"\"; \" -> \" + ifempty(29.array[30.ms_index].array[1].`33`; \"\"); \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[1].`20`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`21`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`22`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`23`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`24`; \"\") != \"\"; \"Progression:\" + if(ifempty(29.array[30.ms_index].array[1].`20`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[1].`20`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[1].`21`; \"\") != \"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[1].`21`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[1].`22`; \"\") != \"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[1].`22`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[1].`23`; \"\") != \"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[1].`23`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[1].`24`; \"\") != \"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[1].`24`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[1].`26`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[1].`27`; \"\") != \"\"; \"Tempo:\" + if(ifempty(29.array[30.ms_index].array[1].`26`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[1].`26`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[1].`27`; \"\") != \"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[1].`27`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[1].`28`; \"\") != \"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[1].`28`; \"\"); \"\"))}}"
+                                    },
+                                    {
+                                        "name": "ms02_details",
+                                        "value": "{{if(28.ms02_text = \"(skip)\"; \"\"; if(29.array[30.ms_index].array[2].`10` != \"\" & 29.array[30.ms_index].array[2].`11` != \"\"; \"Target: \" + 29.array[30.ms_index].array[2].`10` + \" - \" + 29.array[30.ms_index].array[2].`11` + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[2].`25`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[2].`25`; \"\") != \"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[2].`25`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[2].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[2].`25`; \"\") != \"\"; \" | Intensity: \"; \"Intensity: \") + if(ifempty(29.array[30.ms_index].array[2].`32`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[2].`32`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[2].`33`; \"\") != \"\"; \" -> \" + ifempty(29.array[30.ms_index].array[2].`33`; \"\"); \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[2].`20`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`21`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`22`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`23`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`24`; \"\") != \"\"; \"Progression:\" + if(ifempty(29.array[30.ms_index].array[2].`20`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[2].`20`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[2].`21`; \"\") != \"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[2].`21`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[2].`22`; \"\") != \"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[2].`22`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[2].`23`; \"\") != \"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[2].`23`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[2].`24`; \"\") != \"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[2].`24`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[2].`26`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[2].`27`; \"\") != \"\"; \"Tempo:\" + if(ifempty(29.array[30.ms_index].array[2].`26`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[2].`26`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[2].`27`; \"\") != \"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[2].`27`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[2].`28`; \"\") != \"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[2].`28`; \"\"); \"\"))}}"
+                                    },
+                                    {
+                                        "name": "ms03_details",
+                                        "value": "{{if(28.ms03_text = \"(skip)\"; \"\"; if(29.array[30.ms_index].array[3].`10` != \"\" & 29.array[30.ms_index].array[3].`11` != \"\"; \"Target: \" + 29.array[30.ms_index].array[3].`10` + \" - \" + 29.array[30.ms_index].array[3].`11` + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[3].`25`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[3].`25`; \"\") != \"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[3].`25`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[3].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[3].`25`; \"\") != \"\"; \" | Intensity: \"; \"Intensity: \") + if(ifempty(29.array[30.ms_index].array[3].`32`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[3].`32`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[3].`33`; \"\") != \"\"; \" -> \" + ifempty(29.array[30.ms_index].array[3].`33`; \"\"); \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[3].`20`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`21`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`22`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`23`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`24`; \"\") != \"\"; \"Progression:\" + if(ifempty(29.array[30.ms_index].array[3].`20`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[3].`20`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[3].`21`; \"\") != \"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[3].`21`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[3].`22`; \"\") != \"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[3].`22`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[3].`23`; \"\") != \"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[3].`23`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[3].`24`; \"\") != \"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[3].`24`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[3].`26`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[3].`27`; \"\") != \"\"; \"Tempo:\" + if(ifempty(29.array[30.ms_index].array[3].`26`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[3].`26`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[3].`27`; \"\") != \"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[3].`27`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[3].`28`; \"\") != \"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[3].`28`; \"\"); \"\"))}}"
+                                    },
+                                    {
+                                        "name": "ms04_details",
+                                        "value": "{{if(28.ms04_text = \"(skip)\"; \"\"; if(29.array[30.ms_index].array[4].`10` != \"\" & 29.array[30.ms_index].array[4].`11` != \"\"; \"Target: \" + 29.array[30.ms_index].array[4].`10` + \" - \" + 29.array[30.ms_index].array[4].`11` + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[4].`25`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[4].`25`; \"\") != \"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[4].`25`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[4].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[4].`25`; \"\") != \"\"; \" | Intensity: \"; \"Intensity: \") + if(ifempty(29.array[30.ms_index].array[4].`32`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[4].`32`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[4].`33`; \"\") != \"\"; \" -> \" + ifempty(29.array[30.ms_index].array[4].`33`; \"\"); \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[4].`20`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`21`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`22`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`23`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`24`; \"\") != \"\"; \"Progression:\" + if(ifempty(29.array[30.ms_index].array[4].`20`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[4].`20`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[4].`21`; \"\") != \"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[4].`21`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[4].`22`; \"\") != \"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[4].`22`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[4].`23`; \"\") != \"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[4].`23`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[4].`24`; \"\") != \"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[4].`24`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[4].`26`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[4].`27`; \"\") != \"\"; \"Tempo:\" + if(ifempty(29.array[30.ms_index].array[4].`26`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[4].`26`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[4].`27`; \"\") != \"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[4].`27`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[4].`28`; \"\") != \"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[4].`28`; \"\"); \"\"))}}"
+                                    },
+                                    {
+                                        "name": "ms05_details",
+                                        "value": "{{if(28.ms05_text = \"(skip)\"; \"\"; if(29.array[30.ms_index].array[5].`10` != \"\" & 29.array[30.ms_index].array[5].`11` != \"\"; \"Target: \" + 29.array[30.ms_index].array[5].`10` + \" - \" + 29.array[30.ms_index].array[5].`11` + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[5].`25`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[5].`25`; \"\") != \"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[5].`25`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[5].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[5].`25`; \"\") != \"\"; \" | Intensity: \"; \"Intensity: \") + if(ifempty(29.array[30.ms_index].array[5].`32`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[5].`32`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[5].`33`; \"\") != \"\"; \" -> \" + ifempty(29.array[30.ms_index].array[5].`33`; \"\"); \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[5].`20`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`21`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`22`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`23`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`24`; \"\") != \"\"; \"Progression:\" + if(ifempty(29.array[30.ms_index].array[5].`20`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[5].`20`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[5].`21`; \"\") != \"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[5].`21`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[5].`22`; \"\") != \"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[5].`22`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[5].`23`; \"\") != \"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[5].`23`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[5].`24`; \"\") != \"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[5].`24`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[5].`26`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[5].`27`; \"\") != \"\"; \"Tempo:\" + if(ifempty(29.array[30.ms_index].array[5].`26`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[5].`26`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[5].`27`; \"\") != \"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[5].`27`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[5].`28`; \"\") != \"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[5].`28`; \"\"); \"\"))}}"
+                                    },
+                                    {
+                                        "name": "ms06_details",
+                                        "value": "{{if(28.ms06_text = \"(skip)\"; \"\"; if(29.array[30.ms_index].array[6].`10` != \"\" & 29.array[30.ms_index].array[6].`11` != \"\"; \"Target: \" + 29.array[30.ms_index].array[6].`10` + \" - \" + 29.array[30.ms_index].array[6].`11` + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[6].`25`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[6].`25`; \"\") != \"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[6].`25`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[6].`32`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`33`; \"\") != \"\"; if(ifempty(29.array[30.ms_index].array[6].`25`; \"\") != \"\"; \" | Intensity: \"; \"Intensity: \") + if(ifempty(29.array[30.ms_index].array[6].`32`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[6].`32`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[6].`33`; \"\") != \"\"; \" -> \" + ifempty(29.array[30.ms_index].array[6].`33`; \"\"); \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[6].`20`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`21`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`22`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`23`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`24`; \"\") != \"\"; \"Progression:\" + if(ifempty(29.array[30.ms_index].array[6].`20`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[6].`20`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[6].`21`; \"\") != \"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[6].`21`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[6].`22`; \"\") != \"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[6].`22`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[6].`23`; \"\") != \"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[6].`23`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[6].`24`; \"\") != \"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[6].`24`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[6].`26`; \"\") != \"\" | ifempty(29.array[30.ms_index].array[6].`27`; \"\") != \"\"; \"Tempo:\" + if(ifempty(29.array[30.ms_index].array[6].`26`; \"\") != \"\"; ifempty(29.array[30.ms_index].array[6].`26`; \"\"); \"\") + if(ifempty(29.array[30.ms_index].array[6].`27`; \"\") != \"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[6].`27`; \"\"); \"\") + \"\\n\"; \"\") + if(ifempty(29.array[30.ms_index].array[6].`28`; \"\") != \"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[6].`28`; \"\"); \"\"))}}"
+                                    },
+                                    {
+                                        "name": "ms07_details",
+                                        "value": "{{if(28.ms07_text = \"(skip)\"; ; if((29.array[30.ms_index].array[7].`10` != \"\"\"\") + (\"\"\"\" & 29.array[30.ms_index].array[7].`11` != \"\"\"\") + \"\"\"\"; \"Target: \" + 29.array[30.ms_index].array[7].`10` + \" - \" + 29.array[30.ms_index].array[7].`11` + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[7].`25`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`32`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`33`; ) != \"\"\"\") + \"\"\"\"; if((ifempty(29.array[30.ms_index].array[7].`25`; ) != \"\"\"\") + \"\"\"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[7].`25`; ); ) + if((ifempty(29.array[30.ms_index].array[7].`32`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`33`; ) != \"\"\"\") + \"\"\"\"; if((ifempty(29.array[30.ms_index].array[7].`25`; ) != \"\"\"\") + \"\"\"\"; \" | Intensity: \"; \"Intensity: \") + if((ifempty(29.array[30.ms_index].array[7].`32`; ) != \"\"\"\") + \"\"\"\"; ifempty(29.array[30.ms_index].array[7].`32`; ); ) + if((ifempty(29.array[30.ms_index].array[7].`33`; ) != \"\"\"\") + \"\"\"\"; \" -> \" + ifempty(29.array[30.ms_index].array[7].`33`; ); ); ) + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[7].`20`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`21`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`22`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`23`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`24`; ) != \"\"\"\") + \"\"\"\"; \"Progression:\" + if((ifempty(29.array[30.ms_index].array[7].`20`; ) != \"\"\"\") + \"\"\"\"; ifempty(29.array[30.ms_index].array[7].`20`; ); ) + if((ifempty(29.array[30.ms_index].array[7].`21`; ) != \"\"\"\") + \"\"\"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[7].`21`; ); ) + if((ifempty(29.array[30.ms_index].array[7].`22`; ) != \"\"\"\") + \"\"\"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[7].`22`; ); ) + if((ifempty(29.array[30.ms_index].array[7].`23`; ) != \"\"\"\") + \"\"\"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[7].`23`; ); ) + if((ifempty(29.array[30.ms_index].array[7].`24`; ) != \"\"\"\") + \"\"\"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[7].`24`; ); ) + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[7].`26`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[7].`27`; ) != \"\"\"\") + \"\"\"\"; \"Tempo:\" + if((ifempty(29.array[30.ms_index].array[7].`26`; ) != \"\"\"\") + \"\"\"\"; ifempty(29.array[30.ms_index].array[7].`26`; ); ) + if((ifempty(29.array[30.ms_index].array[7].`27`; ) != \"\"\"\") + \"\"\"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[7].`27`; ); ) + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[7].`28`; ) != \"\"\"\") + \"\"\"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[7].`28`; ); ))}}"
+                                    },
+                                    {
+                                        "name": "ms08_details",
+                                        "value": "{{if(28.ms08_text = \"(skip)\"; ; if((29.array[30.ms_index].array[8].`10` != \"\"\"\") + (\"\"\"\" & 29.array[30.ms_index].array[8].`11` != \"\"\"\") + \"\"\"\"; \"Target: \" + 29.array[30.ms_index].array[8].`10` + \" - \" + 29.array[30.ms_index].array[8].`11` + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[8].`25`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`32`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`33`; ) != \"\"\"\") + \"\"\"\"; if((ifempty(29.array[30.ms_index].array[8].`25`; ) != \"\"\"\") + \"\"\"\"; \"RPE pattern: \" + ifempty(29.array[30.ms_index].array[8].`25`; ); ) + if((ifempty(29.array[30.ms_index].array[8].`32`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`33`; ) != \"\"\"\") + \"\"\"\"; if((ifempty(29.array[30.ms_index].array[8].`25`; ) != \"\"\"\") + \"\"\"\"; \" | Intensity: \"; \"Intensity: \") + if((ifempty(29.array[30.ms_index].array[8].`32`; ) != \"\"\"\") + \"\"\"\"; ifempty(29.array[30.ms_index].array[8].`32`; ); ) + if((ifempty(29.array[30.ms_index].array[8].`33`; ) != \"\"\"\") + \"\"\"\"; \" -> \" + ifempty(29.array[30.ms_index].array[8].`33`; ); ); ) + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[8].`20`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`21`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`22`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`23`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`24`; ) != \"\"\"\") + \"\"\"\"; \"Progression:\" + if((ifempty(29.array[30.ms_index].array[8].`20`; ) != \"\"\"\") + \"\"\"\"; ifempty(29.array[30.ms_index].array[8].`20`; ); ) + if((ifempty(29.array[30.ms_index].array[8].`21`; ) != \"\"\"\") + \"\"\"\"; \" | Start kg: \" + ifempty(29.array[30.ms_index].array[8].`21`; ); ) + if((ifempty(29.array[30.ms_index].array[8].`22`; ) != \"\"\"\") + \"\"\"\"; \" | +kg per set: \" + ifempty(29.array[30.ms_index].array[8].`22`; ); ) + if((ifempty(29.array[30.ms_index].array[8].`23`; ) != \"\"\"\") + \"\"\"\"; \" | Peak kg: \" + ifempty(29.array[30.ms_index].array[8].`23`; ); ) + if((ifempty(29.array[30.ms_index].array[8].`24`; ) != \"\"\"\") + \"\"\"\"; \" | Reps pattern: \" + ifempty(29.array[30.ms_index].array[8].`24`; ); ) + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[8].`26`; ) != \"\"\"\") + (\"\"\"\" | ifempty(29.array[30.ms_index].array[8].`27`; ) != \"\"\"\") + \"\"\"\"; \"Tempo:\" + if((ifempty(29.array[30.ms_index].array[8].`26`; ) != \"\"\"\") + \"\"\"\"; ifempty(29.array[30.ms_index].array[8].`26`; ); ) + if((ifempty(29.array[30.ms_index].array[8].`27`; ) != \"\"\"\") + \"\"\"\"; \" | Per set: \" + ifempty(29.array[30.ms_index].array[8].`27`; ); ) + \"\\n\"; ) + if((ifempty(29.array[30.ms_index].array[8].`28`; ) != \"\"\"\") + \"\"\"\"; \"Pattern notes: \" + ifempty(29.array[30.ms_index].array[8].`28`; ); ))}}"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2400,
+                                    "y": 0,
+                                    "name": "B-FillForm | Exercise details variables"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        },
+                                        "variables": {
+                                            "items": [
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "variables",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Variable name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "any",
+                                                "label": "Variable value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Variables"
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "ms01_details",
+                                        "type": "any",
+                                        "label": "ms01_details"
+                                    },
+                                    {
+                                        "name": "ms02_details",
+                                        "type": "any",
+                                        "label": "ms02_details"
+                                    },
+                                    {
+                                        "name": "ms03_details",
+                                        "type": "any",
+                                        "label": "ms03_details"
+                                    },
+                                    {
+                                        "name": "ms04_details",
+                                        "type": "any",
+                                        "label": "ms04_details"
+                                    },
+                                    {
+                                        "name": "ms05_details",
+                                        "type": "any",
+                                        "label": "ms05_details"
+                                    },
+                                    {
+                                        "name": "ms06_details",
+                                        "type": "any",
+                                        "label": "ms06_details"
+                                    },
+                                    {
+                                        "name": "ms07_details",
+                                        "type": "any",
+                                        "label": "ms07_details"
+                                    },
+                                    {
+                                        "name": "ms08_details",
+                                        "type": "any",
+                                        "label": "ms08_details"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 32,
+                            "module": "util:SetVariables",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "scope": "roundtrip",
+                                "variables": [
+                                    {
+                                        "name": "Prefilled Form",
+                                        "value": "{{\"https://docs.google.com/forms/d/e/1FAIpQLScVmNt_KaYAiguyGRr1S5qgwke2mKjOhMCIoncMBVpJEeV7FQ/viewform?usp=pp_url\" + \"&entry.1273423738=\" + encodeURL(replace(28.wu01_text; \"\\n\"; newline)) + \"&entry.691070038=\" + encodeURL(replace(28.wu02_text; \"\\n\"; newline)) + \"&entry.597774429=\" + encodeURL(replace(28.wu03_text; \"\\n\"; newline)) + \"&entry.1909459436=\" + encodeURL(replace(28.wu04_text; \"\\n\"; newline)) + \"&entry.1910047499=\" + encodeURL(replace(28.ms01_text; \"\\n\"; newline) + replace(31.ms01_details; \"\\n\"; newline)) + \"&entry.1953730720=\" + encodeURL(replace(28.ms02_text; \"\\n\"; newline) + replace(31.ms02_details; \"\\n\"; newline)) + \"&entry.1909950985=\" + encodeURL(replace(28.ms03_text; \"\\n\"; newline) + replace(31.ms03_details; \"\\n\"; newline)) + \"&entry.898928388=\" + encodeURL(replace(28.ms04_text; \"\\n\"; newline) + replace(31.ms04_details; \"\\n\"; newline)) + \"&entry.1981378081=\" + encodeURL(replace(28.ms05_text; \"\\n\"; newline) + replace(31.ms05_details; \"\\n\"; newline)) + \"&entry.2072777090=\" + encodeURL(replace(28.ms06_text; \"\\n\"; newline) + replace(31.ms06_details; \"\\n\"; newline)) + \"&entry.253081316=\" + encodeURL(replace(28.ms07_text; \"\\n\"; newline) + replace(31.ms07_details; \"\\n\"; newline)) + \"&entry.1359614341=\" + encodeURL(replace(28.ms08_text; \"\\n\"; newline) + replace(31.ms08_details; \"\\n\"; newline)) + \"&entry.1287528626=\" + encodeURL(replace(28.cd01_text; \"\\n\"; newline)) + \"&entry.527396898=\" + encodeURL(replace(28.cd02_text; \"\\n\"; newline)) + \"&entry.62812837=\" + encodeURL(replace(28.cd03_text; \"\\n\"; newline)) + \"&entry.1169164454=\" + encodeURL(replace(1.`2`; \"\\n\"; newline)) + \"&entry.988910894=\" + encodeURL(replace(1.`6`; \"\\n\"; newline))}}"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2700,
+                                    "y": 0,
+                                    "name": "B-FillForm | Create Form URL"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        },
+                                        "variables": {
+                                            "items": [
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "variables",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Variable name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "any",
+                                                "label": "Variable value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Variables"
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "Prefilled Form",
+                                        "type": "any",
+                                        "label": "Prefilled Form"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 33,
+                            "module": "google-sheets:updateRow",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 6600568
+                            },
+                            "mapper": {
+                                "from": "drive",
+                                "mode": "select",
+                                "values": {
+                                    "22": "{{32.`Prefilled Form`}}"
+                                },
+                                "sheetId": "Plans_Sessions",
+                                "rowNumber": "{{1.`__ROW_NUMBER__`}}",
+                                "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                                "includesHeaders": true,
+                                "valueInputOption": "USER_ENTERED"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3000,
+                                    "y": 0,
+                                    "name": "B-FillForm | Update Session with prefill URL"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "from": {
+                                            "label": "My Drive"
+                                        },
+                                        "mode": {
+                                            "label": "Search by path"
+                                        },
+                                        "sheetId": {
+                                            "label": "Plans_Sessions"
+                                        },
+                                        "spreadsheetId": {
+                                            "path": [
+                                                "Bill D'Bettabody",
+                                                "Bill D'Bettabody System Core"
+                                            ]
+                                        },
+                                        "includesHeaders": {
+                                            "label": "Yes",
+                                            "nested": [
+                                                {
+                                                    "name": "values",
+                                                    "spec": [
+                                                        {
+                                                            "name": "0",
+                                                            "type": "text",
+                                                            "label": "plan_id (A)"
+                                                        },
+                                                        {
+                                                            "name": "1",
+                                                            "type": "text",
+                                                            "label": "block_id (B)"
+                                                        },
+                                                        {
+                                                            "name": "2",
+                                                            "type": "text",
+                                                            "label": "client_id (C)"
+                                                        },
+                                                        {
+                                                            "name": "3",
+                                                            "type": "text",
+                                                            "label": "week (D)"
+                                                        },
+                                                        {
+                                                            "name": "4",
+                                                            "type": "text",
+                                                            "label": "week_id (E)"
+                                                        },
+                                                        {
+                                                            "name": "5",
+                                                            "type": "text",
+                                                            "label": "day (F)"
+                                                        },
+                                                        {
+                                                            "name": "6",
+                                                            "type": "text",
+                                                            "label": "session_id (G)"
+                                                        },
+                                                        {
+                                                            "name": "7",
+                                                            "type": "text",
+                                                            "label": "phase (H)"
+                                                        },
+                                                        {
+                                                            "name": "8",
+                                                            "type": "text",
+                                                            "label": "location (I)"
+                                                        },
+                                                        {
+                                                            "name": "9",
+                                                            "type": "text",
+                                                            "label": "focus (J)"
+                                                        },
+                                                        {
+                                                            "name": "10",
+                                                            "type": "text",
+                                                            "label": "exercises (K)"
+                                                        },
+                                                        {
+                                                            "name": "11",
+                                                            "type": "text",
+                                                            "label": "macros (L)"
+                                                        },
+                                                        {
+                                                            "name": "12",
+                                                            "type": "text",
+                                                            "label": "supplements (M)"
+                                                        },
+                                                        {
+                                                            "name": "13",
+                                                            "type": "text",
+                                                            "label": "notes (N)"
+                                                        },
+                                                        {
+                                                            "name": "14",
+                                                            "type": "text",
+                                                            "label": "session_date (O)"
+                                                        },
+                                                        {
+                                                            "name": "15",
+                                                            "type": "text",
+                                                            "label": "session_day_of_week (P)"
+                                                        },
+                                                        {
+                                                            "name": "16",
+                                                            "type": "text",
+                                                            "label": "session_global_number (Q)"
+                                                        },
+                                                        {
+                                                            "name": "17",
+                                                            "type": "text",
+                                                            "label": "intended_intensity_rpe (R)"
+                                                        },
+                                                        {
+                                                            "name": "18",
+                                                            "type": "text",
+                                                            "label": "intended_hr_zone (S)"
+                                                        },
+                                                        {
+                                                            "name": "19",
+                                                            "type": "text",
+                                                            "label": "estimated_duration_minutes (T)"
+                                                        },
+                                                        {
+                                                            "name": "20",
+                                                            "type": "text",
+                                                            "label": "linked_sport (U)"
+                                                        },
+                                                        {
+                                                            "name": "21",
+                                                            "type": "text",
+                                                            "label": "session_status (V)"
+                                                        },
+                                                        {
+                                                            "name": "22",
+                                                            "type": "text",
+                                                            "label": "google_form_url (W)"
+                                                        },
+                                                        {
+                                                            "name": "23",
+                                                            "type": "text",
+                                                            "label": "(X)"
+                                                        },
+                                                        {
+                                                            "name": "24",
+                                                            "type": "text",
+                                                            "label": "(Y)"
+                                                        },
+                                                        {
+                                                            "name": "25",
+                                                            "type": "text",
+                                                            "label": "(Z)"
+                                                        },
+                                                        {
+                                                            "name": "26",
+                                                            "type": "text",
+                                                            "label": "(AA)"
+                                                        }
+                                                    ],
+                                                    "type": "collection",
+                                                    "label": "Values"
+                                                }
+                                            ]
+                                        },
+                                        "valueInputOption": {
+                                            "mode": "chose",
+                                            "label": "User entered"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "google"
+                                            },
+                                            "label": "66Fish (66fishmarket@gmail.com)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:google",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "mode",
+                                        "type": "select",
+                                        "label": "Search Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "select",
+                                                "fromAll",
+                                                "map"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "valueInputOption",
+                                        "type": "select",
+                                        "label": "Value input option",
+                                        "validate": {
+                                            "enum": [
+                                                "USER_ENTERED",
+                                                "RAW"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "from",
+                                        "type": "select",
+                                        "label": "Drive",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "drive",
+                                                "share",
+                                                "team"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "spreadsheetId",
+                                        "type": "file",
+                                        "label": "Spreadsheet ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "sheetId",
+                                        "type": "select",
+                                        "label": "Sheet Name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "rowNumber",
+                                        "type": "uinteger",
+                                        "label": "Row number",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "includesHeaders",
+                                        "type": "select",
+                                        "label": "Table contains headers",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                true,
+                                                false
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "values",
+                                        "spec": [
+                                            {
+                                                "name": "0",
+                                                "type": "text",
+                                                "label": "plan_id (A)"
+                                            },
+                                            {
+                                                "name": "1",
+                                                "type": "text",
+                                                "label": "block_id (B)"
+                                            },
+                                            {
+                                                "name": "2",
+                                                "type": "text",
+                                                "label": "client_id (C)"
+                                            },
+                                            {
+                                                "name": "3",
+                                                "type": "text",
+                                                "label": "week (D)"
+                                            },
+                                            {
+                                                "name": "4",
+                                                "type": "text",
+                                                "label": "week_id (E)"
+                                            },
+                                            {
+                                                "name": "5",
+                                                "type": "text",
+                                                "label": "day (F)"
+                                            },
+                                            {
+                                                "name": "6",
+                                                "type": "text",
+                                                "label": "session_id (G)"
+                                            },
+                                            {
+                                                "name": "7",
+                                                "type": "text",
+                                                "label": "phase (H)"
+                                            },
+                                            {
+                                                "name": "8",
+                                                "type": "text",
+                                                "label": "location (I)"
+                                            },
+                                            {
+                                                "name": "9",
+                                                "type": "text",
+                                                "label": "focus (J)"
+                                            },
+                                            {
+                                                "name": "10",
+                                                "type": "text",
+                                                "label": "exercises (K)"
+                                            },
+                                            {
+                                                "name": "11",
+                                                "type": "text",
+                                                "label": "macros (L)"
+                                            },
+                                            {
+                                                "name": "12",
+                                                "type": "text",
+                                                "label": "supplements (M)"
+                                            },
+                                            {
+                                                "name": "13",
+                                                "type": "text",
+                                                "label": "notes (N)"
+                                            },
+                                            {
+                                                "name": "14",
+                                                "type": "text",
+                                                "label": "session_date (O)"
+                                            },
+                                            {
+                                                "name": "15",
+                                                "type": "text",
+                                                "label": "session_day_of_week (P)"
+                                            },
+                                            {
+                                                "name": "16",
+                                                "type": "text",
+                                                "label": "session_global_number (Q)"
+                                            },
+                                            {
+                                                "name": "17",
+                                                "type": "text",
+                                                "label": "intended_intensity_rpe (R)"
+                                            },
+                                            {
+                                                "name": "18",
+                                                "type": "text",
+                                                "label": "intended_hr_zone (S)"
+                                            },
+                                            {
+                                                "name": "19",
+                                                "type": "text",
+                                                "label": "estimated_duration_minutes (T)"
+                                            },
+                                            {
+                                                "name": "20",
+                                                "type": "text",
+                                                "label": "linked_sport (U)"
+                                            },
+                                            {
+                                                "name": "21",
+                                                "type": "text",
+                                                "label": "session_status (V)"
+                                            },
+                                            {
+                                                "name": "22",
+                                                "type": "text",
+                                                "label": "google_form_url (W)"
+                                            },
+                                            {
+                                                "name": "23",
+                                                "type": "text",
+                                                "label": "(X)"
+                                            },
+                                            {
+                                                "name": "24",
+                                                "type": "text",
+                                                "label": "(Y)"
+                                            },
+                                            {
+                                                "name": "25",
+                                                "type": "text",
+                                                "label": "(Z)"
+                                            },
+                                            {
+                                                "name": "26",
+                                                "type": "text",
+                                                "label": "(AA)"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Values"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 35,
+                            "module": "util:SetVariable2",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "No Session Found",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{1.`__IMTLENGTH__`}}",
+                                            "b": "0",
+                                            "o": "number:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "name": "no_session_tomorrow",
+                                "scope": "roundtrip",
+                                "value": "Fuck All Tomorrow"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 550,
+                                    "y": 397,
+                                    "name": "B-FillForm | No effing Sesh"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "name",
+                                        "type": "text",
+                                        "label": "Variable name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "value",
+                                        "type": "any",
+                                        "label": "Variable value"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "no_session_tomorrow",
+                                        "type": "any",
+                                        "label": "no_session_tomorrow"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu2.make.com",
+        "notes": []
+    }
+}
