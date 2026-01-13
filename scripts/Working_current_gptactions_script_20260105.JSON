@@ -839,6 +839,372 @@
         }
       }
     },
+"/2vs9htbixx68m2hdbxinro9tdp55arao": {
+  "post": {
+    "operationId": "populate_training_week",
+    "summary": "Populate sessions and steps for a specific training week",
+    "description": "Populates one training week by updating existing Plans_Sessions rows (matched by session_id) and creating Plans_Steps rows for each step. session_id values must already exist.",
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["client_id", "context", "sessions"],
+            "properties": {
+              "client_id": {
+                "type": "string",
+                "description": "Client identifier."
+              },
+              "context": {
+                "type": "object",
+                "required": ["plan_id", "block_id", "week_id", "week_number"],
+                "properties": {
+                  "plan_id": { "type": "string" },
+                  "block_id": { "type": "string" },
+                  "week_id": { "type": "string" },
+                  "week_number": { "type": "integer" }
+                },
+                "additionalProperties": false
+              },
+              "sessions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["session_id", "steps"],
+                  "properties": {
+                    "session_id": { "type": "string" },
+                    "week": { "type": "integer" },
+                    "day": { "type": "integer" },
+                    "phase": { "type": "string" },
+                    "location": { "type": "string" },
+                    "focus": { "type": "string" },
+                    "exercises": { "type": "string" },
+                    "macros": { "type": "string" },
+                    "supplements": { "type": "string" },
+                    "notes": { "type": "string" },
+                    "session_date": {
+                      "type": "string",
+                      "description": "YYYY-MM-DD recommended."
+                    },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "step_order": { "type": "integer" },
+                          "segment_type": { "type": "string" },
+                          "step_type": { "type": "string" },
+                          "duration_type": { "type": "string" },
+                          "duration_value": { "type": "string" },
+                          "target_type": { "type": "string" },
+                          "target_value": { "type": "string" },
+                          "exercise_name": { "type": "string" },
+                          "sets": { "type": "integer" },
+                          "reps": {
+                            "type": "integer",
+                            "description": "Must be >= 1."
+                          },
+                          "load_kg": { "type": "number" },
+                          "rest_seconds": { "type": "integer" },
+                          "notes_coach": { "type": "string" },
+                          "notes_athlete": { "type": "string" },
+                          "pattern_type": "linear_simple",
+                          "load_start_kg": {{4.load_kg}},
+                          "load_increment_kg": 0,
+                          "load_peak_kg": {{4.load_kg}},
+                          "reps_pattern": "constant",
+                          "rpe_pattern": "steady",
+                          "tempo_pattern": "2011",
+                          "tempo_per_set_pattern": "constant",
+                          "pattern_notes": "",
+                          "interval_count": 0,
+                          "interval_work_sec": 0,
+                          "interval_rest_sec": 0,
+                          "intensity_start": 0,
+                          "intensity_end": 0
+                        },
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Training week populated successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "success" },
+                "client_id": { "type": "string" },
+                "plan_id": { "type": "string" },
+                "week_id": { "type": "string" },
+                "week_number": { "type": "integer" },
+                "sessions_updated": { "type": "integer" },
+                "steps_created": { "type": "integer" },
+                "timestamp": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+},
+    "/w8kw2yvyhvt2zh9lf5m8gkus4slywdjq": {
+  "post": {
+    "operationId": "load_client_context",
+    "summary": "Load full client context bundle",
+    "description": "Returns the full client context JSON bundle (profile, plan context, weeks/sessions/steps, and related context). Input contract is a single top-level client_id.",
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["client_id"],
+            "properties": {
+              "client_id": {
+                "type": "string",
+                "description": "Client identifier (matched case-insensitively in Clients sheet)."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Client context loaded successfully",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "required": ["status", "client_id", "timestamp"],
+              "properties": {
+                "status": { "type": "string", "example": "OK" },
+                "client_id": { "type": "string" },
+                "timestamp": { "type": "string", "description": "Timestamp string generated by scenario." }
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    }
+  }
+},
+"/hv7koluwt0mxtbj6m8exs4774oyk4e7g": {
+  "post": {
+    "operationId": "session_update",
+    "summary": "Patch an existing session and/or steps",
+    "description": "Patches one existing Plans_Sessions row (by client_id + session_id) and patches existing Plans_Steps rows (by client_id + step_id). steps_upsert may be an empty array to trigger session-only updates or no-op validation.",
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["client_id", "session_id"],
+            "properties": {
+              "client_id": {
+                "type": "string",
+                "description": "Client identifier."
+              },
+              "session_id": {
+                "type": "string",
+                "description": "Session identifier to patch."
+              },
+              "session_updates": {
+                "type": "object",
+                "description": "Optional patch fields mapped into Plans_Sessions.",
+                "properties": {
+                  "location": { "type": "string" },
+                  "focus": { "type": "string" },
+                  "exercises": { "type": "string" },
+                  "macros": { "type": "string" },
+                  "supplements": { "type": "string" },
+                  "notes": { "type": "string" },
+                  "session_status": { "type": "string" }
+                },
+                "additionalProperties": false
+              },
+              "steps_upsert": {
+                "type": "array",
+                "description": "Optional array of step patches. Preferred to send [] when none. Each item MUST include step_id.",
+                "items": {
+                  "type": "object",
+                  "required": ["step_id"],
+                  "properties": {
+                    "step_id": { "type": "string" },
+
+                    "step_order": { "type": "integer" },
+                    "segment_type": { "type": "string" },
+                    "step_type": { "type": "string" },
+                    "duration_type": { "type": "string" },
+                    "duration_value": { "type": "number" },
+                    "target_type": { "type": "string" },
+                    "target_value": { "type": "number" },
+                    "exercise_name": { "type": "string" },
+                    "sets": { "type": "number" },
+                    "reps": {
+                      "type": "number",
+                      "description": "Minimum 1; never 0."
+                    },
+                    "load_kg": { "type": "number" },
+                    "rest_seconds": { "type": "number" },
+                    "notes_coach": { "type": "string" },
+                    "notes_athlete": { "type": "string" },
+                    "status": { "type": "string" },
+
+                    "pattern_type": { "type": "string" },
+                    "load_start_kg": { "type": "number" },
+                    "load_increment_kg": { "type": "number" },
+                    "load_peak_kg": { "type": "number" },
+                    "reps_pattern": { "type": "string" },
+                    "rpe_pattern": { "type": "string" },
+                    "tempo_pattern": { "type": "string" },
+                    "tempo_per_set_pattern": { "type": "string" },
+                    "pattern_notes": { "type": "string" },
+
+                    "interval_count": { "type": "number" },
+                    "interval_work_sec": { "type": "number" },
+                    "interval_rest_sec": { "type": "number" },
+
+                    "intensity_start": { "type": "number" },
+                    "intensity_end": { "type": "number" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Session update response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "ok" },
+                "action": { "type": "string", "example": "session_updated" },
+                "client_id": { "type": "string" },
+                "session_id": { "type": "string" },
+                "sessions_updated": { "type": "number" },
+                "steps_requested": { "type": "number" },
+                "steps_updated": { "type": "number" },
+                "timestamp": { "type": "string" }
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    }
+  }
+},
+
+"/9cip80yob4ybt8qrkyaxsows81teldu5": {
+  "post": {
+    "operationId": "issue_log_updater",
+    "summary": "Create or update an issue log entry",
+    "description": "Creates a new Issues_Log row or updates an existing one (dedupe key based on client_id + issue_type + entity_type + entity_id). Sends an email notification and returns created/updated plus row index.",
+    "requestBody": {
+      "required": true,
+      "content": {
+        "application/json": {
+          "schema": {
+            "type": "object",
+            "required": ["issue_type", "entity_type", "description"],
+            "properties": {
+              "client_id": {
+                "type": "string",
+                "description": "Optional. If omitted/blank, scenario defaults to 'no_client'."
+              },
+              "source": {
+                "type": "string",
+                "description": "Optional. Defaults to 'bill'."
+              },
+              "issue_type": {
+                "type": "string",
+                "description": "Required. Issue category/type."
+              },
+              "entity_type": {
+                "type": "string",
+                "description": "Required. What the issue relates to (e.g. scenario, schema, action, sheet)."
+              },
+              "entity_id": {
+                "type": "string",
+                "description": "Optional. Identifier for the entity."
+              },
+              "description": {
+                "type": "string",
+                "description": "Required. Human-readable issue description."
+              },
+              "context": {
+                "type": "string",
+                "description": "Optional. Extra context."
+              },
+              "suggested_action": {
+                "type": "string",
+                "description": "Optional. Suggested next action."
+              },
+              "priority": {
+                "type": "string",
+                "description": "Optional. Priority label."
+              },
+              "status": {
+                "type": "string",
+                "description": "Optional. Defaults to 'open'."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "responses": {
+      "200": {
+        "description": "Issue log upsert response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": { "type": "string", "example": "ok" },
+                "action": {
+                  "type": "string",
+                  "description": "created or updated",
+                  "example": "created"
+                },
+                "row_index": { "type": "string" },
+                "timestamp": { "type": "string" }
+              },
+              "additionalProperties": true
+            }
+          }
+        }
+      }
+    }
+  }
+},
+
     "/7n8m9rg7chlxjrtfcdrekx1qc12smsyn": {
       "post": {
         "operationId": "post_contraindication_temp",
