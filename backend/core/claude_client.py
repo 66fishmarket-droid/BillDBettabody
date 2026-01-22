@@ -1,12 +1,16 @@
 """
-Bill D'Bettabody - Claude API Client
+Bill D'Bettabody - Claude API Client (WITH TOOL CALLING)
 Handles all interactions with Claude API
 Implements Bill's persona, priority hierarchy, and context management
+NOW WITH: Webhook execution via Claude's native tool calling
 """
 
 import anthropic
+import json
 from config import Config
 from core.context_loader import build_system_prompt
+from core.tool_definitions import get_claude_tools, get_webhook_url_for_tool
+from webhooks import webhook_handler
 
 
 def initialize_client():
@@ -48,14 +52,62 @@ def build_conversation_history(session):
     return messages
 
 
+def execute_tool_call(tool_name, tool_input):
+    """
+    Execute a webhook tool call
+    
+    Args:
+        tool_name: Name of the tool (e.g., 'populate_training_week')
+        tool_input: Tool input parameters as dict
+        
+    Returns:
+        dict: Webhook response
+    """
+    print(f"[Tool] Executing: {tool_name}")
+    print(f"[Tool] Input keys: {list(tool_input.keys())}")
+    
+    # Get the webhook URL for this tool
+    webhook_url = get_webhook_url_for_tool(tool_name)
+    
+    if not webhook_url:
+        error_msg = f"No webhook URL found for tool: {tool_name}"
+        print(f"[Tool] ERROR: {error_msg}")
+        return {"error": error_msg}
+    
+    print(f"[Tool] Webhook URL: {webhook_url}")
+    
+    try:
+        # Execute the webhook using webhook_handler
+        response = webhook_handler.execute_webhook(webhook_url, tool_input)
+        
+        print(f"[Tool] Success: {tool_name}")
+        
+        return response
+        
+    except Exception as e:
+        error_msg = f"Webhook execution failed: {str(e)}"
+        print(f"[Tool] ERROR: {error_msg}")
+        import traceback
+        traceback.print_exc()
+        return {"error": error_msg, "details": str(e)}
+
+
 def chat(message, session):
     """
     Send message to Claude and get Bill's response
+    NOW WITH TOOL CALLING SUPPORT
+    
+    This function handles the full tool use loop:
+    1. Send message to Claude with available tools
+    2. If Claude wants to use a tool, execute it
+    3. Send tool results back to Claude
+    4. Repeat until Claude gives a text response
     
     Implements:
     - Section 0: Priority hierarchy
     - Section 1: Operating modes and persona
     - Section 2.1b: Context integrity
+    - Section 3.7: Auto-refresh after writes
     - Section 4.1a: Exercise Library authority
     
     Args:
@@ -70,75 +122,158 @@ def chat(message, session):
     client = initialize_client()
     
     # Build system prompt (includes Bill instructions + client context)
-    # Pass user_message for smart exercise library loading
     system_prompt = build_system_prompt(
         session,
         include_context=True,
-        user_message=message  # ← Added this
+        user_message=message
     )
+    
+    # Load available tools
+    tools = get_claude_tools()
+    
+    # Remove the _webhook_path metadata before sending to Claude
+    # (Claude doesn't need to see internal metadata)
+    claude_tools = []
+    for tool in tools:
+        clean_tool = {
+            'name': tool['name'],
+            'description': tool['description'],
+            'input_schema': tool['input_schema']
+        }
+        claude_tools.append(clean_tool)
     
     # Build conversation history
     history = build_conversation_history(session)
     
     # Add current message
-    current_messages = history + [{
+    messages = history + [{
         'role': 'user',
         'content': message
     }]
     
-    # Log token estimate
-    print(f"[Claude] Sending message (conversation length: {len(current_messages)} messages)")
+    # Track if we've made any write operations (for context refresh)
+    made_write_operation = False
     
-    try:
-        # Call Claude API
-        response = client.messages.create(
-            model=Config.CLAUDE_MODEL,
-            max_tokens=Config.CLAUDE_MAX_TOKENS,
-            system=system_prompt,
-            messages=current_messages
-        )
+    # Tool use loop - keep going until we get a text response
+    max_iterations = 10  # Safety limit to prevent infinite loops
+    iteration = 0
+    
+    while iteration < max_iterations:
+        iteration += 1
         
-        # Extract text response
-        bill_response = response.content[0].text
+        print(f"[Claude] Iteration {iteration}: Calling API...")
+        print(f"[Claude] Messages in conversation: {len(messages)}")
         
-        # Log usage
-        print(f"[Claude] Response received")
-        print(f"[Claude] Input tokens: {response.usage.input_tokens}")
-        print(f"[Claude] Output tokens: {response.usage.output_tokens}")
+        try:
+            # Call Claude API with tools
+            response = client.messages.create(
+                model=Config.CLAUDE_MODEL,
+                max_tokens=Config.CLAUDE_MAX_TOKENS,
+                system=system_prompt,
+                messages=messages,
+                tools=claude_tools
+            )
+            
+            # Log usage
+            print(f"[Claude] Input tokens: {response.usage.input_tokens}")
+            print(f"[Claude] Output tokens: {response.usage.output_tokens}")
+            
+            # Check stop reason
+            stop_reason = response.stop_reason
+            print(f"[Claude] Stop reason: {stop_reason}")
+            
+            # Process response content
+            if stop_reason == "tool_use":
+                # Claude wants to use a tool
+                tool_results = []
+                
+                for content_block in response.content:
+                    if content_block.type == "tool_use":
+                        tool_name = content_block.name
+                        tool_input = content_block.input
+                        tool_use_id = content_block.id
+                        
+                        print(f"[Claude] Wants to use tool: {tool_name}")
+                        
+                        # Execute the tool
+                        tool_result = execute_tool_call(tool_name, tool_input)
+                        
+                        # Check if this is a write operation
+                        write_tools = {
+                            'post_user_upsert',
+                            'generate_training_plan', 
+                            'populate_training_week',
+                            'session_update',
+                            'post_contraindication_temp',
+                            'update_contraindication_temp',
+                            'post_contraindication_chronic'
+                        }
+                        if tool_name in write_tools:
+                            made_write_operation = True
+                            print(f"[Claude] Write operation detected: {tool_name}")
+                        
+                        # Add tool result to list
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": tool_use_id,
+                            "content": json.dumps(tool_result)
+                        })
+                
+                # Add assistant's tool use to conversation
+                messages.append({
+                    "role": "assistant",
+                    "content": response.content
+                })
+                
+                # Add tool results to conversation
+                messages.append({
+                    "role": "user",
+                    "content": tool_results
+                })
+                
+                # Continue loop to get Claude's response to the tool results
+                continue
+                
+            elif stop_reason == "end_turn":
+                # Claude is done - extract text response
+                bill_response = ""
+                
+                for content_block in response.content:
+                    if content_block.type == "text":
+                        bill_response += content_block.text
+                
+                # If we made write operations, refresh context
+                if made_write_operation:
+                    print("[Claude] Write operation completed - context should be refreshed")
+                    # Note: Context refresh is handled by server.py after this function returns
+                
+                return bill_response
+                
+            else:
+                # Unexpected stop reason
+                print(f"[Claude] WARNING: Unexpected stop reason: {stop_reason}")
+                
+                # Try to extract any text we can
+                bill_response = ""
+                for content_block in response.content:
+                    if content_block.type == "text":
+                        bill_response += content_block.text
+                
+                if bill_response:
+                    return bill_response
+                else:
+                    return "I encountered an unexpected issue. Please try again."
         
-        return bill_response
-        
-    except anthropic.APIError as e:
-        print(f"[Claude] API Error: {str(e)}")
-        raise
-    except Exception as e:
-        print(f"[Claude] Unexpected error: {str(e)}")
-        raise
-
-def chat_with_webhook_awareness(message, session):
-    """
-    Enhanced chat that can detect and execute webhook requests
+        except anthropic.APIError as e:
+            print(f"[Claude] API Error: {str(e)}")
+            raise
+        except Exception as e:
+            print(f"[Claude] Unexpected error: {str(e)}")
+            raise
     
-    This is where Bill's responses might trigger Make.com webhooks.
-    For V1, we keep it simple - Bill explicitly states when he needs
-    to call a webhook, and we parse that intent.
-    
-    Args:
-        message: User's message
-        session: Session dict
-        
-    Returns:
-        str: Bill's response (may include webhook execution results)
-    """
-    
-    # Get initial response from Claude
-    response = chat(message, session)
-    
-    # TODO: Parse response for webhook intent
-    # For now, just return the response
-    # Later we'll add webhook parsing and execution
-    
-    return response
+    # If we hit max iterations, return a helpful message
+    print(f"[Claude] WARNING: Hit max iterations ({max_iterations})")
+    return "I'm having trouble completing that request. The operation may have succeeded, but I lost track of the conversation. Please check if your request was completed, or try asking again."
 
 
 def generate_onboarding_response(message, session):
@@ -158,7 +293,7 @@ def generate_onboarding_response(message, session):
         str: Bill's response
     """
     
-    # Use standard chat but with onboarding context
+    # Use standard chat - tools are available during onboarding too
     return chat(message, session)
 
 
@@ -182,5 +317,5 @@ def generate_developer_response(message, session):
     if not session.get('developer_authenticated'):
         return "Developer mode requires authentication. Use /developer-auth endpoint first."
     
-    # Use standard chat but mode is already set to DEVELOPER
+    # Use standard chat - tools are available in developer mode
     return chat(message, session)

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#8b4513">
+  
+  <title>Session Preview - Bill D'Bettabody</title>
+  
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="container">
+      
+      <!-- Header with Bill's face -->
+      <header class="mb-4">
+        <div class="flex items-center justify-between">
+          <button class="btn btn-secondary" id="back-btn">← Back</button>
+          <button class="btn btn-secondary" id="ask-bill-btn">💬 Ask Bill</button>
+        </div>
+      </header>
+
+      <!-- Session Header Card -->
+      <div class="card mb-3">
+        <h1 class="text-2xl font-bold mb-2" id="session-name"></h1>
+        <p class="text-muted mb-3" id="session-focus"></p>
+        
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <span class="text-gray-600">Phase:</span>
+            <span class="font-semibold ml-2" id="session-phase"></span>
+          </div>
+          <div>
+            <span class="text-gray-600">Location:</span>
+            <span class="font-semibold ml-2 capitalize" id="session-location"></span>
+          </div>
+          <div>
+            <span class="text-gray-600">Duration:</span>
+            <span class="font-semibold ml-2" id="session-duration"></span>
+          </div>
+          <div>
+            <span class="text-gray-600">Intensity:</span>
+            <span class="font-semibold ml-2" id="session-intensity"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session Outline -->
+      <div class="mb-4">
+        <h2 class="text-xl font-bold mb-3">Session Outline</h2>
+        
+        <!-- Warm-up Section -->
+        <div class="mb-4">
+          <div class="flex items-center mb-2">
+            <span class="badge badge-warmup mr-2">Warm-up</span>
+            <span class="text-sm text-gray-600" id="warmup-duration"></span>
+          </div>
+          <ul class="exercise-list" id="warmup-exercises">
+            <!-- Populated by JavaScript -->
+          </ul>
+        </div>
+
+        <!-- Main Section -->
+        <div class="mb-4">
+          <div class="flex items-center mb-2">
+            <span class="badge badge-main mr-2">Main Work</span>
+            <span class="text-sm text-gray-600" id="main-duration"></span>
+          </div>
+          <ul class="exercise-list" id="main-exercises">
+            <!-- Populated by JavaScript -->
+          </ul>
+        </div>
+
+        <!-- Cool-down Section -->
+        <div class="mb-4">
+          <div class="flex items-center mb-2">
+            <span class="badge badge-cooldown mr-2">Cool-down</span>
+            <span class="text-sm text-gray-600" id="cooldown-duration"></span>
+          </div>
+          <ul class="exercise-list" id="cooldown-exercises">
+            <!-- Populated by JavaScript -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Equipment Preview -->
+      <div class="card mb-4" id="equipment-card">
+        <h3 class="font-semibold mb-2">Equipment You'll Need:</h3>
+        <div class="flex flex-wrap gap-2" id="equipment-list">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Start Session Button (Fixed at bottom) -->
+      <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div class="container max-w-2xl mx-auto">
+          <button class="btn btn-primary btn-block btn-large" id="start-session-btn">
+            START SESSION
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/mock-data.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/session-preview.js"></script>
+</body>
+</html>

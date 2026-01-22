@@ -5,6 +5,7 @@ Implements Section 3 (Action Logic) and Section 3.7 (Context Integrity)
 """
 
 import requests
+import json
 from datetime import datetime
 from config import Config
 from core.bill_config import is_write_webhook
@@ -13,6 +14,82 @@ from webhooks.context_integrity import (
     validate_session_ids_present,
     log_context_integrity_escalation
 )
+from webhooks.webhook_validator import validate_or_raise
+
+
+def parse_make_response(response):
+    """
+    Parse Make.com webhook response which may have double-nested JSON
+    
+    Make.com returns: {"body": "{...}", "headers": [...]}
+    Problem: The ENTIRE response often contains literal newlines/tabs 
+    Solution: Clean the raw response text before any JSON parsing
+    
+    Args:
+        response: requests.Response object
+        
+    Returns:
+        dict: Parsed response data
+    """
+    import re
+    
+    try:
+        # CRITICAL: Clean the raw response text BEFORE parsing
+        # Make.com includes literal control characters in JSON strings
+        raw_text = response.text
+        
+        # We can't just replace all newlines/tabs because the outer JSON
+        # structure uses them. We need to be smarter.
+        # 
+        # The pattern is: {"body": "{\n  ..."}
+        # We need to replace control chars INSIDE string values only
+        
+        # Actually, let's try a different approach:
+        # Parse what we can, then handle the body separately
+        
+        # First attempt: Try to parse as-is (might work if Make.com fixed it)
+        try:
+            data = response.json()
+        except json.JSONDecodeError:
+            # Failed - the outer JSON has issues
+            # Strip all control characters and try again
+            cleaned_text = re.sub(r'[\n\r\t]+', ' ', raw_text)
+            try:
+                data = json.loads(cleaned_text)
+            except json.JSONDecodeError as e:
+                print(f"[Webhook] Failed to parse even after stripping control chars: {str(e)}")
+                raise
+        
+        # Now handle the body if it exists
+        if 'body' in data and isinstance(data['body'], str):
+            body_str = data['body']
+            
+            # Clean control characters from body string
+            body_str_cleaned = re.sub(r'[\n\r\t]+', ' ', body_str)
+            
+            try:
+                first_body = json.loads(body_str_cleaned)
+                
+                # Check for second level nesting
+                if 'body' in first_body and isinstance(first_body['body'], str):
+                    second_body_str = re.sub(r'[\n\r\t]+', ' ', first_body['body'])
+                    return json.loads(second_body_str)
+                else:
+                    return first_body
+                    
+            except json.JSONDecodeError as e:
+                print(f"[Webhook] Failed to parse body: {str(e)}")
+                print(f"[Webhook] Cleaned body (first 500 chars): {body_str_cleaned[:500]}")
+                # Return the outer data as fallback
+                return data
+        else:
+            # Direct JSON response (no body wrapper)
+            return data
+            
+    except Exception as e:
+        print(f"[Webhook] Error parsing response: {str(e)}")
+        print(f"[Webhook] Raw response (first 1000 chars): {response.text[:1000]}")
+        raise
 
 
 def check_client_exists(client_id):
@@ -44,7 +121,7 @@ def check_client_exists(client_id):
         )
         response.raise_for_status()
         
-        data = response.json()
+        data = parse_make_response(response)
         return data.get('exists', False)
         
     except requests.RequestException as e:
@@ -89,26 +166,8 @@ def load_client_context(client_id):
         )
         response.raise_for_status()
         
-        # Parse the response
-        import json
-        data = response.json()
-        
-        # Handle double-nested JSON from Make.com
-        # First level: { "body": "..." }
-        if 'body' in data and isinstance(data['body'], str):
-            # Parse first body
-            first_body = json.loads(data['body'])
-            
-            # Second level might also have body
-            if 'body' in first_body and isinstance(first_body['body'], str):
-                # Parse second body - this is the actual context
-                context = json.loads(first_body['body'])
-            else:
-                # Only one level of nesting
-                context = first_body
-        else:
-            # Direct JSON response
-            context = data
+        # Use centralized parsing
+        context = parse_make_response(response)
         
         # Add metadata
         context['_loaded_at'] = datetime.now().isoformat()
@@ -119,74 +178,46 @@ def load_client_context(client_id):
     except requests.RequestException as e:
         print(f"Error loading client context: {str(e)}")
         raise
-    except (ValueError, json.JSONDecodeError) as e:
-        print(f"Error parsing client context JSON: {str(e)}")
-        print(f"Raw response (first 1000 chars): {response.text[:1000]}")
-        raise
 
-def execute_webhook(webhook_name, payload, session):
+
+def execute_webhook(webhook_url, payload):
     """
-    Execute a Make.com webhook with automatic context refresh
+    Execute a Make.com webhook (SIMPLIFIED for tool calling)
     
-    Section 2.1B + 3.7: POST-WRITE CONTEXT REFRESH (MANDATORY)
-    After ANY successful write-type webhook call, Bill MUST:
-    1) Call load_client_context(client_id) immediately
-    2) Replace working context with newly returned context
-    3) Confirm the update is visible before continuing
+    This is called by claude_client.py's execute_tool_call function.
+    Session management and context refresh happen at a higher level.
     
     Args:
-        webhook_name: Name of webhook to execute
+        webhook_url: Full webhook URL
         payload: JSON payload to send
-        session: Session object (will be updated if refresh needed)
         
     Returns:
         dict: Response from webhook
     """
-    webhook_url = Config.WEBHOOKS.get(webhook_name)
-    
-    if not webhook_url:
-        raise ValueError(f"Webhook URL not configured: {webhook_name}")
-    
-    # Special validation for populate_training_week
-    if webhook_name == 'populate_training_week':
-        valid, error_msg = validate_session_ids_present(session.get('context', {}))
-        if not valid:
-            raise ValueError(f"Cannot populate week: {error_msg}")
-    
     try:
-        print(f"[Webhook] Executing: {webhook_name}")
+        print(f"[Webhook] Executing webhook: {webhook_url[:50]}...")
+        print(f"[Webhook] Payload keys: {list(payload.keys())}")
         
         response = requests.post(
             webhook_url,
             json=payload,
             headers={'Content-Type': 'application/json'},
-            timeout=60  # Longer timeout for training generation
+            timeout=60
         )
         response.raise_for_status()
         
-        result = response.json()
+        result = parse_make_response(response)
         
-        # Check if this webhook requires context refresh
-        if should_refresh_context(webhook_name):
-            print(f"[Webhook] {webhook_name} is a write operation - refreshing context")
-            
-            client_id = session.get('client_id')
-            if client_id:
-                # Refresh context immediately
-                fresh_context = load_client_context(client_id)
-                
-                # Update session with fresh data
-                session['context'] = fresh_context
-                session['last_refresh'] = datetime.now().isoformat()
-                
-                print(f"[Webhook] Context refreshed at {session['last_refresh']}")
-            else:
-                print(f"[Webhook] WARNING: No client_id in session - cannot refresh context")
+        print(f"[Webhook] Success - Response keys: {list(result.keys()) if isinstance(result, dict) else 'not a dict'}")
         
         return result
         
     except requests.RequestException as e:
-        print(f"[Webhook] Error executing {webhook_name}: {str(e)}")
+        error_msg = f"Webhook execution failed: {str(e)}"
+        print(f"[Webhook] ERROR: {error_msg}")
+        if hasattr(e, 'response') and e.response is not None:
+            print(f"[Webhook] Response status: {e.response.status_code}")
+            print(f"[Webhook] Response text: {e.response.text[:500]}")
         raise
 
 
@@ -219,116 +250,9 @@ def authenticate_developer(provided_key):
         )
         response.raise_for_status()
         
-        data = response.json()
+        data = parse_make_response(response)
         return data.get('authenticated', False)
         
     except requests.RequestException as e:
         print(f"Error authenticating developer: {str(e)}")
         return False
-
-
-def post_user_upsert(client_id, data, session):
-    """
-    Create or update client profile
-    Section 3.1: post_user_upsert action
-    
-    Args:
-        client_id: Client identifier
-        data: Profile data to upsert
-        session: Session object (will be refreshed)
-        
-    Returns:
-        dict: Response from webhook
-    """
-    payload = {
-        "client_id": client_id,
-        "data": data
-    }
-    
-    return execute_webhook('post_user_upsert', payload, session)
-
-
-def post_contraindication_temp(client_id, contraindication_data, session):
-    """
-    Log temporary contraindication (injury, illness, etc.)
-    Section 3.3: post_contraindication_temp action
-    
-    Args:
-        client_id: Client identifier
-        contraindication_data: Injury/illness details
-        session: Session object (will be refreshed)
-        
-    Returns:
-        dict: Response from webhook
-    """
-    payload = {
-        "client_id": client_id,
-        **contraindication_data
-    }
-    
-    return execute_webhook('add_injury', payload, session)
-
-
-def generate_training_plan(client_id, plan_data, session):
-    """
-    Generate new training block/plan
-    Section 5.1: generate_training_plan action
-    
-    Args:
-        client_id: Client identifier
-        plan_data: Plan parameters
-        session: Session object (will be refreshed)
-        
-    Returns:
-        dict: Response from webhook
-    """
-    payload = {
-        "client_id": client_id,
-        **plan_data
-    }
-    
-    return execute_webhook('full_training_block', payload, session)
-
-
-def populate_training_week(client_id, week_data, session):
-    """
-    Populate week with training steps
-    Section 5.2: populate_training_week action
-    
-    HARD PRECONDITION: session_id values must already exist in context
-    
-    Args:
-        client_id: Client identifier
-        week_data: Week parameters
-        session: Session object (will be refreshed)
-        
-    Returns:
-        dict: Response from webhook
-    """
-    payload = {
-        "client_id": client_id,
-        **week_data
-    }
-    
-    return execute_webhook('populate_training_week', payload, session)
-
-
-def update_session(session_id, session_data, session):
-    """
-    Update existing session/steps
-    Section 5.3: session_update action
-    
-    Args:
-        session_id: Session identifier
-        session_data: Updated session details
-        session: Session object (will be refreshed)
-        
-    Returns:
-        dict: Response from webhook
-    """
-    payload = {
-        "session_id": session_id,
-        **session_data
-    }
-    
-    return execute_webhook('session_update', payload, session)

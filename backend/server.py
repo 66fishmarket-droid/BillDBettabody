@@ -343,6 +343,92 @@ def context_integrity_check():
 
 
 # ============================================================
+# REST DAY SUMMARY GENERATION
+# ============================================================
+
+@app.route('/sessions/rest-day-summary', methods=['GET'])
+def get_rest_day_summary():
+    """
+    Generate contextual rest day message when no session is scheduled
+    
+    This endpoint is called by the PWA when:
+    - No session exists for today (rest day)
+    - Client loads the dashboard
+    
+    Returns a 2-3 sentence message from Bill about rest, recovery, and nutrition.
+    Uses Claude API to generate a contextual, personalized message based on:
+    - Recent training load (from context)
+    - Client goals
+    - Nutrition targets
+    - Active contraindications
+    
+    Query params:
+        session_id: User's session identifier
+    
+    Returns:
+        {
+            "summary": "Rest day message from Bill",
+            "client_id": "cli_xxx",
+            "timestamp": "ISO datetime"
+        }
+    """
+    try:
+        session_id = request.args.get('session_id')
+        
+        if not session_id:
+            return jsonify({'error': 'Missing session_id parameter'}), 400
+        
+        session = client_context.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Invalid session_id'}), 400
+        
+        client_id = session.get('client_id')
+        context = session.get('context', {})
+        
+        # Build a focused prompt for Claude
+        profile = context.get('profile', {})
+        nutrition = context.get('nutrition', {})
+        contraindications = context.get('contraindications', {})
+        
+        # Count recent sessions for context
+        recent_sessions = len(context.get('sessions', {}).get('active', []))
+        
+        prompt = f"""Generate a 2-3 sentence rest day message for this client.
+
+CLIENT CONTEXT:
+- Name: {profile.get('first_name', 'there')}
+- Primary Goal: {profile.get('goal_primary', 'general fitness')}
+- Recent sessions: {recent_sessions} scheduled this week
+- Daily protein target: {nutrition.get('protein_min', 'adequate')}g
+- Active injuries: {'Yes' if contraindications else 'None'}
+
+TONE REQUIREMENTS:
+- Use Bill's gruff-but-warm voice
+- Frame rest as essential, not optional
+- Reference protein intake
+- Mention light movement if they're feeling restless
+- Reassure that recovery is progress
+
+Generate ONLY the 2-3 sentence message, nothing else."""
+
+        # Call Claude to generate the message
+        rest_message = claude_client.chat(prompt, session)
+        
+        return jsonify({
+            'summary': rest_message,
+            'client_id': client_id,
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        print(f"[Rest Day Summary] Error: {str(e)}")
+        return jsonify({
+            'error': 'Failed to generate rest day summary',
+            'details': str(e)
+        }), 500
+
+
+# ============================================================
 # SESSION CLEANUP
 # ============================================================
 
@@ -382,7 +468,8 @@ def not_found(error):
             'POST /chat',
             'POST /developer-auth',
             'POST /refresh-context',
-            'POST /context-integrity-check'
+            'POST /context-integrity-check',
+            'GET /sessions/rest-day-summary'
         ]
     }), 404
 

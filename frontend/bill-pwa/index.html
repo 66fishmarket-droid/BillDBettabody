@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2a2a2a">
+  
+  <title>Bill D'Bettabody</title>
+  
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="page flex items-center justify-center min-h-screen">
+    <div class="container max-w-md">
+      
+      <!-- Bill's Portrait -->
+      <div class="text-center mb-6">
+        <img src="/assets/bill-portrait.png" alt="Bill D'Bettabody" 
+             class="w-40 h-40 rounded-full mx-auto mb-4 border-4 border-amber-800 shadow-2xl">
+        <h1 class="text-4xl mb-2">Bill D'Bettabody</h1>
+        <p class="text-muted">Your AI Fitness Coach</p>
+      </div>
+
+      <!-- Login Card -->
+      <div class="card text-center">
+        <p class="mb-4 text-lg">Right then, let's get you sorted.</p>
+        
+        <!-- Client ID Input (temporary until device ID auto-login) -->
+        <div class="mb-4">
+          <label for="client-id-input" class="block text-sm text-left mb-2 text-muted">
+            Enter your Client ID:
+          </label>
+          <input 
+            type="text" 
+            id="client-id-input" 
+            class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-amber-600 focus:outline-none"
+            placeholder="e.g., cli_sherlock"
+            value="cli_demo"
+          />
+          <p class="text-xs text-muted mt-2 text-left">
+            For now, use "cli_demo" to see the demo data
+          </p>
+        </div>
+
+        <button class="btn btn-primary btn-block btn-large" id="enter-btn">
+          Enter
+        </button>
+
+        <p class="text-xs text-muted mt-4">
+          🔒 Auto-login via device ID coming soon
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/mock-data.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    // Login logic
+    document.getElementById('enter-btn').addEventListener('click', async () => {
+      const clientId = document.getElementById('client-id-input').value.trim();
+      
+      if (!clientId) {
+        alert('Please enter a Client ID');
+        return;
+      }
+
+      // For now, just save to session and redirect
+      // Later: call /initialize endpoint with device ID
+      app.saveSession({
+        session_id: 'sess_' + Date.now(),
+        client_id: clientId
+      });
+
+      window.location.href = '/dashboard.html';
+    });
+
+    // Allow Enter key to submit
+    document.getElementById('client-id-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('enter-btn').click();
+      }
+    });
+  </script>
+</body>
+</html>
