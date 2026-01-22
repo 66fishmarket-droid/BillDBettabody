@@ -1,7 +1,8 @@
 """
-Bill D'Bettabody - Claude API Client
+Bill D'Bettabody - Claude API Client (WITH PROMPT CACHING SUPPORT)
 Handles all interactions with Claude API
 Implements Bill's persona, priority hierarchy, and context management
+NOW SUPPORTS: Structured system prompts with cache_control
 """
 
 import anthropic
@@ -52,11 +53,14 @@ def chat(message, session):
     """
     Send message to Claude and get Bill's response
     
+    UPDATED: Now handles structured system prompts for prompt caching
+    
     Implements:
     - Section 0: Priority hierarchy
     - Section 1: Operating modes and persona
     - Section 2.1b: Context integrity
     - Section 4.1a: Exercise Library authority
+    - Prompt caching for token optimization
     
     Args:
         message: User's message
@@ -70,12 +74,21 @@ def chat(message, session):
     client = initialize_client()
     
     # Build system prompt (includes Bill instructions + client context)
-    # Pass user_message for smart exercise library loading
+    # Returns: list of dicts with cache_control OR single string (backward compatible)
     system_prompt = build_system_prompt(
         session,
         include_context=True,
-        user_message=message  # ← Added this
+        user_message=message
     )
+    
+    # Debug: Log system prompt structure
+    if isinstance(system_prompt, list):
+        print(f"[Claude] System prompt: {len(system_prompt)} blocks (structured for caching)")
+        for i, block in enumerate(system_prompt):
+            has_cache = 'cache_control' in block
+            print(f"[Claude]   Block {i+1}: {'CACHED' if has_cache else 'not cached'}")
+    else:
+        print(f"[Claude] System prompt: single string (no caching)")
     
     # Build conversation history
     history = build_conversation_history(session)
@@ -86,25 +99,31 @@ def chat(message, session):
         'content': message
     }]
     
-    # Log token estimate
     print(f"[Claude] Sending message (conversation length: {len(current_messages)} messages)")
     
     try:
         # Call Claude API
+        # system parameter accepts both string and list formats
         response = client.messages.create(
             model=Config.CLAUDE_MODEL,
             max_tokens=Config.CLAUDE_MAX_TOKENS,
-            system=system_prompt,
+            system=system_prompt,  # Can be string or list
             messages=current_messages
         )
         
         # Extract text response
         bill_response = response.content[0].text
         
-        # Log usage
+        # Log usage (including cache statistics)
         print(f"[Claude] Response received")
         print(f"[Claude] Input tokens: {response.usage.input_tokens}")
         print(f"[Claude] Output tokens: {response.usage.output_tokens}")
+        
+        # Log cache statistics if available
+        if hasattr(response.usage, 'cache_creation_input_tokens'):
+            print(f"[Claude] Cache creation tokens: {response.usage.cache_creation_input_tokens}")
+        if hasattr(response.usage, 'cache_read_input_tokens'):
+            print(f"[Claude] Cache read tokens: {response.usage.cache_read_input_tokens}")
         
         return bill_response
         
@@ -114,6 +133,7 @@ def chat(message, session):
     except Exception as e:
         print(f"[Claude] Unexpected error: {str(e)}")
         raise
+
 
 def chat_with_webhook_awareness(message, session):
     """

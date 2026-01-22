@@ -1,7 +1,16 @@
 """
-Bill D'Bettabody - Context Loader
+Bill D'Bettabody - Context Loader (WITH PROMPT CACHING)
 Selective instruction loading to optimize token usage
-Implements smart loading based on mode, state, and operation type
+NOW WITH: Structured system messages for Claude's prompt caching
+
+PROMPT CACHING STRATEGY:
+- Bill's instructions are CACHED (stable, ~75k tokens)
+- Client context is NOT cached (changes frequently, ~13k tokens)
+- Cache TTL: 5 minutes (refreshed with each request)
+- Expected savings: 90% reduction on cached portions after first request
+
+Cache invalidation: Different instruction combinations create separate caches
+(e.g., with_exercise_canonical vs without). This is GOOD - each mode gets its own cache.
 """
 
 import os
@@ -219,6 +228,59 @@ def load_bill_instructions(mode, client_state, operation_type='chat',
     return "\n".join(instructions_parts)
 
 
+def build_client_context_text(session):
+    """
+    Build client context section as text
+    
+    This is separated from instructions so it can be:
+    - NOT cached (changes frequently)
+    - Kept separate in the system message array
+    
+    Args:
+        session: Session dict with context, state, etc.
+        
+    Returns:
+        str: Client context text (or empty string if not applicable)
+    """
+    state = session.get('state', ClientState.STRANGER)
+    
+    # Only include context for READY clients
+    if state != ClientState.READY:
+        return ""
+    
+    context = session.get('context', {})
+    
+    if not context:
+        return ""
+    
+    context_parts = []
+    
+    context_parts.append("=" * 60)
+    context_parts.append("CURRENT CLIENT CONTEXT")
+    context_parts.append(f"Last refreshed: {session.get('last_refresh', 'Never')}")
+    context_parts.append("=" * 60)
+    context_parts.append("")
+    
+    # Add key context elements
+    # (Don't dump entire context - extract key fields)
+    if context.get('profile'):
+        context_parts.append("CLIENT PROFILE:")
+        profile = context['profile']
+        context_parts.append(f"- Name: {profile.get('first_name', '')} {profile.get('last_name', '')}")
+        context_parts.append(f"- Goals: {profile.get('goal_primary', '')}")
+        context_parts.append(f"- Experience: {profile.get('training_experience', '')}")
+        context_parts.append("")
+    
+    # Add contraindications if present
+    contraindications = context.get('contraindications', {})
+    if contraindications:
+        context_parts.append("ACTIVE CONTRAINDICATIONS:")
+        context_parts.append(str(contraindications))
+        context_parts.append("")
+    
+    return "\n".join(context_parts)
+
+
 def detect_exercise_question(message):
     """
     Detect if user is asking about specific exercises
@@ -256,7 +318,22 @@ def detect_exercise_question(message):
 
 def build_system_prompt(session, include_context=True, user_message=None):
     """
-    Build complete system prompt for Claude
+    Build complete system prompt for Claude WITH PROMPT CACHING
+    
+    CRITICAL CHANGE: Returns ARRAY instead of STRING
+    
+    Structure:
+    [
+        {
+            "type": "text",
+            "text": "Bill's instructions...",
+            "cache_control": {"type": "ephemeral"}  # CACHED
+        },
+        {
+            "type": "text",
+            "text": "Client context..."  # NOT CACHED (changes frequently)
+        }
+    ]
     
     Respects Bill's priority hierarchy:
     1. Safety rules (always loaded)
@@ -275,7 +352,7 @@ def build_system_prompt(session, include_context=True, user_message=None):
         user_message: Current user message (for exercise question detection)
         
     Returns:
-        str: Complete system prompt
+        list: Structured system messages for Claude API (with cache_control)
     """
     
     mode = session.get('mode', OperatingMode.COACH)
@@ -295,7 +372,7 @@ def build_system_prompt(session, include_context=True, user_message=None):
         include_exercise_canonical = True
         print("[Context Loader] Exercise question detected - loading canonical library")
     
-    # Load Bill instructions
+    # Load Bill instructions (STABLE - WILL BE CACHED)
     instructions = load_bill_instructions(
         mode, 
         state, 
@@ -304,38 +381,34 @@ def build_system_prompt(session, include_context=True, user_message=None):
         include_exercise_canonical=include_exercise_canonical
     )
     
-    prompt_parts = [instructions]
+    # Build structured system messages array
+    system_messages = []
     
-    # Add client context if available and in READY state
-    if include_context and state == ClientState.READY:
-        context = session.get('context', {})
+    # PART 1: Bill's instructions (CACHED)
+    # This is stable and should be cached
+    system_messages.append({
+        "type": "text",
+        "text": instructions,
+        "cache_control": {"type": "ephemeral"}
+    })
+    
+    print(f"[Context Loader] Cached section: ~{len(instructions)} chars (~{len(instructions)//4} tokens estimated)")
+    
+    # PART 2: Client context (NOT CACHED)
+    # This changes frequently, so don't cache it
+    if include_context:
+        client_context_text = build_client_context_text(session)
         
-        if context:
-            prompt_parts.append("")
-            prompt_parts.append("=" * 60)
-            prompt_parts.append("CURRENT CLIENT CONTEXT")
-            prompt_parts.append(f"Last refreshed: {session.get('last_refresh', 'Never')}")
-            prompt_parts.append("=" * 60)
-            prompt_parts.append("")
-            
-            # Add key context elements
-            # (Don't dump entire context - extract key fields)
-            if context.get('profile'):
-                prompt_parts.append("CLIENT PROFILE:")
-                profile = context['profile']
-                prompt_parts.append(f"- Name: {profile.get('first_name', '')} {profile.get('last_name', '')}")
-                prompt_parts.append(f"- Goals: {profile.get('goal_primary', '')}")
-                prompt_parts.append(f"- Experience: {profile.get('training_experience', '')}")
-                prompt_parts.append("")
-            
-            # Add contraindications if present
-            contraindications = context.get('contraindications', {})
-            if contraindications:
-                prompt_parts.append("ACTIVE CONTRAINDICATIONS:")
-                prompt_parts.append(str(contraindications))
-                prompt_parts.append("")
+        if client_context_text:
+            system_messages.append({
+                "type": "text",
+                "text": client_context_text
+            })
+            print(f"[Context Loader] Non-cached section: ~{len(client_context_text)} chars (~{len(client_context_text)//4} tokens estimated)")
     
-    return "\n".join(prompt_parts)
+    print(f"[Context Loader] Total system message blocks: {len(system_messages)}")
+    
+    return system_messages
 
 
 def get_greeting_for_state(state, context=None):
