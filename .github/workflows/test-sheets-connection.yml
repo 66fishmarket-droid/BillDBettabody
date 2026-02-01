@@ -2,6 +2,9 @@ name: Test Google Sheets Connection
 
 on:
   workflow_dispatch:  # Manual trigger only
+  push:
+    branches:
+      - develop
 
 jobs:
   test-connection:
