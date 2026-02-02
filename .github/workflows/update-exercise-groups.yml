@@ -1,0 +1,71 @@
+name: Update Exercise Groups
+
+on:
+  schedule:
+    # Run every Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+  
+  workflow_dispatch:  # Allow manual triggering
+  
+  push:
+    branches:
+      - develop
+    paths:
+      - 'scripts/create_exercise_groups.py'
+      - '.github/workflows/update-exercise-groups.yml'
+
+jobs:
+  update-groups:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install gspread oauth2client pandas openpyxl
+      
+      - name: Generate exercise group files
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          SHEET_ID: ${{ secrets.EXERCISE_LIBRARY_SHEET_ID }}
+          SHEET_NAME: ${{ secrets.EXERCISE_LIBRARY_SHEET_NAME }}
+        run: |
+          python scripts/create_exercise_groups.py
+      
+      - name: Check if files changed
+        id: check_changes
+        run: |
+          git diff --quiet exercise_groups/ || echo "changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push changes
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.name "GitHub Actions Bot"
+          git config --local user.email "actions@github.com"
+          git add exercise_groups/
+          git commit -m "Update exercise groups - $(date +'%Y-%m-%d %H:%M UTC')"
+          git push
+      
+      - name: No changes detected
+        if: steps.check_changes.outputs.changed != 'true'
+        run: |
+          echo "No changes detected in exercise groups. Skipping commit."
+      
+      - name: Summary
+        run: |
+          echo "### Exercise Groups Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changes:** ${{ steps.check_changes.outputs.changed == 'true' && 'Files updated and committed' || 'No changes detected' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Group Files Generated:" >> $GITHUB_STEP_SUMMARY
+          ls -lh exercise_groups/*.json | awk '{print "- " $9 " (" $5 ")"}' >> $GITHUB_STEP_SUMMARY || echo "- No files found" >> $GITHUB_STEP_SUMMARY
