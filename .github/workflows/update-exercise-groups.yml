@@ -53,6 +53,7 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "Update exercise groups - $(date +'%Y-%m-%d %H:%M UTC')"
+            git pull --rebase origin develop
             git push
           fi
       
