@@ -225,10 +225,11 @@ class ExerciseGroupGenerator:
         groups_created = []
         
         # 1. UPPER PUSH
+        # Include exercises that have 'main' in segment_type (including "main; warmup")
         main = self.df[
             (self.df['body_region'] == 'upper') &
             (self.df['movement_pattern'].isin(['push_horizontal', 'push_vertical'])) &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.get_warmup_exercises(
             relevant_body_regions=['upper'],
@@ -248,7 +249,7 @@ class ExerciseGroupGenerator:
         main = self.df[
             (self.df['body_region'] == 'upper') &
             (self.df['movement_pattern'].isin(['pull_horizontal', 'pull_vertical'])) &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.get_warmup_exercises(
             relevant_body_regions=['upper'],
@@ -268,7 +269,7 @@ class ExerciseGroupGenerator:
         main = self.df[
             (self.df['body_region'] == 'lower') &
             (self.df['movement_pattern'].isin(['squat', 'lunge'])) &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.get_warmup_exercises(
             relevant_body_regions=['lower'],
@@ -288,7 +289,7 @@ class ExerciseGroupGenerator:
         main = self.df[
             (self.df['body_region'] == 'lower') &
             (self.df['movement_pattern'] == 'hinge') &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.get_warmup_exercises(
             relevant_body_regions=['lower'],
@@ -312,7 +313,7 @@ class ExerciseGroupGenerator:
                     'anti_extension', 'anti_rotation', 'anti_lateral_flexion', 'rotation'
                 ]))
             ) &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.get_warmup_exercises(
             relevant_body_regions=['core'],
@@ -335,7 +336,7 @@ class ExerciseGroupGenerator:
                 (self.df['environment'] == 'pool') |
                 (self.df['locomotion_type'] == 'swim')
             ) &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.df[
             (self.df['environment'] == 'pool') &
@@ -360,7 +361,7 @@ class ExerciseGroupGenerator:
         # 7. CARDIO
         main = self.df[
             (self.df['locomotion_type'].isin(['run', 'jog', 'walk', 'cycle', 'row', 'ski'])) &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.df[
             (self.df['category'] == 'conditioning') &
@@ -379,7 +380,7 @@ class ExerciseGroupGenerator:
         # 8. FULL BODY
         main = self.df[
             (self.df['body_region'] == 'full') &
-            (~self.df['segment_type'].str.contains('warmup', case=False, na=False))
+            (self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
         warmup = self.get_warmup_exercises(relevant_body_regions=['full'])
         cooldown = self.get_cooldown_exercises(relevant_body_regions=['full'])
