@@ -1,12 +1,12 @@
 {
   "group_name": "Lower_Push",
   "description": "Lower body knee-dominant movements (squats, lunges)",
-  "last_updated": "2026-02-02T10:14:26.744768Z",
+  "last_updated": "2026-02-02T13:09:53.561406Z",
   "exercise_count": {
     "main": 14,
     "warmup": 14,
-    "cooldown": 2,
-    "total": 30
+    "cooldown": 6,
+    "total": 34
   },
   "main_exercises": [
     {
@@ -552,6 +552,77 @@
       "training_focus": "motor_control,mobility",
       "secondary_muscles": "spinal_erectors,core",
       "special_flags": "joint_friendly,hip_dominant"
+    },
+    {
+      "exercise_id": "wu_0001",
+      "exercise_name": "Lower Body Dynamic Prep",
+      "category": "mobility",
+      "body_region": "lower",
+      "movement_pattern": "squat, hinge, lunge",
+      "equipment": "bodyweight",
+      "primary_muscles": "glutes, quads, adductors",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Smooth controlled range; 30 to 60s per drill",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Shorten sequence, reduce range, slow tempo, or use support (wall/bench) where needed.",
+      "progression": "Add 1-2 rounds, increase range gradually, or add light resistance (band) while staying submaximal.",
+      "training_focus": "mobility",
+      "secondary_muscles": "hamstrings, core",
+      "special_flags": "joint_friendly, low_impact"
+    },
+    {
+      "exercise_id": "wu_0003",
+      "exercise_name": "Posterior Chain Primer",
+      "category": "mobility",
+      "body_region": "lower",
+      "movement_pattern": "hinge",
+      "equipment": "portable_accessory",
+      "primary_muscles": "glutes, hamstrings, spinal_erectors",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Squeeze glutes; Control the hinge",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Shorten sequence, reduce range, slow tempo, or use support (wall/bench) where needed.",
+      "progression": "Add 1-2 rounds, increase range gradually, or add light resistance (band) while staying submaximal.",
+      "training_focus": "mobility, strength",
+      "secondary_muscles": "core",
+      "special_flags": "joint_friendly, hip_dominant"
+    },
+    {
+      "exercise_id": "wu_0005",
+      "exercise_name": "Ankle and Calf Mobility Set",
+      "category": "mobility",
+      "body_region": "lower",
+      "movement_pattern": "locomotion",
+      "equipment": "bodyweight",
+      "primary_muscles": "calves, tibialis, ankle_stabilisers",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Smooth, small range; Controlled balance",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Shorten sequence, reduce range, slow tempo, or use support (wall/bench) where needed.",
+      "progression": "Add 1-2 rounds, increase range gradually, perform barefoot on firm surface for enhanced sensory feedback.",
+      "training_focus": "mobility, stability",
+      "special_flags": "joint_friendly, low_impact, balance_challenging"
+    },
+    {
+      "exercise_id": "cd_0001",
+      "exercise_name": "Lower Body Reset",
+      "category": "mobility",
+      "body_region": "lower",
+      "movement_pattern": "squat, hinge",
+      "equipment": "bodyweight",
+      "primary_muscles": "quads, glutes, hamstrings",
+      "segment_type": "cooldown",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Slow breathing; Ease tension, no bouncing",
+      "safety_notes": "Breathe steadily and keep stretches gentle (no sharp pain). Avoid forcing range; ease off if numbness/tingling occurs.",
+      "regression": "Shorter holds (10-20s), reduce range, use supported positions (chair/wall).",
+      "progression": "Longer holds (30-60s), breath-led downregulation, add gentle mobility flow.",
+      "training_focus": "mobility",
+      "secondary_muscles": "core",
+      "special_flags": "joint_friendly, low_impact"
     }
   ]
 }

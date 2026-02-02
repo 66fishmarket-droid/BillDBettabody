@@ -1,12 +1,12 @@
 {
   "group_name": "Upper_Pull",
   "description": "Upper body pulling movements (rows, pull-ups, lat work)",
-  "last_updated": "2026-02-02T10:14:26.729459Z",
+  "last_updated": "2026-02-02T13:09:53.545529Z",
   "exercise_count": {
     "main": 27,
     "warmup": 27,
-    "cooldown": 1,
-    "total": 55
+    "cooldown": 3,
+    "total": 57
   },
   "main_exercises": [
     {
@@ -996,6 +996,42 @@
       "training_focus": "mobility",
       "secondary_muscles": "upper_back,core",
       "special_flags": "joint_friendly"
+    },
+    {
+      "exercise_id": "wu_0002",
+      "exercise_name": "Upper Body Activation",
+      "category": "mobility",
+      "body_region": "upper",
+      "movement_pattern": "push_horizontal, pull_horizontal",
+      "equipment": "portable_accessory",
+      "primary_muscles": "shoulders, upper_back, rotator_cuff",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Light tension, full control; Smooth scapular movement",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Shorten sequence, reduce range, slow tempo, or use support (wall/bench) where needed.",
+      "progression": "Add 1-2 rounds, increase range gradually, or add light resistance (band) while staying submaximal.",
+      "training_focus": "mobility",
+      "secondary_muscles": "core",
+      "special_flags": "joint_friendly, low_impact, shoulder_intensive"
+    },
+    {
+      "exercise_id": "cd_0002",
+      "exercise_name": "Upper Body Stretch Flow",
+      "category": "mobility",
+      "body_region": "upper",
+      "movement_pattern": "push_horizontal, pull_horizontal",
+      "equipment": "bodyweight",
+      "primary_muscles": "chest, shoulders, upper_back",
+      "segment_type": "cooldown",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Relax shoulders; Steady breathing",
+      "safety_notes": "Breathe steadily and keep stretches gentle (no sharp pain). Avoid forcing range; ease off if numbness/tingling occurs.",
+      "regression": "Shorter holds (10-20s), reduce range, use supported positions (chair/wall).",
+      "progression": "Longer holds (30-60s), breath-led downregulation, add gentle mobility flow.",
+      "training_focus": "mobility",
+      "secondary_muscles": "core",
+      "special_flags": "joint_friendly, low_impact, shoulder_intensive"
     }
   ]
 }

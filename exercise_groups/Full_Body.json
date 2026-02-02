@@ -1,12 +1,12 @@
 {
   "group_name": "Full_Body",
   "description": "Full-body compound movements and athletic exercises",
-  "last_updated": "2026-02-02T10:14:26.799448Z",
+  "last_updated": "2026-02-02T13:09:53.620654Z",
   "exercise_count": {
     "main": 32,
-    "warmup": 32,
-    "cooldown": 0,
-    "total": 64
+    "warmup": 35,
+    "cooldown": 3,
+    "total": 70
   },
   "main_exercises": [
     {
@@ -1118,7 +1118,112 @@
       "training_focus": "aerobic,skill",
       "secondary_muscles": "core",
       "special_flags": "low_impact,joint_friendly"
+    },
+    {
+      "exercise_id": "wu_0004",
+      "exercise_name": "Full-Body Dynamic Flow",
+      "category": "mobility",
+      "body_region": "full",
+      "movement_pattern": "locomotion",
+      "equipment": "bodyweight",
+      "primary_muscles": "total_body",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Flow continuously; Keep breathing steady",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Shorten sequence, reduce range, slow tempo, or use support (wall/bench) where needed.",
+      "progression": "Add 1-2 rounds, increase range gradually, or add light resistance (band) while staying submaximal.",
+      "training_focus": "mobility",
+      "special_flags": "joint_friendly, low_impact"
+    },
+    {
+      "exercise_id": "wu_0006",
+      "exercise_name": "Warmup - Treadmill",
+      "category": "conditioning",
+      "body_region": "full",
+      "movement_pattern": "locomotion",
+      "equipment": "cardio_machine",
+      "primary_muscles": "calves, glutes, hamstrings",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Start easy, finish warm; Smooth rhythm, upright posture",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Reduce speed, stay at walk pace entire time, shorten duration to 3-5 minutes.",
+      "progression": "Increase duration to 10 minutes, add incline, progress to light jog.",
+      "training_focus": "aerobic, endurance",
+      "secondary_muscles": "quads",
+      "special_flags": "low_impact"
+    },
+    {
+      "exercise_id": "wu_0007",
+      "exercise_name": "Warmup - Elliptical",
+      "category": "conditioning",
+      "body_region": "full",
+      "movement_pattern": "locomotion",
+      "equipment": "cardio_machine",
+      "primary_muscles": "quads, glutes, hamstrings",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Light resistance; Smooth, rhythmic stride",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Lower resistance, reduce duration to 3-5 minutes, maintain slower pace.",
+      "progression": "Increase duration to 10 minutes, add resistance gradually, incorporate intervals.",
+      "training_focus": "aerobic, endurance",
+      "secondary_muscles": "arms, shoulders",
+      "special_flags": "low_impact, joint_friendly"
     }
   ],
-  "cooldown_exercises": []
+  "cooldown_exercises": [
+    {
+      "exercise_id": "wu_0004",
+      "exercise_name": "Full-Body Dynamic Flow",
+      "category": "mobility",
+      "body_region": "full",
+      "movement_pattern": "locomotion",
+      "equipment": "bodyweight",
+      "primary_muscles": "total_body",
+      "segment_type": "warmup",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Flow continuously; Keep breathing steady",
+      "safety_notes": "Keep movements smooth and controlled. Avoid pain or pinching. Stop if you feel dizzy or sharp discomfort.",
+      "regression": "Shorten sequence, reduce range, slow tempo, or use support (wall/bench) where needed.",
+      "progression": "Add 1-2 rounds, increase range gradually, or add light resistance (band) while staying submaximal.",
+      "training_focus": "mobility",
+      "special_flags": "joint_friendly, low_impact"
+    },
+    {
+      "exercise_id": "cd_0003",
+      "exercise_name": "Full Body Downshift",
+      "category": "mobility",
+      "body_region": "full",
+      "movement_pattern": "locomotion",
+      "equipment": "bodyweight",
+      "primary_muscles": "total_body",
+      "segment_type": "cooldown",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Calm breathing; Relax and unwind",
+      "safety_notes": "Breathe steadily and keep stretches gentle (no sharp pain). Avoid forcing range; ease off if numbness/tingling occurs.",
+      "regression": "Shorter holds (10-20s), reduce range, use supported positions (chair/wall).",
+      "progression": "Longer holds (30-60s), breath-led downregulation, add gentle mobility flow.",
+      "training_focus": "mobility",
+      "special_flags": "joint_friendly, low_impact"
+    },
+    {
+      "exercise_id": "cd_0004",
+      "exercise_name": "Pool Cooldown Flow",
+      "category": "mobility",
+      "body_region": "full",
+      "movement_pattern": "swim",
+      "equipment": "pool",
+      "primary_muscles": "total_body",
+      "segment_type": "cooldown",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Stay moving, breathe easy; Gentle range, no strain",
+      "safety_notes": "Breathe steadily and keep stretches gentle (no sharp pain). Avoid forcing range; ease off if numbness/tingling occurs.",
+      "regression": "Shorter duration (3-5 min), reduce intensity, stay in shallow water.",
+      "progression": "Longer duration (8-10 min), add deeper stretches, incorporate breathing exercises.",
+      "training_focus": "mobility",
+      "special_flags": "joint_friendly, low_impact"
+    }
+  ]
 }

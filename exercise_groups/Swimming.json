@@ -1,12 +1,12 @@
 {
   "group_name": "Swimming",
   "description": "Swimming strokes, drills, and pool-based exercises",
-  "last_updated": "2026-02-02T10:14:26.774517Z",
+  "last_updated": "2026-02-02T13:09:53.593505Z",
   "exercise_count": {
     "main": 26,
     "warmup": 26,
-    "cooldown": 0,
-    "total": 52
+    "cooldown": 1,
+    "total": 53
   },
   "main_exercises": [
     {
@@ -930,5 +930,23 @@
       "special_flags": "low_impact,joint_friendly"
     }
   ],
-  "cooldown_exercises": []
+  "cooldown_exercises": [
+    {
+      "exercise_id": "cd_0004",
+      "exercise_name": "Pool Cooldown Flow",
+      "category": "mobility",
+      "body_region": "full",
+      "movement_pattern": "swim",
+      "equipment": "pool",
+      "primary_muscles": "total_body",
+      "segment_type": "cooldown",
+      "difficulty": "beginner",
+      "coaching_cues_short": "Stay moving, breathe easy; Gentle range, no strain",
+      "safety_notes": "Breathe steadily and keep stretches gentle (no sharp pain). Avoid forcing range; ease off if numbness/tingling occurs.",
+      "regression": "Shorter duration (3-5 min), reduce intensity, stay in shallow water.",
+      "progression": "Longer duration (8-10 min), add deeper stretches, incorporate breathing exercises.",
+      "training_focus": "mobility",
+      "special_flags": "joint_friendly, low_impact"
+    }
+  ]
 }
