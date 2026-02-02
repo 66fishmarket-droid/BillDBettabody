@@ -14,6 +14,9 @@ on:
       - 'scripts/create_exercise_groups.py'
       - '.github/workflows/update-exercise-groups.yml'
 
+permissions:
+  contents: write  # Allow workflow to commit and push
+
 jobs:
   update-groups:
     runs-on: ubuntu-latest
@@ -22,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
       
       - name: Set up Python
         uses: actions/setup-python@v4
