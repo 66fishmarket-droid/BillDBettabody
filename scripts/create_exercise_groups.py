@@ -83,17 +83,20 @@ class ExerciseGroupGenerator:
     
     def get_warmup_exercises(self, relevant_body_regions=None, relevant_patterns=None):
         """
-        Get warm-up exercises relevant to specific body regions or movement patterns
+        Get warm-up exercises that are ONLY warmups (not dual-purpose main; warmup)
         
         Args:
             relevant_body_regions (list): Body regions to include (e.g., ['upper'])
             relevant_patterns (list): Movement patterns to include
         
         Returns:
-            pd.DataFrame: Warm-up exercises
+            pd.DataFrame: Warm-up only exercises
         """
-        # Start with exercises tagged as warmup
-        warmups = self.df[self.df['segment_type'].str.contains('warmup', case=False, na=False)]
+        # Only include exercises where segment_type is ONLY warmup (not "main; warmup")
+        warmups = self.df[
+            (self.df['segment_type'].str.contains('warmup', case=False, na=False)) &
+            (~self.df['segment_type'].str.contains('main', case=False, na=False))
+        ]
         
         # Filter by body region if specified
         if relevant_body_regions:
@@ -107,19 +110,29 @@ class ExerciseGroupGenerator:
     
     def get_cooldown_exercises(self, relevant_body_regions=None):
         """
-        Get cool-down/mobility exercises relevant to specific body regions
+        Get cool-down/mobility exercises that are ONLY cooldowns (not dual-purpose)
         
         Args:
             relevant_body_regions (list): Body regions to include
         
         Returns:
-            pd.DataFrame: Cool-down exercises
+            pd.DataFrame: Cool-down only exercises
         """
-        # Exercises with mobility category or mobility in training_focus
+        # Only include exercises where segment_type is ONLY cooldown (not "main; cooldown")
         cooldowns = self.df[
-            (self.df['category'] == 'mobility') |
-            (self.df['training_focus'].str.contains('mobility', case=False, na=False))
+            (self.df['segment_type'].str.contains('cooldown', case=False, na=False)) &
+            (~self.df['segment_type'].str.contains('main', case=False, na=False))
         ]
+        
+        # If no explicit cooldown exercises, fall back to mobility exercises that aren't main exercises
+        if len(cooldowns) == 0:
+            cooldowns = self.df[
+                (
+                    (self.df['category'] == 'mobility') |
+                    (self.df['training_focus'].str.contains('mobility', case=False, na=False))
+                ) &
+                (~self.df['segment_type'].str.contains('main', case=False, na=False))
+            ]
         
         # Filter by body region if specified
         if relevant_body_regions:
