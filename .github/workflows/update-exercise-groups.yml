@@ -41,24 +41,17 @@ jobs:
         run: |
           python scripts/create_exercise_groups.py
       
-      - name: Check if files changed
-        id: check_changes
-        run: |
-          git diff --quiet exercise_groups/ || echo "changed=true" >> $GITHUB_OUTPUT
-      
       - name: Commit and push changes
-        if: steps.check_changes.outputs.changed == 'true'
         run: |
           git config --local user.name "GitHub Actions Bot"
           git config --local user.email "actions@github.com"
-          git add exercise_groups/
-          git commit -m "Update exercise groups - $(date +'%Y-%m-%d %H:%M UTC')"
-          git push
-      
-      - name: No changes detected
-        if: steps.check_changes.outputs.changed != 'true'
-        run: |
-          echo "No changes detected in exercise groups. Skipping commit."
+          git add -f exercise_groups/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update exercise groups - $(date +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
       
       - name: Summary
         run: |
