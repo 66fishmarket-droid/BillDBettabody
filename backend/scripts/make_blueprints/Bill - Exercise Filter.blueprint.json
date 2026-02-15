@@ -1,0 +1,1225 @@
+{
+    "name": "Bill - Exercise Filter",
+    "flow": [
+        {
+            "id": 2,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 3817313,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0,
+                    "name": "B-ExFil | Webhook In"
+                },
+                "restore": {
+                    "parameters": {
+                        "hook": {
+                            "data": {
+                                "editable": "true"
+                            },
+                            "label": "Bill - Exercise List Search"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "type": "hook:gateway-webhook",
+                        "label": "Webhook",
+                        "required": true
+                    },
+                    {
+                        "name": "maxResults",
+                        "type": "number",
+                        "label": "Maximum number of results"
+                    }
+                ],
+                "interface": [
+                    {
+                        "help": "",
+                        "name": "query_id",
+                        "type": "text",
+                        "label": "Query ID",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "help": "",
+                        "name": "segment_type",
+                        "spec": {
+                            "type": "text",
+                            "default": null,
+                            "required": false,
+                            "multiline": false
+                        },
+                        "type": "array",
+                        "label": "Segment type",
+                        "required": false
+                    },
+                    {
+                        "help": "",
+                        "name": "required_tags",
+                        "spec": [
+                            {
+                                "help": "",
+                                "name": "movement_pattern",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Movement pattern",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "training_focus",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Training focus",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "primary_muscles",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": null,
+                                "required": false
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Required tags",
+                        "required": false
+                    },
+                    {
+                        "help": "",
+                        "name": "optional_tags",
+                        "spec": [
+                            {
+                                "help": "",
+                                "name": "secondary_muscles",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Secondary muscles",
+                                "required": false
+                            },
+                            {
+                                "help": "",
+                                "name": "special_flags",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Special flags",
+                                "required": false
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Optional tags",
+                        "required": false
+                    },
+                    {
+                        "help": "",
+                        "name": "exclude_tags",
+                        "spec": [
+                            {
+                                "help": "",
+                                "name": "special_flags",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "type": "array",
+                                "label": "Special flags",
+                                "required": false
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Exclude tags",
+                        "required": false
+                    },
+                    {
+                        "help": "",
+                        "name": "minimum_match_threshold",
+                        "type": "number",
+                        "label": "Minimum match threshold",
+                        "default": null,
+                        "required": false
+                    },
+                    {
+                        "name": "__IMTMETHOD__",
+                        "type": "text",
+                        "label": "Method"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 3,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "v_query_id",
+                        "value": "{{ifempty(2.query_id; \"exfil_\" + formatDate(now; \"YYYYMMDD_HHmmss\"))}}"
+                    },
+                    {
+                        "name": "v_segment_type",
+                        "value": "{{2.segment_type}}"
+                    },
+                    {
+                        "name": "v_required_tags",
+                        "value": "{{2.required_tags}}"
+                    },
+                    {
+                        "name": "v_optional_tags",
+                        "value": "{{2.optional_tags}}"
+                    },
+                    {
+                        "name": "v_exclude_tags",
+                        "value": "{{2.exclude_tags}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 0,
+                    "name": "B-ExFil | Set Webhook Variables"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "v_query_id",
+                        "type": "any",
+                        "label": "v_query_id"
+                    },
+                    {
+                        "name": "v_segment_type",
+                        "type": "any",
+                        "label": "v_segment_type"
+                    },
+                    {
+                        "name": "v_required_tags",
+                        "type": "any",
+                        "label": "v_required_tags"
+                    },
+                    {
+                        "name": "v_optional_tags",
+                        "type": "any",
+                        "label": "v_optional_tags"
+                    },
+                    {
+                        "name": "v_exclude_tags",
+                        "type": "any",
+                        "label": "v_exclude_tags"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 4,
+            "module": "google-sheets:filterRows",
+            "version": 2,
+            "parameters": {
+                "__IMTCONN__": 6600568
+            },
+            "mapper": {
+                "from": "drive",
+                "filter": [
+                    [
+                        {
+                            "a": "U",
+                            "b": "active",
+                            "o": "text:equal:ci"
+                        },
+                        {
+                            "a": "Z",
+                            "b": "{{2.segment_type[1]}}",
+                            "o": "text:contain"
+                        }
+                    ]
+                ],
+                "sheetId": "Exercises_Library",
+                "sortOrder": "asc",
+                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "tableFirstRow": "A1:BZ1",
+                "includesHeaders": true,
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 0,
+                    "name": "B-ExFil | Pull Candidates"
+                },
+                "restore": {
+                    "expect": {
+                        "from": {
+                            "label": "Select from My Drive"
+                        },
+                        "orderBy": {
+                            "mode": "chose"
+                        },
+                        "sheetId": {
+                            "mode": "chose",
+                            "label": "Exercises_Library"
+                        },
+                        "sortOrder": {
+                            "mode": "chose",
+                            "label": "Ascending"
+                        },
+                        "spreadsheetId": {
+                            "mode": "chose",
+                            "label": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I"
+                        },
+                        "tableFirstRow": {
+                            "label": "A-BZ"
+                        },
+                        "includesHeaders": {
+                            "mode": "chose",
+                            "label": "Yes"
+                        },
+                        "valueRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted value"
+                        },
+                        "dateTimeRenderOption": {
+                            "mode": "chose",
+                            "label": "Formatted string"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "66Fish (66fishmarket@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "from",
+                        "type": "select",
+                        "label": "Search Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valueRenderOption",
+                        "type": "select",
+                        "label": "Value render option",
+                        "validate": {
+                            "enum": [
+                                "FORMATTED_VALUE",
+                                "UNFORMATTED_VALUE",
+                                "FORMULA"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateTimeRenderOption",
+                        "type": "select",
+                        "label": "Date and time render option",
+                        "validate": {
+                            "enum": [
+                                "SERIAL_NUMBER",
+                                "FORMATTED_STRING"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "type": "uinteger",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "spreadsheetId",
+                        "type": "select",
+                        "label": "Spreadsheet ID",
+                        "required": true
+                    },
+                    {
+                        "name": "sheetId",
+                        "type": "select",
+                        "label": "Sheet Name",
+                        "required": true
+                    },
+                    {
+                        "name": "includesHeaders",
+                        "type": "select",
+                        "label": "Table contains headers",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tableFirstRow",
+                        "type": "select",
+                        "label": "Column range",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "A1:Z1",
+                                "A1:BZ1",
+                                "A1:CZ1",
+                                "A1:DZ1",
+                                "A1:MZ1",
+                                "A1:ZZ1",
+                                "A1:AZZ1",
+                                "A1:BZZ1",
+                                "A1:CZZ1",
+                                "A1:DZZ1",
+                                "A1:MZZ1",
+                                "A1:ZZZ1"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "filter",
+                        "type": "filter",
+                        "label": "Filter",
+                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                    },
+                    {
+                        "name": "orderBy",
+                        "type": "select",
+                        "label": "Order by"
+                    },
+                    {
+                        "name": "sortOrder",
+                        "type": "select",
+                        "label": "Sort order",
+                        "validate": {
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "__ROW_NUMBER__",
+                        "type": "number",
+                        "label": "Row number"
+                    },
+                    {
+                        "name": "__SPREADSHEET_ID__",
+                        "type": "text",
+                        "label": "Spreadsheet ID"
+                    },
+                    {
+                        "name": "__SHEET__",
+                        "type": "text",
+                        "label": "Sheet"
+                    },
+                    {
+                        "name": "0",
+                        "type": "text",
+                        "label": "exercise_id (A)"
+                    },
+                    {
+                        "name": "1",
+                        "type": "text",
+                        "label": "exercise_name (B)"
+                    },
+                    {
+                        "name": "2",
+                        "type": "text",
+                        "label": "name_canonical (C)"
+                    },
+                    {
+                        "name": "3",
+                        "type": "text",
+                        "label": "category (D)"
+                    },
+                    {
+                        "name": "4",
+                        "type": "text",
+                        "label": "body_region (E)"
+                    },
+                    {
+                        "name": "5",
+                        "type": "text",
+                        "label": "equipment (F)"
+                    },
+                    {
+                        "name": "6",
+                        "type": "text",
+                        "label": "variant (G)"
+                    },
+                    {
+                        "name": "7",
+                        "type": "text",
+                        "label": "movement_pattern (H)"
+                    },
+                    {
+                        "name": "8",
+                        "type": "text",
+                        "label": "primary_muscles (I)"
+                    },
+                    {
+                        "name": "9",
+                        "type": "text",
+                        "label": "video_url (J)"
+                    },
+                    {
+                        "name": "10",
+                        "type": "text",
+                        "label": "image_url (K)"
+                    },
+                    {
+                        "name": "11",
+                        "type": "text",
+                        "label": "coaching_cues_short (L)"
+                    },
+                    {
+                        "name": "12",
+                        "type": "text",
+                        "label": "exercise_description_short (M)"
+                    },
+                    {
+                        "name": "13",
+                        "type": "text",
+                        "label": "exercise_description_long (N)"
+                    },
+                    {
+                        "name": "14",
+                        "type": "text",
+                        "label": "safety_notes (O)"
+                    },
+                    {
+                        "name": "15",
+                        "type": "text",
+                        "label": "common_mistakes (P)"
+                    },
+                    {
+                        "name": "16",
+                        "type": "text",
+                        "label": "regression (Q)"
+                    },
+                    {
+                        "name": "17",
+                        "type": "text",
+                        "label": "progression (R)"
+                    },
+                    {
+                        "name": "18",
+                        "type": "text",
+                        "label": "source_url (S)"
+                    },
+                    {
+                        "name": "19",
+                        "type": "text",
+                        "label": "last_verified_date (T)"
+                    },
+                    {
+                        "name": "20",
+                        "type": "text",
+                        "label": "status (U)"
+                    },
+                    {
+                        "name": "21",
+                        "type": "text",
+                        "label": "metric_family_default (V)"
+                    },
+                    {
+                        "name": "22",
+                        "type": "text",
+                        "label": "garmin_exercise_name (W)"
+                    },
+                    {
+                        "name": "23",
+                        "type": "text",
+                        "label": "garmin_mapping_confidence (X)"
+                    },
+                    {
+                        "name": "24",
+                        "type": "text",
+                        "label": "garmin_variations (Y)"
+                    },
+                    {
+                        "name": "25",
+                        "type": "text",
+                        "label": "segment_type (Z)"
+                    },
+                    {
+                        "name": "26",
+                        "type": "text",
+                        "label": "training_focus (AA)"
+                    },
+                    {
+                        "name": "27",
+                        "type": "text",
+                        "label": "secondary_muscles (AB)"
+                    },
+                    {
+                        "name": "28",
+                        "type": "text",
+                        "label": "difficulty (AC)"
+                    },
+                    {
+                        "name": "29",
+                        "type": "text",
+                        "label": "load_type (AD)"
+                    },
+                    {
+                        "name": "30",
+                        "type": "text",
+                        "label": "execution_style (AE)"
+                    },
+                    {
+                        "name": "31",
+                        "type": "text",
+                        "label": "tempo_emphasis (AF)"
+                    },
+                    {
+                        "name": "32",
+                        "type": "text",
+                        "label": "body_position (AG)"
+                    },
+                    {
+                        "name": "33",
+                        "type": "text",
+                        "label": "environment (AH)"
+                    },
+                    {
+                        "name": "34",
+                        "type": "text",
+                        "label": "locomotion_type (AI)"
+                    },
+                    {
+                        "name": "35",
+                        "type": "text",
+                        "label": "special_flags (AJ)"
+                    },
+                    {
+                        "name": "36",
+                        "type": "text",
+                        "label": "(AK)"
+                    },
+                    {
+                        "name": "37",
+                        "type": "text",
+                        "label": "(AL)"
+                    },
+                    {
+                        "name": "38",
+                        "type": "text",
+                        "label": "(AM)"
+                    },
+                    {
+                        "name": "39",
+                        "type": "text",
+                        "label": "(AN)"
+                    },
+                    {
+                        "name": "40",
+                        "type": "text",
+                        "label": "(AO)"
+                    },
+                    {
+                        "name": "41",
+                        "type": "text",
+                        "label": "(AP)"
+                    },
+                    {
+                        "name": "42",
+                        "type": "text",
+                        "label": "(AQ)"
+                    },
+                    {
+                        "name": "43",
+                        "type": "text",
+                        "label": "(AR)"
+                    },
+                    {
+                        "name": "44",
+                        "type": "text",
+                        "label": "(AS)"
+                    },
+                    {
+                        "name": "45",
+                        "type": "text",
+                        "label": "(AT)"
+                    },
+                    {
+                        "name": "46",
+                        "type": "text",
+                        "label": "(AU)"
+                    },
+                    {
+                        "name": "47",
+                        "type": "text",
+                        "label": "(AV)"
+                    },
+                    {
+                        "name": "48",
+                        "type": "text",
+                        "label": "(AW)"
+                    },
+                    {
+                        "name": "49",
+                        "type": "text",
+                        "label": "(AX)"
+                    },
+                    {
+                        "name": "50",
+                        "type": "text",
+                        "label": "(AY)"
+                    },
+                    {
+                        "name": "51",
+                        "type": "text",
+                        "label": "(AZ)"
+                    },
+                    {
+                        "name": "52",
+                        "type": "text",
+                        "label": "(BA)"
+                    },
+                    {
+                        "name": "53",
+                        "type": "text",
+                        "label": "(BB)"
+                    },
+                    {
+                        "name": "54",
+                        "type": "text",
+                        "label": "(BC)"
+                    },
+                    {
+                        "name": "55",
+                        "type": "text",
+                        "label": "(BD)"
+                    },
+                    {
+                        "name": "56",
+                        "type": "text",
+                        "label": "(BE)"
+                    },
+                    {
+                        "name": "57",
+                        "type": "text",
+                        "label": "(BF)"
+                    },
+                    {
+                        "name": "58",
+                        "type": "text",
+                        "label": "(BG)"
+                    },
+                    {
+                        "name": "59",
+                        "type": "text",
+                        "label": "(BH)"
+                    },
+                    {
+                        "name": "60",
+                        "type": "text",
+                        "label": "(BI)"
+                    },
+                    {
+                        "name": "61",
+                        "type": "text",
+                        "label": "(BJ)"
+                    },
+                    {
+                        "name": "62",
+                        "type": "text",
+                        "label": "(BK)"
+                    },
+                    {
+                        "name": "63",
+                        "type": "text",
+                        "label": "(BL)"
+                    },
+                    {
+                        "name": "64",
+                        "type": "text",
+                        "label": "(BM)"
+                    },
+                    {
+                        "name": "65",
+                        "type": "text",
+                        "label": "(BN)"
+                    },
+                    {
+                        "name": "66",
+                        "type": "text",
+                        "label": "(BO)"
+                    },
+                    {
+                        "name": "67",
+                        "type": "text",
+                        "label": "(BP)"
+                    },
+                    {
+                        "name": "68",
+                        "type": "text",
+                        "label": "(BQ)"
+                    },
+                    {
+                        "name": "69",
+                        "type": "text",
+                        "label": "(BR)"
+                    },
+                    {
+                        "name": "70",
+                        "type": "text",
+                        "label": "(BS)"
+                    },
+                    {
+                        "name": "71",
+                        "type": "text",
+                        "label": "(BT)"
+                    },
+                    {
+                        "name": "72",
+                        "type": "text",
+                        "label": "(BU)"
+                    },
+                    {
+                        "name": "73",
+                        "type": "text",
+                        "label": "(BV)"
+                    },
+                    {
+                        "name": "74",
+                        "type": "text",
+                        "label": "(BW)"
+                    },
+                    {
+                        "name": "75",
+                        "type": "text",
+                        "label": "(BX)"
+                    },
+                    {
+                        "name": "76",
+                        "type": "text",
+                        "label": "(BY)"
+                    },
+                    {
+                        "name": "77",
+                        "type": "text",
+                        "label": "(BZ)"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 5,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "v_match_movement",
+                        "value": "{{if(length(2.required_tags.movement_pattern) = 0; 1; if(contains(\",\" + lower(trim(4.`7`)) + \",\"; \",\" + lower(trim(2.required_tags.movement_pattern[1])) + \",\"); 1; 0))}}"
+                    },
+                    {
+                        "name": "v_match_training_focus",
+                        "value": "{{if(length(2.required_tags.training_focus) = 0; 0; if(contains(\",\" + lower(trim(4.`26`)) + \",\"; \",\" + lower(trim(2.required_tags.training_focus[1])) + \",\"); 1; 0))}}"
+                    },
+                    {
+                        "name": "v_match_secondary_muscles",
+                        "value": "{{if(length(2.optional_tags.secondary_muscles) = 0; 0; if(contains(\",\" + lower(trim(4.`27`)) + \",\"; \",\" + lower(trim(2.optional_tags.secondary_muscles[1])) + \",\"); 1; 0))}}"
+                    },
+                    {
+                        "name": "v_match_primary_muscles",
+                        "value": "{{if(length(2.required_tags.primary_muscles) = 0; 0; if(contains(\",\" + lower(trim(4.`8`)) + \",\"; \",\" + lower(trim(2.required_tags.primary_muscles[1])) + \",\"); 1; 0))}}"
+                    },
+                    {
+                        "name": "v_match_flags",
+                        "value": "{{if(length(2.optional_tags.special_flags) = 0; 0; if(contains(\",\" + lower(trim(4.`35`)) + \",\"; \",\" + lower(trim(2.optional_tags.special_flags[1])) + \",\"); 1; 0))}}"
+                    },
+                    {
+                        "name": "v_exclude_special_flags",
+                        "value": "{{if(length(2.exclude_tags.special_flags) = 0; 0; if(contains(\",\" + lower(trim(4.`35`)) + \",\"; \",\" + lower(trim(2.exclude_tags.special_flags[1])) + \",\"); 1; 0))}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 0,
+                    "name": "B-ExFil | Evaluate Exercise"
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "v_match_movement",
+                        "type": "any",
+                        "label": "v_match_movement"
+                    },
+                    {
+                        "name": "v_match_training_focus",
+                        "type": "any",
+                        "label": "v_match_training_focus"
+                    },
+                    {
+                        "name": "v_match_secondary_muscles",
+                        "type": "any",
+                        "label": "v_match_secondary_muscles"
+                    },
+                    {
+                        "name": "v_match_primary_muscles",
+                        "type": "any",
+                        "label": "v_match_primary_muscles"
+                    },
+                    {
+                        "name": "v_match_flags",
+                        "type": "any",
+                        "label": "v_match_flags"
+                    },
+                    {
+                        "name": "v_exclude_special_flags",
+                        "type": "any",
+                        "label": "v_exclude_special_flags"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 11,
+            "module": "json:AggregateToJSON",
+            "version": 1,
+            "parameters": {
+                "type": 530037,
+                "space": "",
+                "feeder": 4
+            },
+            "filter": {
+                "name": "Is this a relevant exercise",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{5.v_match_movement + 5.v_match_training_focus + 5.v_match_primary_muscles + 5.v_match_secondary_muscles + 5.v_match_flags}}",
+                            "b": "3",
+                            "o": "number:greaterorequal"
+                        },
+                        {
+                            "a": "{{5.v_exclude_special_flags}}",
+                            "b": "0",
+                            "o": "number:equal"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "description": "{{4.`12`}}",
+                "exercise_code": "{{4.`0`}}",
+                "exercise_name": "{{4.`1`}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 0,
+                    "name": "B-ExFil | Aggregate Responses"
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "B-ExFil | Pull Candidates - Search Rows [4]"
+                        }
+                    },
+                    "parameters": {
+                        "type": {
+                            "label": "exercise aggregator"
+                        },
+                        "space": {
+                            "label": "Empty"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "type",
+                        "type": "udt",
+                        "label": "Data structure",
+                        "required": true
+                    },
+                    {
+                        "name": "space",
+                        "type": "select",
+                        "label": "Indentation",
+                        "validate": {
+                            "enum": [
+                                "tab",
+                                "2",
+                                "4"
+                            ]
+                        }
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "exercise_code",
+                        "type": "text",
+                        "label": "Exercise code"
+                    },
+                    {
+                        "name": "exercise_name",
+                        "type": "text",
+                        "label": "Exercise name"
+                    },
+                    {
+                        "name": "description",
+                        "type": "text",
+                        "label": "Description"
+                    }
+                ],
+                "advanced": true
+            }
+        },
+        {
+            "id": 7,
+            "module": "gateway:WebhookRespond",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "body": "{\r\n  \"query_id\": \"{{3.v_query_id}}\",\r\n   \"exercises\": {{11.json}}}",
+                "status": "200",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 0,
+                    "name": "B-ExFil | Response"
+                },
+                "restore": {
+                    "expect": {
+                        "headers": {
+                            "mode": "chose"
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "status",
+                        "type": "uinteger",
+                        "label": "Status",
+                        "required": true,
+                        "validate": {
+                            "min": 100
+                        }
+                    },
+                    {
+                        "name": "body",
+                        "type": "any",
+                        "label": "Body"
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key",
+                                "required": true,
+                                "validate": {
+                                    "max": 256
+                                }
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value",
+                                "required": true,
+                                "validate": {
+                                    "max": 4096
+                                }
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Custom headers",
+                        "validate": {
+                            "maxItems": 16
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu2.make.com",
+        "notes": []
+    }
+}

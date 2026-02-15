@@ -7,7 +7,7 @@
             "version": 1,
             "parameters": {
                 "hook": 3687067,
-                "maxResults": 3
+                "maxResults": 10
             },
             "mapper": {},
             "metadata": {
@@ -280,16 +280,6 @@
                 ],
                 "interface": [
                     {
-                        "name": "__IMTLENGTH__",
-                        "type": "uinteger",
-                        "label": "Total number of bundles"
-                    },
-                    {
-                        "name": "__IMTINDEX__",
-                        "type": "uinteger",
-                        "label": "Bundle order position"
-                    },
-                    {
                         "name": "__ROW_NUMBER__",
                         "type": "number",
                         "label": "Row number"
@@ -422,7 +412,7 @@
                     {
                         "name": "23",
                         "type": "text",
-                        "label": "(X)"
+                        "label": "session_summary (X)"
                     },
                     {
                         "name": "24",
@@ -874,12 +864,12 @@
                                         {
                                             "name": "22",
                                             "type": "text",
-                                            "label": "(W)"
+                                            "label": "google_form_url (W)"
                                         },
                                         {
                                             "name": "23",
                                             "type": "text",
-                                            "label": "(X)"
+                                            "label": "session_summary (X)"
                                         },
                                         {
                                             "name": "24",
@@ -1109,12 +1099,12 @@
                             {
                                 "name": "22",
                                 "type": "text",
-                                "label": "(W)"
+                                "label": "google_form_url (W)"
                             },
                             {
                                 "name": "23",
                                 "type": "text",
-                                "label": "(X)"
+                                "label": "session_summary (X)"
                             },
                             {
                                 "name": "24",
