@@ -23,30 +23,28 @@ class Config:
     CLAUDE_MODEL = 'claude-sonnet-4-20250514'  # Sonnet 4
     CLAUDE_MAX_TOKENS = 4096
     
-    # Make.com Webhook URLs
+    # Make.com Webhook URLs - Active (MVP)
     WEBHOOKS = {
         # Client Management
         'check_client_exists': os.getenv('WEBHOOK_CHECK_CLIENT_EXISTS'),
         'post_user_upsert': os.getenv('WEBHOOK_USER_UPSERT'),
         'load_client_context': os.getenv('WEBHOOK_LOAD_CLIENT_CONTEXT'),
-        
+
         # Contraindications
         'add_chronic_condition': os.getenv('WEBHOOK_ADD_CHRONIC_CONDITION'),
         'add_injury': os.getenv('WEBHOOK_ADD_INJURY'),
         'update_injury_status': os.getenv('WEBHOOK_UPDATE_INJURY_STATUS'),
-        
+
         # Training Plans
         'full_training_block': os.getenv('WEBHOOK_FULL_TRAINING_BLOCK'),
         'populate_training_week': os.getenv('WEBHOOK_POPULATE_TRAINING_WEEK'),
         'session_update': os.getenv('WEBHOOK_SESSION_UPDATE'),
-        
-        # Developer & Admin
-        'authenticate_developer': os.getenv('WEBHOOK_AUTHENTICATE_DEVELOPER'),
+
+        # Exercise Library
+        'exercise_filter': os.getenv('WEBHOOK_EXERCISE_FILTER'),
+
+        # Admin
         'issue_log_updater': os.getenv('WEBHOOK_ISSUE_LOG_UPDATER'),
-        
-        # Communication
-        'build_session_form_urls': os.getenv('WEBHOOK_BUILD_SESSION_FORM_URLS'),
-        'daily_email_generator': os.getenv('WEBHOOK_DAILY_EMAIL_GENERATOR'),
     }
     
     # Session Management
