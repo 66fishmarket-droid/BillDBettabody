@@ -1153,11 +1153,13 @@ If that happens → **MVP is successful, proceed to Phase 2**
 - ✅ Loads environment variables via `python-dotenv`
 - ✅ `Config` class with all required settings
 - ✅ `validate()` method checks for missing keys
-- ✅ Webhook URL dictionary (maps webhook names to URLs)
+- ✅ Webhook URL dictionary (maps 11 active webhook names to URLs)
 - ✅ Claude API key configuration
 - ✅ Flask secret key for sessions
+- ✅ `exercise_filter` webhook added (2026-02-16)
+- ✅ Deprecated webhooks removed: `authenticate_developer`, `build_session_form_urls`, `daily_email_generator` (2026-02-16)
 
-**Gaps:** NONE - This file appears complete
+**Gaps:** NONE - This file is complete
 
 **Dependencies:** None (root-level config)
 
@@ -1877,9 +1879,9 @@ log_issue(issue_data) -> dict
 
 #### 1. **Load Client Context V2**
 **Blueprint File:** `Bill_-_Load_Client_Context_V2_blueprint.json` (540KB)
-**Status:** ✅ **COMPLETED** - V2 implemented, missing contraindications
+**Status:** ✅ **COMPLETED** - V2 implemented with contraindications
 
-**Webhook Path:** (Webhook ID: 3851730 - need to get full URL from Make.com)
+**Webhook Path:** `https://hook.eu2.make.com/4uq52ajluecic9p29n4dg3ypck6cgnxn`
 
 **Intended Purpose:**
 - Fetch complete client context for Bill
@@ -1917,20 +1919,15 @@ log_issue(issue_data) -> dict
 - ✅ Exercise Bests fetching
 - ✅ Engagement metrics calculation
 
-**CRITICAL GAP:**
-- ❌ **NO CONTRAINDICATIONS QUERIES** (Contraindications_Temp and Contraindications_Chronic)
-- This means Bill cannot see injuries or chronic conditions when prescribing exercises
-- **This is a safety issue** - must be added before MVP testing with friends
+**Contraindications:** ✅ RESOLVED (2026-02-15)
+- ✅ Contraindications_Temp query added (active injuries)
+- ✅ Contraindications_Chronic query added (chronic conditions)
+- ✅ Response JSON (Module 20) updated to include contraindications arrays
+- ✅ Webhook URL extracted from Make.com
 
-**Gaps to Fill:**
-- [ ] **ADD Contraindications_Temp query** (after Module 2, before Router)
-- [ ] **ADD Contraindications_Chronic query** (parallel to Temp)
-- [ ] **UPDATE response JSON** (Module 20) to include contraindications arrays
+**Remaining Gaps:**
 - [ ] Test with client who has active injuries
 - [ ] Verify date filtering works correctly for sessions/steps
-- [ ] Extract full webhook URL from Make.com
-
-**Estimated Time to Add Contraindications:** 30-45 minutes (following LOAD_CLIENT_CONTEXT_MAKE_GUIDE.md Steps 2-3)
 
 **Dependencies:**
 - Google Sheets: Clients, Plans_Blocks, Plans_Weeks, Plans_Sessions, Plans_Steps, Exercise_Bests, Contraindications_Temp, Contraindications_Chronic
@@ -2283,8 +2280,8 @@ log_issue(issue_data) -> dict
 ### Summary - Make.com Scenario Status:
 
 **Scenarios Implemented (V2):** 2
-- Load Client Context V2 (29 modules) - ⚠️ Missing contraindications
-- Exercise Bests V2 (20 modules) - ✅ Complete, needs testing
+- Load Client Context V2 (29+ modules) - ✅ Complete with contraindications
+- Exercise Bests V2 (20 modules) - ✅ Complete (scheduled daily, no webhook), needs testing
 
 **Scenarios Partial (Need Verification):** 9
 - User Upsert
@@ -2299,24 +2296,13 @@ log_issue(issue_data) -> dict
 
 **Scenarios Archived:** 1 (Authenticate Developer)
 
-**QUICK WIN - Add Contraindications to Load Client Context:**
-**Priority:** CRITICAL (safety issue)
-**Time:** 30-45 minutes
-**Steps:**
-1. Add Module after Module 2: Google Sheets → Search Rows → Contraindications_Temp
-   - Filter: Column B (client_id) = {{1.client_id}} AND Column F (status) = "active" OR "recovering"
-   - Limit: 100
-2. Add parallel module: Google Sheets → Search Rows → Contraindications_Chronic  
-   - Filter: Column B (client_id) = {{1.client_id}} AND Column J (status) = "active"
-   - Limit: 100
-3. Update Module 20 (Prepare Response JSON):
-   - Add: `"contraindications": {"temp": "{{[temp_module].array}}", "chronic": "{{[chronic_module].array}}"}`
-4. Test with client who has injuries
-5. Export updated blueprint
+**~~QUICK WIN - Add Contraindications to Load Client Context:~~** ✅ DONE (2026-02-15)
+
+**~~Verify all webhook paths:~~** ✅ DONE (2026-02-15) - All 11 active webhook URLs extracted from Make.com UI
 
 **Critical Priorities:**
-1. **Add contraindications to Load Client Context** (30-45 min) - SAFETY BLOCKING
-2. **Verify all webhook paths** (1 hour) - Extract from Make.com UI
+1. ~~Add contraindications to Load Client Context~~ ✅ DONE
+2. ~~Verify all webhook paths~~ ✅ DONE
 3. **Test Exercise Bests V2** (1-2 hours) - Validate PB tracking works
 4. **Test all other webhook payloads** (2-3 hours) - Ensure schema matches backend
 
@@ -3715,20 +3701,21 @@ print(f"Request cost: ${cost:.4f}")
 ### Webhook Configuration (.env):
 
 ```bash
-# Make.com Webhook URLs
-WEBHOOK_LOAD_CLIENT_CONTEXT=https://hook.eu2.make.com/3851730
-WEBHOOK_USER_UPSERT=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_ADD_INJURY=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_ADD_CHRONIC_CONDITION=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_GENERATE_TRAINING_BLOCK=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_POPULATE_TRAINING_WEEK=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_EXERCISE_FILTER=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_SESSION_UPDATE=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_ISSUE_LOG_UPDATER=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_USERID_CHECK=https://hook.eu2.make.com/XXXXXXX
+# Make.com Webhook URLs - All extracted 2026-02-15
+WEBHOOK_CHECK_CLIENT_EXISTS=https://hook.eu2.make.com/hvsvswhrdfacm7ag4flv1uhpb1nxbigh
+WEBHOOK_LOAD_CLIENT_CONTEXT=https://hook.eu2.make.com/4uq52ajluecic9p29n4dg3ypck6cgnxn
+WEBHOOK_USER_UPSERT=https://hook.eu2.make.com/cwxh4f7a7akrfnr9ljilctodqm8355af
+WEBHOOK_ADD_INJURY=https://hook.eu2.make.com/7n8m9rg7chlxjrtfcdrekx1qc12smsyn
+WEBHOOK_ADD_CHRONIC_CONDITION=https://hook.eu2.make.com/box83ye6ison8gbpsecr1pufermgdx0b
+WEBHOOK_UPDATE_INJURY_STATUS=https://hook.eu2.make.com/bkkygjml0fmc2rkguyesn4jeppg5ia9d
+WEBHOOK_FULL_TRAINING_BLOCK=https://hook.eu2.make.com/v35x7s4w3ksju9e4jgjes5rpsoxb3a22
+WEBHOOK_POPULATE_TRAINING_WEEK=https://hook.eu2.make.com/2vs9htbixx68m2hdbxinro9tdp55arao
+WEBHOOK_SESSION_UPDATE=https://hook.eu2.make.com/hv7koluwt0mxtbj6m8exs4774oyk4e7g
+WEBHOOK_EXERCISE_FILTER=https://hook.eu2.make.com/rjnd2mbbblulbk1xjlpmtejg5b9plblj
+WEBHOOK_ISSUE_LOG_UPDATER=https://hook.eu2.make.com/9cip80yob4ybt8qrkyaxsows81teldu5
 ```
 
-**Action Required:** Extract actual webhook IDs from Make.com UI for each scenario.
+✅ All webhook URLs extracted from Make.com UI (2026-02-15).
 
 ## 4.3 Google Sheets Data Structure
 
@@ -5549,7 +5536,7 @@ MVP COMPLETE
 ## 6.6 Recommended Implementation Order
 
 **Immediate (Next 1-2 Weeks):**
-1. 🚨 Add contraindications to Load Client Context V2 (30-45 min)
+1. ~~Add contraindications to Load Client Context V2~~ ✅ DONE (2026-02-15)
 2. Test Exercise Bests V2 with real data (1-2 hours)
 
 **Phase 1 (During Friend Testing - Weeks 2-4):**
@@ -5639,17 +5626,18 @@ FLASK_PORT=5000
 ANTHROPIC_API_KEY=sk-ant-...
 CLAUDE_MODEL=claude-sonnet-4-5-20250929
 
-# Make.com Webhook URLs (extract from Make.com UI)
-WEBHOOK_LOAD_CLIENT_CONTEXT=https://hook.eu2.make.com/3851730
-WEBHOOK_USER_UPSERT=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_ADD_INJURY=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_ADD_CHRONIC_CONDITION=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_GENERATE_TRAINING_BLOCK=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_POPULATE_TRAINING_WEEK=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_EXERCISE_FILTER=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_SESSION_UPDATE=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_ISSUE_LOG_UPDATER=https://hook.eu2.make.com/XXXXXXX
-WEBHOOK_USERID_CHECK=https://hook.eu2.make.com/XXXXXXX
+# Make.com Webhook URLs - All extracted 2026-02-15
+WEBHOOK_CHECK_CLIENT_EXISTS=https://hook.eu2.make.com/hvsvswhrdfacm7ag4flv1uhpb1nxbigh
+WEBHOOK_LOAD_CLIENT_CONTEXT=https://hook.eu2.make.com/4uq52ajluecic9p29n4dg3ypck6cgnxn
+WEBHOOK_USER_UPSERT=https://hook.eu2.make.com/cwxh4f7a7akrfnr9ljilctodqm8355af
+WEBHOOK_ADD_INJURY=https://hook.eu2.make.com/7n8m9rg7chlxjrtfcdrekx1qc12smsyn
+WEBHOOK_ADD_CHRONIC_CONDITION=https://hook.eu2.make.com/box83ye6ison8gbpsecr1pufermgdx0b
+WEBHOOK_UPDATE_INJURY_STATUS=https://hook.eu2.make.com/bkkygjml0fmc2rkguyesn4jeppg5ia9d
+WEBHOOK_FULL_TRAINING_BLOCK=https://hook.eu2.make.com/v35x7s4w3ksju9e4jgjes5rpsoxb3a22
+WEBHOOK_POPULATE_TRAINING_WEEK=https://hook.eu2.make.com/2vs9htbixx68m2hdbxinro9tdp55arao
+WEBHOOK_SESSION_UPDATE=https://hook.eu2.make.com/hv7koluwt0mxtbj6m8exs4774oyk4e7g
+WEBHOOK_EXERCISE_FILTER=https://hook.eu2.make.com/rjnd2mbbblulbk1xjlpmtejg5b9plblj
+WEBHOOK_ISSUE_LOG_UPDATER=https://hook.eu2.make.com/9cip80yob4ybt8qrkyaxsows81teldu5
 
 # Google Sheets (for Make.com scenarios)
 GOOGLE_SHEETS_ID=1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I
@@ -5784,8 +5772,8 @@ __pycache__/
 
 ### Backend Readiness:
 
-- [ ] All environment variables documented in `.env.example`
-- [ ] All webhook URLs extracted from Make.com
+- [x] All environment variables documented in `.env.example`
+- [x] All webhook URLs extracted from Make.com
 - [ ] `requirements.txt` includes all dependencies
 - [ ] `server.py` uses environment variables (not hardcoded)
 - [ ] Error handling implemented (try/catch around API calls)
@@ -6206,20 +6194,24 @@ logging.basicConfig(
 ## Summary - Deployment Status
 
 **Current State:**
-- ✅ Backend code complete (needs contraindications added)
+- ✅ Backend code complete
 - ✅ Frontend code exists (needs mobile testing)
 - ✅ Make.com scenarios mostly complete
+- ✅ Contraindications added to Load Client Context V2 (2026-02-15)
+- ✅ All webhook URLs extracted and configured (2026-02-15)
+- ✅ `.env.example` and `config.py` updated with all active webhooks (2026-02-16)
 - ⚠️ Deployment: NOT YET DONE
 - ⚠️ Friend testing: NOT YET STARTED
 
 **Next Immediate Steps:**
-1. Add contraindications to Load Client Context V2 (30-45 min) 🚨
-2. Test Exercise Bests V2 (1-2 hours)
-3. Extract webhook URLs from Make.com (30 min)
-4. Create `.env` file with all variables (15 min)
-5. Deploy backend to Railway (1 hour)
-6. Test end-to-end (2 hours)
-7. Invite first friend (the brave one!)
+1. ~~Add contraindications to Load Client Context V2~~ ✅ DONE
+2. ~~Extract webhook URLs from Make.com~~ ✅ DONE
+3. ~~Update `.env.example` and `config.py`~~ ✅ DONE
+4. Test Exercise Bests V2 (1-2 hours)
+5. Create `.env` file with all variables (15 min)
+6. Deploy backend to Railway (1 hour)
+7. Test end-to-end (2 hours)
+8. Invite first friend (the brave one!)
 
 **Estimated Time to Go-Live: 6-8 hours of focused work**
 
