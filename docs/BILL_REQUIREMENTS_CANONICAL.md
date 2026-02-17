@@ -566,11 +566,14 @@ This document serves as:
 ### Core User Features:
 
 #### 1. ✅ User Onboarding & Identity
-- [ ] First-time user flow (Stranger → Client)
+> **Login design finalised 2026-02-17** — see `docs/PWA_FRONTEND_SCOPE.md`
+- [ ] Login screen with large Bill portrait (first-time / new device users)
+- [ ] Device recognition via localStorage — returning users skip login, go straight to home
+- [ ] Client ID passed to backend on first API call (`POST /initialize`)
+- [ ] First-time user flow (Stranger → Client) — Bill onboards via chat
 - [ ] Partial vs Full context load choice
 - [ ] User profile creation (name, goals, equipment)
 - [ ] Client ID generation and storage
-- [ ] Session persistence (remember user between visits)
 
 #### 2. ✅ Injury & Health Management
 - [ ] Add active injuries (Contraindications_Temp)
@@ -595,14 +598,17 @@ This document serves as:
 - [ ] YouTube video links for each exercise
 
 #### 5. ✅ Session Execution Interface
-- [ ] Dashboard showing upcoming sessions
-- [ ] Session preview (overview + exercise list)
-- [ ] In-session view (step-by-step)
-- [ ] Log sets (reps + weight per set, up to 5 sets)
-- [ ] Pre-filled units from Exercise Library
-- [ ] Exercise notes field (per exercise)
-- [ ] Main body RPE entry
+> **UI Design finalised 2026-02-17** — see `docs/PWA_FRONTEND_SCOPE.md` for full spec
+- [ ] Home screen with progress snapshot + next session summary card + chat with Bill
+- [ ] Session preview (read-only overview + exercise list by segment)
+- [ ] Active session view (accordion — user controls exercise order)
+- [ ] Log sets (reps + measure per set, up to 5 sets per exercise)
+- [ ] Dynamic measure unit from Exercise Library (kg / seconds / km / m)
+- [ ] Exercise info: coach notes, video link, detailed description
+- [ ] Exercise RPE + notes field (per exercise)
 - [ ] Overall session RPE + notes
+- [ ] Auto-log session start/end timestamps
+- [ ] Draft auto-save to localStorage
 - [ ] Session completion submission
 
 #### 6. ✅ Exercise Bests Tracking (NEW System)
@@ -615,13 +621,17 @@ This document serves as:
 - [ ] Historical data informs future prescriptions
 
 #### 7. ✅ Bill's Chat Interface
-- [ ] Always-accessible chat with Bill
+> **Chat integrated into home screen (2026-02-17)** — not a separate page
+- [ ] Chat integrated into home screen below info cards, input pinned at bottom
+- [ ] Bill's small circular avatar on his chat messages
 - [ ] Bill uses full client context in conversations
 - [ ] Bill can call Make.com webhooks as tools
 - [ ] Bill can update user profile mid-conversation
 - [ ] Bill can add injuries/conditions during chat
 - [ ] Bill can answer questions about exercises
 - [ ] Bill provides motivation and coaching
+- [ ] Chat history persisted in localStorage
+- [ ] Typing indicator while waiting for Bill's response
 
 #### 8. ✅ Context Integrity
 - [ ] Load Client Context on session start
@@ -1551,337 +1561,122 @@ If that happens → **MVP is successful, proceed to Phase 2**
 
 ## 3.2 Frontend PWA Components
 
-### HTML Files:
-
----
-
-#### `index.html` (2.8KB)
-**Status:** ⚠️ **PARTIAL** - Landing/chat interface
-
-**Intended Purpose:**
-- Primary entry point for PWA
-- Chat interface with Bill
-- Session initialization
-- Navigation to dashboard
-
-**Current Implementation:**
-- ⚠️ Basic HTML structure (need to verify)
-- ⚠️ Chat UI elements (need to verify)
-- ❌ Mobile-first responsiveness needs testing
-- ❌ Offline capability not verified
-
-**Gaps to Fill:**
-- [ ] Verify chat interface works on mobile (touch-optimized)
-- [ ] Add loading states for API calls
-- [ ] Add error handling UI (connection failures)
-- [ ] Test on iOS Safari and Android Chrome
-- [ ] Ensure works offline (service worker caching)
-
-**Dependencies:**
-- `app.js` (chat logic)
-- `app.css` (styling)
-- `api.js` (backend communication)
-
----
-
-#### `dashboard.html` (3.4KB)
-**Status:** ⚠️ **PARTIAL** - Session overview interface
-
-**Intended Purpose:**
-- Show upcoming sessions (this week + next week)
-- Show completed sessions with checkmarks
-- High-level progress stats
-- Navigate to session preview
-- Access chat with Bill
-
-**Current Implementation:**
-- ⚠️ Dashboard layout (need to verify mobile optimization)
-- ⚠️ Session cards (need to verify data binding)
-- ❌ Progress stats display not verified
-- ❌ Responsive design needs testing
-
-**Gaps to Fill:**
-- [ ] Verify session cards display correctly
-- [ ] Add "no sessions" empty state
-- [ ] Add pull-to-refresh for updated data
-- [ ] Test responsive breakpoints (mobile, tablet)
-- [ ] Add skeleton loaders for better UX
-
-**Dependencies:**
-- `dashboard.js` (data fetching and rendering)
-- `app.css` (styling)
-- `api.js` (backend communication)
-
----
-
-#### `session-preview.html` (3.9KB)
-**Status:** ⚠️ **PARTIAL** - Pre-session and in-session interface
-
-**Intended Purpose:**
-- **Preview mode:** Show session overview, exercise list, "Start Session" button
-- **In-session mode:** Step-by-step exercise logging
-- Log sets (reps, weight) for each exercise
-- Log RPE for main body and overall session
-- Submit completed session
-
-**Current Implementation:**
-- ⚠️ Session preview layout (need to verify)
-- ⚠️ Exercise step UI (need to verify mobile optimization)
-- ❌ Set logging inputs not verified (critical for MVP)
-- ❌ RPE selection UI not verified
-- ❌ Notes fields not verified
-
-**Gaps to Fill:**
-- [ ] **CRITICAL:** Verify set logging works (5 sets × 2 fields per exercise)
-- [ ] Ensure number inputs are mobile-friendly (large tap targets)
-- [ ] Pre-fill units from Exercise Library
-- [ ] Add YouTube video link buttons (open in new tab)
-- [ ] Add long description expandable sections
-- [ ] Test session submission with real data
-- [ ] Add "save draft" functionality (don't lose data if interrupted)
-- [ ] Verify RPE scales (1-10, with descriptions)
-
-**Dependencies:**
-- `session-preview.js` (session execution logic)
-- `app.css` (styling)
-- `api.js` (backend communication)
-
----
-
-### JavaScript Files:
-
----
-
-#### `app.js` (5.4KB)
-**Status:** ⚠️ **PARTIAL** - Chat interface logic
-
-**Intended Purpose:**
-- Handle chat message sending/receiving
-- Display Bill's responses (including formatting, links)
-- Handle session initialization
-- Navigate between views
-
-**Current Implementation:**
-- ⚠️ Chat message handling (need to verify)
-- ⚠️ API call structure (need to verify error handling)
-- ❌ Message history management unclear
-- ❌ Typing indicators not verified
-
-**Gaps to Fill:**
-- [ ] Verify chat messages display correctly (markdown support?)
-- [ ] Add error handling for failed messages
-- [ ] Add retry logic for network failures
-- [ ] Store chat history in localStorage (persist between sessions)
-- [ ] Add typing indicators while Bill is thinking
-- [ ] Handle long responses (streaming if supported)
-
-**Dependencies:**
-- `api.js` (backend API calls)
-- `index.html` (chat UI elements)
-
----
-
-#### `dashboard.js` (6.1KB)
-**Status:** ⚠️ **PARTIAL** - Dashboard data management
-
-**Intended Purpose:**
-- Fetch client context (sessions, stats)
-- Render session cards dynamically
-- Handle navigation to session preview
-- Show progress stats
-
-**Current Implementation:**
-- ⚠️ Data fetching logic (need to verify)
-- ⚠️ Session card rendering (need to verify)
-- ❌ Progress stats calculation not verified
-- ❌ Error handling not verified
-
-**Gaps to Fill:**
-- [ ] Verify sessions fetch from `/session/{id}` endpoint
-- [ ] Add loading states (skeleton loaders)
-- [ ] Add empty states ("No sessions yet")
-- [ ] Calculate progress stats (sessions this week, recent PBs)
-- [ ] Add pull-to-refresh
-- [ ] Cache session data in localStorage (faster loads)
-
-**Dependencies:**
-- `api.js` (backend API calls)
-- `dashboard.html` (DOM elements)
-
----
-
-#### `session-preview.js` (6.7KB)
-**Status:** ⚠️ **PARTIAL** - Session execution logic
-
-**Intended Purpose:**
-- Load session details
-- Manage step-by-step progression through exercises
-- Capture set data (reps, weight)
-- Capture RPE and notes
-- Submit completed session
-
-**Current Implementation:**
-- ⚠️ Session data loading (need to verify)
-- ⚠️ Set logging inputs (need to verify)
-- ⚠️ Submission logic (need to verify payload structure)
-- ❌ Form validation not verified
-- ❌ Draft saving not implemented
-
-**Gaps to Fill:**
-- [ ] **CRITICAL:** Verify set logging creates correct payload structure
-- [ ] Add form validation (prevent negative weights, impossible reps)
-- [ ] Save draft to localStorage every 30 seconds
-- [ ] Restore draft on page reload (if session not completed)
-- [ ] Add "Are you sure?" confirmation before submit
-- [ ] Show success screen after submission (with PBs if any)
-- [ ] Handle submission failures gracefully
-
-**Dependencies:**
-- `api.js` (backend API calls)
-- `session-preview.html` (form elements)
-
----
-
-#### `api.js` (3.2KB)
-**Status:** ⚠️ **PARTIAL** - Backend communication layer
-
-**Intended Purpose:**
-- Wrapper around fetch() for all API calls
-- Centralized error handling
-- Request/response formatting
-- Auth token management (if needed)
-
-**Current Implementation:**
-- ⚠️ Basic fetch wrappers (need to verify)
-- ⚠️ Error handling (need to verify)
-- ❌ Retry logic not implemented
-- ❌ Request timeout not configured
-
-**Gaps to Fill:**
-- [ ] Add retry logic for transient failures (3 attempts)
-- [ ] Add timeout configuration (10 seconds default)
-- [ ] Add request/response logging (for debugging)
-- [ ] Handle offline mode gracefully
-- [ ] Add authentication headers if needed (session tokens)
-- [ ] Standardize error format for UI display
-
-**Dependencies:** None (uses native fetch)
-
----
-
-#### `mock-data.js` (7.6KB)
-**Status:** ✅ **DEVELOPMENT HELPER** - Mock data for testing
-
-**Purpose:** Provides mock session data for frontend development without backend
-
-**Action:** Keep for development, comment out in production
-
----
-
-### CSS Files:
-
----
-
-#### `app.css` (6.4KB)
-**Status:** ⚠️ **PARTIAL** - Styling for all views
-
-**Intended Purpose:**
-- Mobile-first responsive design
-- Touch-optimized input sizes
-- Consistent theming
-- Loading states and animations
-
-**Current Implementation:**
-- ⚠️ Basic styling (need to verify mobile optimization)
-- ⚠️ Responsive breakpoints (need to verify)
-- ❌ Touch target sizes not verified (minimum 44×44px)
-- ❌ Loading animations not verified
-- ❌ Dark mode not implemented (out of scope for MVP)
-
-**Gaps to Fill:**
-- [ ] **CRITICAL:** Ensure all buttons/inputs are touch-friendly (44×44px minimum)
-- [ ] Test on real devices (not just browser DevTools)
-- [ ] Add loading spinners/skeletons
-- [ ] Ensure good contrast ratios (accessibility)
-- [ ] Test landscape orientation on phones
-- [ ] Optimize for one-thumb usage
-
-**Dependencies:** None
-
----
-
-### PWA Configuration Files:
-
----
-
-#### `manifest.json` (588 bytes)
-**Status:** ⚠️ **PARTIAL** - PWA manifest
-
-**Intended Purpose:**
-- Define PWA metadata (name, icons, theme)
-- Enable "Add to Home Screen"
-- Configure display mode (standalone)
-
-**Current Implementation:**
-- ⚠️ Basic manifest structure (need to verify)
-- ❌ Icons not verified (need 192×192 and 512×512 PNG)
-- ❌ Theme colors not set
-- ❌ Start URL not verified
-
-**Gaps to Fill:**
-- [ ] Create app icons (192×192, 512×512)
-- [ ] Set proper theme color (brand color)
-- [ ] Set background color (for splash screen)
-- [ ] Verify start_url points to correct path
-- [ ] Test installation on iOS and Android
-
-**Dependencies:** None
-
----
-
-#### `sw.js` (989 bytes)
-**Status:** ⚠️ **PARTIAL** - Service Worker
-
-**Intended Purpose:**
-- Cache static assets for offline use
-- Enable PWA installation
-- Provide offline fallback page
-
-**Current Implementation:**
-- ⚠️ Basic service worker structure (need to verify)
-- ❌ Caching strategy not verified
-- ❌ Offline fallback not implemented
-
-**Gaps to Fill:**
-- [ ] Implement cache-first strategy for static assets (HTML, CSS, JS)
-- [ ] Implement network-first strategy for API calls
-- [ ] Create offline fallback page
-- [ ] Add cache versioning (for updates)
-- [ ] Test offline mode thoroughly
-
-**Dependencies:** None
-
----
-
-### Summary - Frontend Status:
-
-**Files Complete:** 1 (mock-data.js - development helper)
-**Files Partial:** 9 (all HTML, JS, CSS, and PWA config files)
-**Critical Gaps:** 
-1. **Set logging interface** in session-preview (blocking for MVP)
-2. **Touch-friendly inputs** across all interfaces (UX critical)
-3. **Mobile testing** on real devices (not just browser DevTools)
-4. **Service worker caching** (for PWA offline capability)
-5. **Form validation** in session logging (prevent bad data)
-
-**Estimated Work:** 25-35 hours to complete all frontend components
-
-**Testing Priority:**
-1. Session logging workflow (highest priority)
-2. Chat interface responsiveness
-3. Dashboard data display
-4. PWA installation on iOS/Android
-5. Offline functionality
+> **Architecture Redesign (2026-02-17):** The frontend is being rebuilt as a Single-Page App.
+> The old multi-page HTML structure (separate `dashboard.html`, `session-preview.html`, etc.)
+> is being replaced. Full design spec in `docs/PWA_FRONTEND_SCOPE.md`.
+
+### Architecture Decisions (Locked In)
+
+| Decision | Choice |
+|----------|--------|
+| App structure | **Single-Page App** — one `index.html` shell, JS view swapping via hash router |
+| Visual theme | **Dark & Warm** — charcoal (#2a2a2a) + chocolate brown (#d2691e) + wheat (#f5deb3) |
+| CSS approach | **Custom CSS only** — Tailwind CDN removed, build on `app.css` with CSS custom properties |
+| Home screen | **Combined view** — progress snapshot + next session card + Bill chat, input pinned at bottom |
+| Chat prominence | **Integrated into home screen** — not a separate page |
+| Session logging | **Separate full-screen view** — user-controlled exercise order (accordion pattern) |
+| Navigation | **Hub-and-spoke** — home is the hub, contextual navigation, no persistent nav bar |
+| Bill's avatar | **Large on login screen**, small circle on chat messages elsewhere |
+| Target devices | **Mobile-first**, desktop aware |
+| Login | **Device recognition** — auto-login for returning users, login screen for first-time/new device |
+
+### SPA File Structure
+
+```
+frontend/bill-pwa/
+├── index.html                    (SPA shell — single mount point)
+├── css/app.css                   (all styling, no Tailwind)
+├── js/
+│   ├── app.js                    (router, session management, shared utilities)
+│   ├── api.js                    (backend communication, mock data toggle)
+│   ├── mock-data.js              (development helper)
+│   ├── views/
+│   │   ├── login.js              (login / welcome, device recognition)
+│   │   ├── home.js               (info cards + chat)
+│   │   ├── session-preview.js    (pre-workout exercise overview)
+│   │   ├── session-active.js     (in-session logging)
+│   │   └── session-complete.js   (post-workout summary)
+│   └── components/
+│       ├── chat.js               (chat messages, Bill's avatar, typing indicator)
+│       ├── exercise-card.js      (expandable exercise detail accordion)
+│       └── step-input.js         (set/rep/weight/time data entry)
+├── sw.js                         (service worker)
+├── manifest.json                 (PWA config)
+└── assets/
+    ├── bill-portrait.png         (optimise to <50KB)
+    └── icons/                    (192x192, 512x512 PWA icons — TO CREATE)
+```
+
+### Views Overview
+
+#### 0. Login (`#/login`)
+- **Large Bill portrait** — branding/personality moment
+- Client ID input for existing users on new device
+- "New here?" path — Bill onboards via chat
+- On success: store `client_id` in localStorage, pass to backend via `POST /initialize`
+- **Returning users skip login entirely** — localStorage `client_id` detected → straight to `#/home`
+
+#### 1. Home Screen (`#/home`)
+- **Progress snapshot card**: sessions completed, current phase/week, recent PBs
+- **Next session card**: uses pre-written `session_summary` field from `plan_sessions` table + "Start Session" button. "TODAY" badge when session is today.
+- **Chat with Bill**: scrollable messages (Bill avatar on his messages), input pinned at bottom, localStorage history, typing indicator
+
+#### 2. Session Preview (`#/session-preview/{id}`)
+- Read-only pre-workout overview
+- Exercise list grouped by segment (warm-up / main / cool-down) with colour-coded borders
+- Equipment needed list
+- "BEGIN WORKOUT" button → auto-logs start timestamp
+
+#### 3. Active Session (`#/session-active/{id}`)
+- **Segment sections**: Warm-up → Main → Cool-down
+- All steps visible as collapsed cards within each segment
+- **Tap any step to expand** (accordion) — user controls order, especially in Main (equipment availability)
+- **Expanded step shows**:
+  - Coach notes, tempo, rest period
+  - Video link (YouTube, opens in new tab)
+  - Detailed exercise description (expandable)
+  - **Up to 5 sets** — prescribed sets pre-filled with reps + load values
+  - **Dynamic measure unit** per exercise from Exercise Library: kg, seconds, km, or m
+  - Exercise RPE (1-10) + notes field
+  - "Mark Complete" button → collapses back, shows tick
+- **Draft auto-save** to localStorage every 30 seconds, restore on reload
+- "Complete Session" button when ready → overall RPE + notes → auto-logs end timestamp → POST to backend
+
+#### 4. Session Complete (`#/session-complete/{id}`)
+- Duration summary (start → end), exercises completed
+- PBs achieved (highlighted)
+- Bill's coaching response
+- "Back to Home" button
+
+### Frontend Build Phases
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| Phase 1 | SPA shell + hash router + login + home screen + chat | ❌ NOT STARTED |
+| Phase 2 | Session preview view | ❌ NOT STARTED |
+| Phase 3 | Active session logging (core MVP) | ❌ NOT STARTED |
+| Phase 4 | Session completion + submission | ❌ NOT STARTED |
+| Phase 5 | PWA polish (icons, service worker, loading/error states, device testing) | ❌ NOT STARTED |
+
+### Legacy Files (To Be Replaced)
+
+The following files exist from the old multi-page structure and will be replaced during the SPA rebuild:
+- `dashboard.html` → becomes `js/views/home.js`
+- `session-preview.html` → becomes `js/views/session-preview.js`
+- `index.html` → gutted and becomes SPA shell
+- `js/dashboard.js` → logic moves to `js/views/home.js`
+- `js/session-preview.js` → logic moves to `js/views/session-preview.js` + `js/views/session-active.js`
+- `js/app.js` → refactored to SPA router + shared utilities
+- Tailwind CDN `<script>` tags removed; all light-theme Tailwind classes (`bg-white`, `bg-gray-50`, `text-gray-900`) removed
+
+### Key Frontend Constraints
+
+1. **No build tools** — vanilla JS, no bundler, no npm
+2. **Mock data first** — `USE_MOCK_DATA` toggle in `api.js` until backend endpoints are ready
+3. **Session summary from backend** — `session_summary` field in `plan_sessions` pre-written by Bill during training week generation, no client-side summarisation
+4. **Dynamic measure units from Exercise Library** — kg / seconds / km / m determined by exercise type
+5. **Up to 5 sets per exercise** — prescribed sets pre-filled, extra row available for bonus set
+6. **Webhook payloads are execution law** — frontend submission must match exact schema
 
 ## 3.3 Make.com Scenarios
 
