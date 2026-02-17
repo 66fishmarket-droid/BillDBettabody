@@ -6,8 +6,9 @@ Central configuration for all backend services
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from .env next to this file
+_dotenv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+load_dotenv(_dotenv_path)
 
 class Config:
     """Base configuration"""

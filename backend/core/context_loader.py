@@ -307,7 +307,10 @@ def build_client_context_text(session):
         parts.append("NUTRITION & SUPPLEMENTS:")
         targets = nutrition.get('nutrition_targets', {})
         if targets:
-            parts.append(f"  Calories: {targets.get('calories', '?')} | Protein: {targets.get('protein', targets.get('protein_min', '?'))}g | Carbs: {targets.get('carbs', '?')}g | Fat: {targets.get('fat', '?')}g")
+            if isinstance(targets, dict):
+                parts.append(f"  Calories: {targets.get('calories', '?')} | Protein: {targets.get('protein', targets.get('protein_min', '?'))}g | Carbs: {targets.get('carbs', '?')}g | Fat: {targets.get('fat', '?')}g")
+            else:
+                parts.append(f"  Targets: {targets}")
         supps = nutrition.get('supplement_protocol', [])
         if supps:
             if isinstance(supps, list):

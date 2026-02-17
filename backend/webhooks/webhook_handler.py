@@ -9,12 +9,6 @@ import json
 from datetime import datetime
 from config import Config
 from core.bill_config import is_write_webhook
-from webhooks.context_integrity import (
-    should_refresh_context,
-    validate_session_ids_present,
-    log_context_integrity_escalation
-)
-from webhooks.webhook_validator import validate_or_raise
 
 
 def parse_make_response(response):
