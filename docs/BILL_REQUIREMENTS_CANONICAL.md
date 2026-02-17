@@ -1553,11 +1553,27 @@ If that happens → **MVP is successful, proceed to Phase 2**
 7. ~~Payload validation wired into tool execution~~ ✅
 8. ~~Dead code cleanup~~ ✅ (authenticate_developer, build_session_form_urls, daily_email_generator removed)
 
+**Completed (2026-02-17 E2E testing session):**
+9. ~~.env file created~~ ✅ (API key + all 11 webhook URLs)
+10. ~~config.py load_dotenv fix~~ ✅ (explicit path relative to file, was failing when CWD differed)
+11. ~~context_loader.py nutrition_targets fix~~ ✅ (handle string or dict from Make.com)
+12. ~~webhook_handler.py dead imports removed~~ ✅ (unused context_integrity/webhook_validator imports causing ImportError)
+13. ~~E2E test: /initialize (stranger)~~ ✅
+14. ~~E2E test: /initialize (existing client plaasboy)~~ ✅ (context loaded, greeted by name)
+15. ~~E2E test: /chat basic~~ ✅ (Bill responded in persona, no tools)
+16. ~~E2E test: /chat with tool use (injury logging)~~ ✅ (tool called, Make.com webhook executed, context refreshed)
+
 **Remaining Gaps:**
 1. **Session expiry in client_context.py** (memory management)
 2. **Retry logic in webhook_handler.py** (exponential backoff)
-3. **End-to-end testing** (Claude → webhook → Make.com → response)
-4. **Streaming support in claude_client.py** (optional, for faster chat)
+3. **Streaming support in claude_client.py** (optional, for faster chat)
+
+**⚠️ CRITICAL BLOCKER: System Prompt Size**
+-  is 303KB / ~75k tokens
+- Combined with Exercise QuickRef (~9k tokens), system prompt is ~82k tokens per request
+- Free tier rate limit is 30k tokens/min → only ~1 request per 3 minutes
+- **Action needed:** Complete slim V2 instructions (personality + safety + coaching only, target ~20-30KB)
+- Work-in-progress tracked in 
 
 ## 3.2 Frontend PWA Components
 
@@ -6011,6 +6027,10 @@ logging.basicConfig(
 - ✅ **V2 context formatting complete** — full client profile, sessions, exercise bests, contraindications (2026-02-17)
 - ✅ **All 11 webhook schemas complete** with payload validation wired into tool execution (2026-02-17)
 - ✅ **Dead code cleaned up** — deprecated auth/form-URL/email endpoints removed (2026-02-17)
+- ✅ **.env file created** with API key + all 11 webhook URLs (2026-02-17)
+- ✅ **E2E testing passed** — init, chat, tool calling (injury logged via Make.com), context refresh all working (2026-02-17)
+- ✅ **3 bugs fixed during E2E testing** — load_dotenv path, nutrition_targets type handling, dead imports (2026-02-17)
+- ⚠️ **System prompt too large** — 82k tokens from Bill_Instructions_current.txt + QuickRef; need slim V2
 - ⚠️ Deployment: NOT YET DONE
 - ⚠️ Friend testing: NOT YET STARTED
 
