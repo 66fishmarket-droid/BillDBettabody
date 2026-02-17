@@ -230,55 +230,325 @@ def load_bill_instructions(mode, client_state, operation_type='chat',
 
 def build_client_context_text(session):
     """
-    Build client context section as text
-    
+    Build client context section as text for Claude's system prompt.
+
+    Formats the Load Client Context V2 webhook output into readable text.
+    The V2 response uses numeric keys (from Make.com data stores) for
+    sessions, steps, and exercise bests arrays.
+
     This is separated from instructions so it can be:
     - NOT cached (changes frequently)
     - Kept separate in the system message array
-    
+
     Args:
         session: Session dict with context, state, etc.
-        
+
     Returns:
         str: Client context text (or empty string if not applicable)
     """
     state = session.get('state', ClientState.STRANGER)
-    
-    # Only include context for READY clients
+
     if state != ClientState.READY:
         return ""
-    
+
     context = session.get('context', {})
-    
     if not context:
         return ""
-    
-    context_parts = []
-    
-    context_parts.append("=" * 60)
-    context_parts.append("CURRENT CLIENT CONTEXT")
-    context_parts.append(f"Last refreshed: {session.get('last_refresh', 'Never')}")
-    context_parts.append("=" * 60)
-    context_parts.append("")
-    
-    # Add key context elements
-    # (Don't dump entire context - extract key fields)
-    if context.get('profile'):
-        context_parts.append("CLIENT PROFILE:")
-        profile = context['profile']
-        context_parts.append(f"- Name: {profile.get('first_name', '')} {profile.get('last_name', '')}")
-        context_parts.append(f"- Goals: {profile.get('goal_primary', '')}")
-        context_parts.append(f"- Experience: {profile.get('training_experience', '')}")
-        context_parts.append("")
-    
-    # Add contraindications if present
-    contraindications = context.get('contraindications', {})
-    if contraindications:
-        context_parts.append("ACTIVE CONTRAINDICATIONS:")
-        context_parts.append(str(contraindications))
-        context_parts.append("")
-    
-    return "\n".join(context_parts)
+
+    parts = []
+
+    parts.append("=" * 60)
+    parts.append("CURRENT CLIENT CONTEXT")
+    parts.append(f"Last refreshed: {session.get('last_refresh', 'Never')}")
+    parts.append(f"Engagement state: {context.get('client_engagement_state', 'unknown')}")
+    parts.append("=" * 60)
+
+    # --- CLIENT PROFILE ---
+    profile = context.get('client_profile', {})
+    if profile:
+        parts.append("")
+        parts.append("CLIENT PROFILE:")
+        parts.append(f"  Name: {profile.get('first_name', '')} {profile.get('last_name', '')}")
+        parts.append(f"  Client ID: {profile.get('client_id', '')}")
+        parts.append(f"  Age: {profile.get('age_years', '?')} | Sex: {profile.get('sex', '?')}")
+        parts.append(f"  Height: {profile.get('height_cm', '?')}cm | Weight: {profile.get('weight_kg', '?')}kg | Waist: {profile.get('waist_circumference_cm', '?')}cm")
+        parts.append(f"  Timezone: {profile.get('timezone', '?')}")
+        parts.append(f"  Goals: {profile.get('goal_primary', 'not set')}")
+        if profile.get('goal_secondary'):
+            parts.append(f"    Secondary: {profile['goal_secondary']}")
+        if profile.get('goal_tertiary'):
+            parts.append(f"    Tertiary: {profile['goal_tertiary']}")
+        if profile.get('goal_timeframe_months'):
+            parts.append(f"    Timeframe: {profile['goal_timeframe_months']} months")
+        parts.append(f"  Training experience: {profile.get('training_experience', '?')}")
+        parts.append(f"  Strength: {profile.get('strength_level', '?')} | Cardio: {profile.get('cardio_fitness_level', '?')} | Movement: {profile.get('movement_quality', '?')}")
+        parts.append(f"  Last trained: {profile.get('last_trained_date', '?')}")
+        parts.append(f"  Days/week: {profile.get('days_per_week', '?')} | Typical recent: {profile.get('typical_sessions_per_week_last_3_months', '?')}/wk")
+        parts.append(f"  Equipment: {profile.get('equipment_preference', '?')}")
+        if profile.get('equipment_gym'):
+            parts.append(f"    Gym: {profile['equipment_gym']}")
+        if profile.get('equipment_home'):
+            parts.append(f"    Home: {profile['equipment_home']}")
+        parts.append(f"  Diet: {profile.get('diet_style', '?')}")
+        parts.append(f"  Sleep: {profile.get('sleep_quality', '?')} | Stress: {profile.get('stress_level', '?')}")
+        parts.append(f"  Work: {profile.get('work_pattern', '?')}")
+        if profile.get('family_responsibilities'):
+            parts.append(f"  Family: {profile['family_responsibilities']}")
+        if profile.get('notes'):
+            parts.append(f"  Notes: {profile['notes']}")
+
+    # --- CONTRAINDICATIONS ---
+    _format_contraindications(parts, profile, context)
+
+    # --- NUTRITION ---
+    nutrition = context.get('nutrition', {})
+    if nutrition:
+        parts.append("")
+        parts.append("NUTRITION & SUPPLEMENTS:")
+        targets = nutrition.get('nutrition_targets', {})
+        if targets:
+            parts.append(f"  Calories: {targets.get('calories', '?')} | Protein: {targets.get('protein', targets.get('protein_min', '?'))}g | Carbs: {targets.get('carbs', '?')}g | Fat: {targets.get('fat', '?')}g")
+        supps = nutrition.get('supplement_protocol', [])
+        if supps:
+            if isinstance(supps, list):
+                for s in supps:
+                    if isinstance(s, dict):
+                        parts.append(f"  - {s.get('name', '?')} {s.get('dosage', '')} ({s.get('timing', '')})")
+                    else:
+                        parts.append(f"  - {s}")
+            else:
+                parts.append(f"  Supplements: {supps}")
+
+    # --- ACTIVE TRAINING BLOCK ---
+    plan = context.get('plan_context', {})
+    active_block = plan.get('active_block', plan) if isinstance(plan, dict) else {}
+    if active_block and active_block.get('plan_id'):
+        parts.append("")
+        parts.append("ACTIVE TRAINING BLOCK:")
+        parts.append(f"  Plan: {active_block.get('plan_id', '?')}")
+        parts.append(f"  Phase: {active_block.get('phase_name', '?')}")
+        parts.append(f"  Goal: {active_block.get('phase_goal', '?')}")
+        parts.append(f"  Duration: {active_block.get('duration_weeks', '?')} weeks | Days/week: {active_block.get('days_per_week', '?')}")
+        parts.append(f"  Week start: {active_block.get('week_start', '?')}")
+        parts.append(f"  Status: {active_block.get('plan_status', '?')}")
+        parts.append(f"  Block ID: {active_block.get('block_id', '?')}")
+        if active_block.get('constraints'):
+            parts.append(f"  Constraints: {active_block['constraints']}")
+
+    # --- ACTIVE WEEK ---
+    weeks = context.get('weeks', {})
+    active_week = weeks.get('active', {}) if isinstance(weeks, dict) else {}
+    if active_week and active_week.get('week_id'):
+        parts.append("")
+        parts.append("CURRENT WEEK:")
+        parts.append(f"  Week {active_week.get('week_number', '?')}: {active_week.get('week_id', '')}")
+        parts.append(f"  Dates: {active_week.get('week_start_date', '?')} to {active_week.get('week_end_date', '?')}")
+        parts.append(f"  Status: {active_week.get('week_status', '?')} | Type: {active_week.get('week_type', '?')}")
+        parts.append(f"  Focus: {active_week.get('primary_focus', '?')}")
+        if active_week.get('secondary_focus'):
+            parts.append(f"  Secondary: {active_week['secondary_focus']}")
+        parts.append(f"  Intensity: {active_week.get('intensity_pattern', '?')}")
+
+    # --- SESSIONS ---
+    sessions = context.get('sessions', {})
+    if isinstance(sessions, dict):
+        _format_sessions(parts, sessions)
+    elif isinstance(sessions, list):
+        # Fallback: flat list format
+        _format_sessions(parts, {'active': sessions})
+
+    # --- EXERCISE BESTS ---
+    exercise_bests = context.get('Exercise Bests', [])
+    if exercise_bests:
+        _format_exercise_bests(parts, exercise_bests)
+
+    # --- HISTORY SUMMARY ---
+    history = context.get('history_summary', {})
+    if history:
+        parts.append("")
+        parts.append("TRAINING HISTORY:")
+        parts.append(f"  Completed blocks: {history.get('completed_blocks', 0)} | Weeks: {history.get('completed_weeks', 0)} | Sessions: {history.get('completed_sessions', 0)} | Steps: {history.get('completed_steps', 0)}")
+
+    # --- CONTEXT VALIDITY ---
+    validity = context.get('context_validity', {})
+    if validity:
+        parts.append("")
+        parts.append("CONTEXT COUNTS:")
+        parts.append(f"  Active sessions: {validity.get('active_sessions_count', 0)} | Completed: {validity.get('completed_sessions_count', 0)}")
+        parts.append(f"  Active steps: {validity.get('active_steps_count', 0)} | Completed: {validity.get('completed_steps_count', 0)}")
+
+    return "\n".join(parts)
+
+
+# ============================================================
+# CONTEXT FORMATTING HELPERS
+# ============================================================
+
+def _format_contraindications(parts, profile, context):
+    """Format contraindications from both profile and dedicated arrays."""
+    has_contras = False
+
+    chronic = profile.get('chronic_contraindications', '')
+    chronic_arr = context.get('Contraindications Chronic', [])
+    temp_arr = context.get('Contraindications Temp', [])
+    injuries = profile.get('injuries', '')
+
+    if chronic or chronic_arr or temp_arr or injuries:
+        parts.append("")
+        parts.append("CONTRAINDICATIONS:")
+
+    if chronic:
+        parts.append(f"  Chronic: {chronic}")
+        has_contras = True
+
+    # Dedicated chronic array (Make.com numeric-key rows)
+    if isinstance(chronic_arr, list):
+        for item in chronic_arr:
+            if isinstance(item, dict) and any(v for k, v in item.items() if not k.startswith('_')):
+                parts.append(f"  Chronic condition: {_row_summary(item)}")
+                has_contras = True
+
+    # Temporary injuries array
+    if isinstance(temp_arr, list):
+        for item in temp_arr:
+            if isinstance(item, dict) and any(v for k, v in item.items() if not k.startswith('_')):
+                parts.append(f"  Temp injury: {_row_summary(item)}")
+                has_contras = True
+
+    if injuries and not has_contras:
+        parts.append(f"  Injuries: {injuries}")
+
+    if profile.get('risk_summary'):
+        parts.append(f"  Risk: {profile['risk_summary']}")
+
+
+def _format_sessions(parts, sessions_data):
+    """Format sessions from V2 context (numeric-key Make.com rows).
+
+    Session column mapping:
+      0=plan_id, 1=block_id, 2=client_id, 3=week_number, 4=week_id,
+      5=day_of_week, 6=session_id, 7=phase_name, 8=location,
+      9=focus/title, 10=exercises, 11=secondary_focus, 12=supplements,
+      13=session_summary, 14=session_date, 16=session_global_number,
+      19=estimated_duration, 21=status
+    """
+    active = sessions_data.get('active', [])
+    completed = sessions_data.get('completed', [])
+
+    if active:
+        parts.append("")
+        parts.append(f"ACTIVE SESSIONS ({len(active)}):")
+        for sess in active[:8]:  # Show up to 8 active sessions
+            if isinstance(sess, dict):
+                sid = sess.get('6', sess.get('session_id', '?'))
+                date = sess.get('14', sess.get('session_date', ''))
+                focus = sess.get('9', sess.get('focus', ''))
+                exercises = sess.get('10', sess.get('exercises', ''))
+                location = sess.get('8', sess.get('location', ''))
+                summary = sess.get('13', sess.get('session_summary', ''))
+                status = sess.get('21', sess.get('session_status', ''))
+                duration = sess.get('19', sess.get('estimated_duration_minutes', ''))
+                week = sess.get('3', sess.get('week_number', ''))
+                day = sess.get('5', sess.get('day', ''))
+
+                line = f"  [{sid}] Wk{week} Day{day}"
+                if date:
+                    line += f" ({date})"
+                if focus:
+                    line += f" — {focus}"
+                if status:
+                    line += f" [{status}]"
+                parts.append(line)
+                if exercises:
+                    parts.append(f"    Exercises: {exercises}")
+                if summary:
+                    parts.append(f"    Summary: {str(summary)[:200]}")
+                if location:
+                    parts.append(f"    Location: {location}")
+                if duration:
+                    parts.append(f"    Duration: ~{duration}min")
+
+        if len(active) > 8:
+            parts.append(f"  ... and {len(active) - 8} more sessions")
+
+    if completed:
+        parts.append("")
+        parts.append(f"COMPLETED SESSIONS ({len(completed)}):")
+        for sess in completed[:4]:  # Show up to 4 recent completed
+            if isinstance(sess, dict):
+                sid = sess.get('6', sess.get('session_id', '?'))
+                date = sess.get('14', sess.get('session_date', ''))
+                focus = sess.get('9', sess.get('focus', ''))
+                summary = sess.get('13', sess.get('session_summary', ''))
+
+                line = f"  [{sid}]"
+                if date:
+                    line += f" ({date})"
+                if focus:
+                    line += f" — {focus}"
+                parts.append(line)
+                if summary:
+                    parts.append(f"    Summary: {str(summary)[:200]}")
+
+        if len(completed) > 4:
+            parts.append(f"  ... and {len(completed) - 4} more completed")
+
+
+def _format_exercise_bests(parts, bests):
+    """Format Exercise Bests from V2 context (numeric-key Make.com rows).
+
+    Exercise Bests column mapping:
+      1=exercise_name, 2=best_type, 3=category, 4=direction,
+      6=best_value, 7=best_unit, 8=best_date, 9=source,
+      10=session_id, 12=recent_value, 13=recent_unit, 14=recent_date,
+      17=total_sessions, 21=total_sets, 25=improvement_count
+    """
+    if not bests:
+        return
+
+    parts.append("")
+    parts.append(f"EXERCISE BESTS ({len(bests)} exercises):")
+
+    for entry in bests:
+        if not isinstance(entry, dict):
+            continue
+
+        name = entry.get('1', entry.get('exercise_name', '?'))
+        if not name:
+            continue
+
+        best_val = entry.get('6', entry.get('best_value', ''))
+        best_unit = entry.get('7', entry.get('best_unit', ''))
+        best_date = entry.get('8', entry.get('best_date', ''))
+        best_type = entry.get('2', entry.get('best_type', ''))
+        total_sess = entry.get('17', entry.get('total_sessions', ''))
+        total_sets = entry.get('21', entry.get('total_sets', ''))
+
+        line = f"  {name}:"
+        if best_val:
+            line += f" best={best_val}{best_unit}"
+        if best_type:
+            line += f" ({best_type})"
+        if best_date:
+            date_short = str(best_date)[:10]
+            line += f" on {date_short}"
+        if total_sess:
+            line += f" | {total_sess} sessions"
+        if total_sets:
+            line += f", {total_sets} sets"
+
+        parts.append(line)
+
+
+def _row_summary(row):
+    """Extract readable text from a Make.com numeric-key row, skipping empties."""
+    values = []
+    for k, v in sorted(row.items(), key=lambda x: str(x[0])):
+        if k.startswith('_'):
+            continue
+        if v and str(v).strip() and str(v).lower() != 'null':
+            values.append(str(v))
+    return ' | '.join(values[:5]) if values else '(empty)'
 
 
 def detect_exercise_question(message):
@@ -432,6 +702,9 @@ def get_greeting_for_state(state, context=None):
     
     else:  # READY
         first_name = "there"
-        if context and context.get('profile'):
-            first_name = context['profile'].get('first_name', 'there')
+        if context:
+            # V2 uses 'client_profile', V1 used 'profile'
+            profile = context.get('client_profile', context.get('profile', {}))
+            if profile:
+                first_name = profile.get('first_name', 'there')
         return f"Right then, {first_name}, what's the plan today?"

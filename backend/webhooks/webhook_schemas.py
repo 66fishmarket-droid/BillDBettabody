@@ -198,16 +198,218 @@ GENERATE_TRAINING_PLAN_SCHEMA = {
 }
 
 
+CHECK_CLIENT_EXISTS_SCHEMA = {
+    "type": "object",
+    "required": ["client_id"],
+    "properties": {
+        "client_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Proposed client identifier to check, e.g. 'otter' or 'aragorn'"
+        }
+    }
+}
+
+
+LOAD_CLIENT_CONTEXT_SCHEMA = {
+    "type": "object",
+    "required": ["client_id"],
+    "properties": {
+        "client_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Client identifier (matched case-insensitively in Clients sheet)"
+        }
+    },
+    "additionalProperties": False
+}
+
+
+POST_CONTRAINDICATION_TEMP_SCHEMA = {
+    "type": "object",
+    "required": ["client_id", "date_reported", "type", "description"],
+    "properties": {
+        "client_id": {"type": "string", "minLength": 1},
+        "date_reported": {
+            "type": "string",
+            "description": "Date the injury/issue was reported (ISO format)"
+        },
+        "type": {
+            "type": "string",
+            "description": "Type of temporary issue, e.g. 'muscle strain', 'joint pain'"
+        },
+        "description": {
+            "type": "string",
+            "description": "Description of the injury/issue and affected area"
+        },
+        "expected_duration": {
+            "type": "string",
+            "description": "Expected recovery time, e.g. '7 days' or '2 weeks'"
+        },
+        "status": {
+            "type": "string",
+            "description": "Current status, e.g. 'active', 'monitoring'"
+        },
+        "notes": {"type": "string"},
+        "date_resolved": {
+            "type": "string",
+            "description": "Date resolved (ISO format), if applicable"
+        }
+    }
+}
+
+
+POST_CONTRAINDICATION_CHRONIC_SCHEMA = {
+    "type": "object",
+    "required": [
+        "client_id", "condition", "severity", "affected_system",
+        "contraindicated_movements", "date_added", "last_reviewed", "status"
+    ],
+    "properties": {
+        "client_id": {"type": "string", "minLength": 1},
+        "condition": {
+            "type": "string",
+            "description": "Name of chronic condition, e.g. 'knee osteoarthritis'"
+        },
+        "severity": {
+            "type": "string",
+            "description": "Severity: 'mild', 'moderate', or 'severe'"
+        },
+        "affected_system": {
+            "type": "string",
+            "description": "Primary system affected, e.g. 'musculoskeletal', 'cardiovascular'"
+        },
+        "contraindicated_movements": {
+            "type": "string",
+            "description": "Movements to avoid or modify (comma-separated)"
+        },
+        "notes": {"type": "string"},
+        "date_added": {
+            "type": "string",
+            "description": "Date condition was logged (ISO format)"
+        },
+        "last_reviewed": {
+            "type": "string",
+            "description": "Date last reviewed/confirmed (ISO format)"
+        },
+        "status": {
+            "type": "string",
+            "description": "Record status, usually 'active'"
+        }
+    }
+}
+
+
+UPDATE_CONTRAINDICATION_TEMP_SCHEMA = {
+    "type": "object",
+    "required": ["record_id", "client_id", "status"],
+    "properties": {
+        "record_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Row identifier from the initial log response, e.g. 'row_23'"
+        },
+        "client_id": {"type": "string", "minLength": 1},
+        "status": {
+            "type": "string",
+            "description": "New status, e.g. 'resolved' or 'active'"
+        },
+        "expected_duration": {
+            "type": "string",
+            "description": "Updated expected duration"
+        },
+        "date_resolved": {
+            "type": "string",
+            "description": "Date resolved (ISO format)"
+        },
+        "notes": {"type": "string"}
+    }
+}
+
+
+EXERCISE_FILTER_SCHEMA = {
+    "type": "object",
+    "required": ["focus_areas"],
+    "properties": {
+        "focus_areas": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "Lower_Pull", "Lower_Push",
+                    "Upper_Pull", "Upper_Push",
+                    "Core", "Cardio",
+                    "Swimming", "Full_Body"
+                ]
+            },
+            "description": "List of focus areas to filter exercises by"
+        }
+    }
+}
+
+
+ISSUE_LOG_UPDATER_SCHEMA = {
+    "type": "object",
+    "required": ["issue_type", "entity_type", "description"],
+    "properties": {
+        "client_id": {
+            "type": "string",
+            "description": "Optional. Defaults to 'no_client' if omitted"
+        },
+        "source": {
+            "type": "string",
+            "description": "Optional. Defaults to 'bill'"
+        },
+        "issue_type": {
+            "type": "string",
+            "description": "Issue category/type"
+        },
+        "entity_type": {
+            "type": "string",
+            "description": "What the issue relates to (e.g. scenario, schema, action, sheet)"
+        },
+        "entity_id": {"type": "string"},
+        "description": {
+            "type": "string",
+            "description": "Human-readable issue description"
+        },
+        "context": {"type": "string"},
+        "suggested_action": {"type": "string"},
+        "priority": {"type": "string"},
+        "status": {
+            "type": "string",
+            "description": "Optional. Defaults to 'open'"
+        }
+    },
+    "additionalProperties": False
+}
+
+
 # ============================================================
 # SCHEMA REGISTRY
 # ============================================================
 
 WEBHOOK_SCHEMAS = {
+    # Training
     'populate_training_week': POPULATE_TRAINING_WEEK_SCHEMA,
     'session_update': SESSION_UPDATE_SCHEMA,
-    'post_user_upsert': POST_USER_UPSERT_SCHEMA,
     'full_training_block': GENERATE_TRAINING_PLAN_SCHEMA,
-    # Add other webhooks as needed
+
+    # Client management
+    'check_client_exists': CHECK_CLIENT_EXISTS_SCHEMA,
+    'load_client_context': LOAD_CLIENT_CONTEXT_SCHEMA,
+    'post_user_upsert': POST_USER_UPSERT_SCHEMA,
+
+    # Contraindications
+    'add_injury': POST_CONTRAINDICATION_TEMP_SCHEMA,
+    'add_chronic_condition': POST_CONTRAINDICATION_CHRONIC_SCHEMA,
+    'update_injury_status': UPDATE_CONTRAINDICATION_TEMP_SCHEMA,
+
+    # Exercise library
+    'exercise_filter': EXERCISE_FILTER_SCHEMA,
+
+    # Admin
+    'issue_log_updater': ISSUE_LOG_UPDATER_SCHEMA,
 }
 
 
@@ -221,5 +423,11 @@ CRITICAL_FIELDS = {
     ],
     'session_update': [
         ('session_summary', 'session_updates', 'Updated session intent (if changed)')
-    ]
+    ],
+    'add_injury': [
+        ('description', 'root', 'Description of the injury/issue and affected area')
+    ],
+    'add_chronic_condition': [
+        ('contraindicated_movements', 'root', 'Movements to avoid or modify')
+    ],
 }

@@ -11,14 +11,34 @@ import os
 # Injury/contraindication logging is critical - it's a key differentiator
 ENABLED_TOOLS = {
     'check_client_id_available',
-    'load_client_context', 
+    'load_client_context',
     'post_user_upsert',
     'generate_training_plan',
+    'update_training_plan',
     'populate_training_week',
     'session_update',
     'post_contraindication_temp',       # Log temporary injuries
     'update_contraindication_temp',     # Update injury status (resolved, etc)
     'post_contraindication_chronic',    # Log chronic conditions
+    'issue_log_updater',
+}
+
+# OpenAPI operationId → Config.WEBHOOKS key mapping
+# The OpenAPI schema uses operationId names that don't always match
+# the keys in Config.WEBHOOKS. This dict bridges them.
+TOOL_TO_WEBHOOK_KEY = {
+    'check_client_id_available': 'check_client_exists',
+    'load_client_context':       'load_client_context',
+    'post_user_upsert':          'post_user_upsert',
+    'generate_training_plan':    'full_training_block',
+    'update_training_plan':      'full_training_block',
+    'populate_training_week':    'populate_training_week',
+    'session_update':            'session_update',
+    'post_contraindication_temp':    'add_injury',
+    'update_contraindication_temp':  'update_injury_status',
+    'post_contraindication_chronic': 'add_chronic_condition',
+    'exercise_filter':           'exercise_filter',
+    'issue_log_updater':         'issue_log_updater',
 }
 
 
@@ -116,25 +136,32 @@ def get_claude_tools(schema_path=None, enabled_only=True):
     return tools
 
 
-def get_webhook_url_for_tool(tool_name, base_url='https://hook.eu2.make.com'):
+def get_webhook_url_for_tool(tool_name):
     """
-    Get the full webhook URL for a given tool name
-    
+    Get the full webhook URL for a given tool name using Config.WEBHOOKS
+
+    Uses TOOL_TO_WEBHOOK_KEY to map OpenAPI operationId → Config key,
+    then looks up the actual URL from Config.WEBHOOKS.
+
     Args:
-        tool_name: Tool/operation name
-        base_url: Base URL for webhooks
-        
+        tool_name: Tool/operation name (OpenAPI operationId)
+
     Returns:
-        str: Full webhook URL
+        str: Full webhook URL, or None if not found/configured
     """
-    
-    tools = get_claude_tools(enabled_only=False)
-    
-    for tool in tools:
-        if tool['name'] == tool_name:
-            return base_url + tool['_webhook_path']
-    
-    return None
+    from config import Config
+
+    webhook_key = TOOL_TO_WEBHOOK_KEY.get(tool_name)
+    if not webhook_key:
+        print(f"[ToolDefs] No webhook key mapping for tool: {tool_name}")
+        return None
+
+    url = Config.WEBHOOKS.get(webhook_key)
+    if not url:
+        print(f"[ToolDefs] Webhook URL not configured for key: {webhook_key}")
+        return None
+
+    return url
 
 
 def describe_tools():

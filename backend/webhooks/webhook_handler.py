@@ -221,38 +221,3 @@ def execute_webhook(webhook_url, payload):
         raise
 
 
-def authenticate_developer(provided_key):
-    """
-    Authenticate developer access
-    Section 1.1A + 3.6: Developer/Tech Mode authentication
-    
-    Args:
-        provided_key: Developer access key
-        
-    Returns:
-        bool: True if authenticated, False otherwise
-    """
-    webhook_url = Config.WEBHOOKS['authenticate_developer']
-    
-    if not webhook_url:
-        raise ValueError("authenticate_developer webhook URL not configured")
-    
-    payload = {
-        "provided_key": provided_key
-    }
-    
-    try:
-        response = requests.post(
-            webhook_url,
-            json=payload,
-            headers={'Content-Type': 'application/json'},
-            timeout=30
-        )
-        response.raise_for_status()
-        
-        data = parse_make_response(response)
-        return data.get('authenticated', False)
-        
-    except requests.RequestException as e:
-        print(f"Error authenticating developer: {str(e)}")
-        return False

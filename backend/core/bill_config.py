@@ -88,12 +88,11 @@ WRITE_WEBHOOKS = [
 READ_WEBHOOKS = [
     'check_client_exists',
     'load_client_context',
-    'authenticate_developer',
+    'exercise_filter',
 ]
 
 # Developer-only webhooks (require authentication)
 DEVELOPER_ONLY_WEBHOOKS = [
-    'authenticate_developer',
     'issue_log_updater',
 ]
 

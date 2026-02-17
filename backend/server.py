@@ -176,13 +176,14 @@ def chat():
         
         # Call Claude based on mode
         mode = session.get('mode', OperatingMode.COACH)
-        
+
         if mode == OperatingMode.DEVELOPER:
             response = claude_client.generate_developer_response(message, session)
         elif session['state'] == ClientState.ONBOARDING:
             response = claude_client.generate_onboarding_response(message, session)
         else:
-            response = claude_client.chat(message, session)
+            # Use tool-aware chat so Bill can call Make.com webhooks
+            response = claude_client.chat_with_tools(message, session)
         
         # Add to conversation history
         client_context.add_message_to_conversation(session_id, message, response)
@@ -200,64 +201,6 @@ def chat():
         traceback.print_exc()
         return jsonify({
             'error': 'Something went wrong processing your message',
-            'details': str(e)
-        }), 500
-
-
-# ============================================================
-# DEVELOPER AUTHENTICATION
-# ============================================================
-
-@app.route('/developer-auth', methods=['POST'])
-def developer_auth():
-    """
-    Authenticate developer for tech mode operations
-    
-    Section 1.1A + 3.6: Developer/Tech Mode authentication
-    
-    Expects: { "session_id": "...", "developer_key": "..." }
-    Returns: { "authenticated": true/false }
-    """
-    try:
-        data = request.json or {}
-        session_id = data.get('session_id')
-        developer_key = data.get('developer_key')
-        
-        if not session_id or not developer_key:
-            return jsonify({
-                'error': 'Missing session_id or developer_key'
-            }), 400
-        
-        # Get session
-        session = client_context.get_session(session_id)
-        
-        if not session:
-            return jsonify({
-                'error': 'Invalid session_id'
-            }), 400
-        
-        # Authenticate with Make.com
-        authenticated = webhook_handler.authenticate_developer(developer_key)
-        
-        if authenticated:
-            # Enable developer mode for this session
-            client_context.set_developer_mode(session_id, authenticated=True)
-            
-            return jsonify({
-                'authenticated': True,
-                'message': 'Developer mode enabled',
-                'session_id': session_id
-            })
-        else:
-            return jsonify({
-                'authenticated': False,
-                'message': 'Invalid developer key'
-            }), 401
-            
-    except Exception as e:
-        print(f"[Developer Auth] Error: {str(e)}")
-        return jsonify({
-            'error': 'Authentication failed',
             'details': str(e)
         }), 500
 
@@ -385,10 +328,10 @@ def get_rest_day_summary():
         client_id = session.get('client_id')
         context = session.get('context', {})
         
-        # Build a focused prompt for Claude
-        profile = context.get('profile', {})
+        # Build a focused prompt for Claude (V2 uses 'client_profile', V1 used 'profile')
+        profile = context.get('client_profile', context.get('profile', {}))
         nutrition = context.get('nutrition', {})
-        contraindications = context.get('contraindications', {})
+        contraindications = context.get('contraindications', context.get('Contraindications Temp', {}))
         
         # Count recent sessions for context
         recent_sessions = len(context.get('sessions', {}).get('active', []))
@@ -399,7 +342,7 @@ CLIENT CONTEXT:
 - Name: {profile.get('first_name', 'there')}
 - Primary Goal: {profile.get('goal_primary', 'general fitness')}
 - Recent sessions: {recent_sessions} scheduled this week
-- Daily protein target: {nutrition.get('protein_min', 'adequate')}g
+- Daily protein target: {nutrition.get('nutrition_targets', {}).get('protein', nutrition.get('protein_min', 'adequate'))}g
 - Active injuries: {'Yes' if contraindications else 'None'}
 
 TONE REQUIREMENTS:
@@ -466,7 +409,6 @@ def not_found(error):
             'GET /status',
             'POST /initialize',
             'POST /chat',
-            'POST /developer-auth',
             'POST /refresh-context',
             'POST /context-integrity-check',
             'GET /sessions/rest-day-summary'
