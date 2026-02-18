@@ -11,11 +11,12 @@ from flask_cors import CORS
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
-from core.sheets_client import get_dashboard_data
+from core.sheets_client import get_dashboard_data, get_session_detail
 from models import client_context
 from core.context_loader import get_greeting_for_state
 from webhooks import webhook_handler
-from webhooks.context_integrity import determine_required_webhook
+from webhooks.context_integrity import determine_required_webhook, should_refresh_context_after
+from webhooks.webhook_validator import validate_or_raise
 
 # Initialize Flask
 app = Flask(__name__)
@@ -353,6 +354,180 @@ def dashboard():
 
 
 # ============================================================
+# SESSION DETAIL + COMPLETION
+# ============================================================
+
+def _resolve_client_id_from_bill_session():
+    """
+    Resolve client_id from the active Bill session (from query/body).
+    Returns (client_id, session_obj, error_response_tuple_or_None).
+    """
+    bill_session_id = request.args.get('session_id') or request.args.get('bill_session_id')
+    if request.is_json:
+        data = request.json or {}
+        bill_session_id = bill_session_id or data.get('bill_session_id') or data.get('session_id')
+
+    if not bill_session_id:
+        return None, None, None
+
+    session = client_context.get_session(bill_session_id)
+    if not session:
+        return None, None, (jsonify({'error': 'Invalid Bill session_id — please initialize first'}), 400)
+
+    client_id = session.get('client_id')
+    if not client_id:
+        return None, session, (jsonify({'error': 'No client_id in session — onboarding not complete'}), 400)
+
+    return client_id, session, None
+
+
+@app.route('/session/<session_id>', methods=['GET'])
+def get_session(session_id):
+    """
+    Return full session details for the session view screen.
+
+    Query params:
+        session_id or bill_session_id: Bill session id (from /initialize)
+        client_id (optional): direct client_id override
+    """
+    try:
+        client_id = request.args.get('client_id')
+        bill_client_id, bill_session, bill_error = _resolve_client_id_from_bill_session()
+        if bill_error:
+            return bill_error
+
+        if not client_id:
+            client_id = bill_client_id
+
+        if not client_id:
+            return jsonify({'error': 'Missing client_id or Bill session_id'}), 400
+
+        data = get_session_detail(client_id, session_id)
+
+        if not data.get('session'):
+            return jsonify({'error': 'Session not found'}), 404
+
+        return jsonify(data)
+
+    except RuntimeError as e:
+        print(f"[Session Detail] Config error: {str(e)}")
+        return jsonify({
+            'error': 'Google Sheets connection failed',
+            'details': str(e)
+        }), 503
+
+    except Exception as e:
+        print(f"[Session Detail] Error: {str(e)}")
+        return jsonify({
+            'error': 'Failed to load session detail',
+            'details': str(e)
+        }), 500
+
+
+@app.route('/session/<session_id>/complete', methods=['POST'])
+def complete_session(session_id):
+    """
+    Log session completion and update steps.
+
+    Body:
+      - client_id (optional if bill_session_id provided)
+      - session_updates (optional)
+      - steps_upsert OR steps (optional, mapped to steps_upsert)
+    """
+    try:
+        data = request.json or {}
+
+        client_id = data.get('client_id')
+        bill_client_id, bill_session, bill_error = _resolve_client_id_from_bill_session()
+        if bill_error:
+            return bill_error
+
+        if not client_id:
+            client_id = bill_client_id
+
+        if not client_id:
+            return jsonify({'error': 'Missing client_id or Bill session_id'}), 400
+
+        # Build steps_upsert payload
+        steps_upsert = data.get('steps_upsert')
+        if steps_upsert is None:
+            steps = data.get('steps', [])
+            steps_upsert = []
+            allowed_fields = {
+                'step_id', 'step_order', 'segment_type', 'step_type',
+                'duration_type', 'duration_value', 'target_type', 'target_value',
+                'exercise_name', 'sets', 'reps', 'load_kg', 'rest_seconds',
+                'notes_coach', 'notes_athlete', 'status',
+                'pattern_type', 'load_start_kg', 'load_increment_kg', 'load_peak_kg',
+                'reps_pattern', 'rpe_pattern', 'tempo_pattern', 'tempo_per_set_pattern',
+                'pattern_notes', 'interval_count', 'interval_work_sec',
+                'interval_rest_sec', 'intensity_start', 'intensity_end'
+            }
+            for step in steps:
+                if not isinstance(step, dict):
+                    continue
+                step_id = step.get('step_id')
+                if not step_id:
+                    continue
+                mapped = {k: v for k, v in step.items() if k in allowed_fields}
+                mapped['step_id'] = step_id
+                steps_upsert.append(mapped)
+
+        # Build session_updates (if provided or derivable)
+        session_updates = data.get('session_updates')
+        if session_updates is None:
+            session_updates = {}
+            for key in ['location', 'focus', 'exercises', 'macros', 'supplements', 'notes', 'session_status', 'session_summary']:
+                if key in data:
+                    session_updates[key] = data.get(key)
+            if not session_updates:
+                session_updates = None
+
+        payload = {
+            'client_id': client_id,
+            'session_id': session_id,
+            'steps_upsert': steps_upsert or []
+        }
+        if session_updates is not None:
+            payload['session_updates'] = session_updates
+
+        # Validate payload against schema
+        validate_or_raise('session_update', payload)
+
+        webhook_url = Config.WEBHOOKS.get('session_update')
+        if not webhook_url:
+            return jsonify({'error': 'session_update webhook not configured'}), 500
+
+        result = webhook_handler.execute_webhook(webhook_url, payload)
+
+        # Post-write context refresh
+        if should_refresh_context_after('session_update') and bill_session:
+            try:
+                client_context.refresh_context(bill_session)
+            except Exception as e:
+                print(f"[Session Complete] WARNING: Context refresh failed: {e}")
+
+        return jsonify({
+            'status': 'ok',
+            'session_id': session_id,
+            'steps_updated': result.get('steps_updated') if isinstance(result, dict) else None,
+            'webhook_response': result,
+            'timestamp': datetime.now().isoformat()
+        })
+
+    except ValueError as e:
+        # Validation errors from validate_or_raise
+        return jsonify({'error': 'Invalid payload', 'details': str(e)}), 400
+
+    except Exception as e:
+        print(f"[Session Complete] Error: {str(e)}")
+        return jsonify({
+            'error': 'Failed to complete session',
+            'details': str(e)
+        }), 500
+
+
+# ============================================================
 # REST DAY SUMMARY GENERATION
 # ============================================================
 
@@ -477,6 +652,8 @@ def not_found(error):
             'POST /initialize',
             'POST /chat',
             'GET /dashboard?session_id=...',
+            'GET /session/<session_id>?session_id=...',
+            'POST /session/<session_id>/complete',
             'POST /refresh-context',
             'POST /context-integrity-check',
             'GET /sessions/rest-day-summary?session_id=...'

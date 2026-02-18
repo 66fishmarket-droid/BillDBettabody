@@ -313,3 +313,119 @@ def get_dashboard_data(client_id):
     except Exception as e:
         logger.error(f"[Sheets] Error building dashboard for {client_id}: {e}")
         return result  # Return whatever was built before the error
+
+
+# ============================================================
+# SESSION DETAIL
+# ============================================================
+
+def get_session_detail(client_id, session_id):
+    """
+    Fetch full session detail: session metadata, steps, and relevant PBs.
+
+    Args:
+        client_id (str): Client identifier
+        session_id (str): Session identifier
+
+    Returns:
+        dict: {
+          "session": { ... } | None,
+          "steps": [ ... ],
+          "exercise_bests": [ ... ]
+        }
+    """
+    result = {
+        "session": None,
+        "steps": [],
+        "exercise_bests": [],
+    }
+
+    try:
+        if not client_id or not session_id:
+            return result
+
+        # ----------------------------------------------------------
+        # 1. Session metadata
+        # ----------------------------------------------------------
+        sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+
+        client_id_lower = str(client_id).lower()
+        session_id_str = str(session_id)
+
+        matched = [
+            s for s in all_sessions
+            if str(s.get('client_id', '')).lower() == client_id_lower
+            and str(s.get('session_id', '')) == session_id_str
+        ]
+
+        if not matched:
+            logger.info(f"[Sheets] Session not found: {session_id} for {client_id}")
+            return result
+
+        sess = matched[0]
+        result["session"] = {
+            "session_id": sess.get('session_id', ''),
+            "session_date": sess.get('session_date', ''),
+            "day_of_week": sess.get('day_of_week', ''),
+            "focus": sess.get('focus', ''),
+            "session_summary": sess.get('session_summary', ''),
+            "location": sess.get('location', ''),
+            "estimated_duration_minutes": sess.get('estimated_duration_minutes', ''),
+            "phase_name": sess.get('phase_name', ''),
+            "week_number": sess.get('week_number', ''),
+            "block_id": sess.get('block_id', ''),
+            "intended_intensity_rpe": sess.get('intended_intensity_rpe', ''),
+        }
+
+        # ----------------------------------------------------------
+        # 2. Steps for the session
+        # ----------------------------------------------------------
+        steps_ws = _get_worksheet(SHEET_NAMES['plans_steps'])
+        all_steps = steps_ws.get_all_records()
+
+        session_steps = [
+            s for s in all_steps
+            if str(s.get('session_id', '')) == session_id_str
+        ]
+
+        # Sort by step_order if present
+        def _step_order(row):
+            try:
+                return int(row.get('step_order', 0))
+            except Exception:
+                return 0
+
+        session_steps.sort(key=_step_order)
+        result["steps"] = session_steps
+
+        # ----------------------------------------------------------
+        # 3. Exercise bests relevant to this session
+        # ----------------------------------------------------------
+        exercise_names = []
+        seen = set()
+        for step in session_steps:
+            name = step.get('exercise_name', '')
+            if name and name not in seen:
+                exercise_names.append(name)
+                seen.add(name)
+
+        if exercise_names:
+            all_bests = get_exercise_bests(client_id)
+            result["exercise_bests"] = [
+                b for b in all_bests
+                if b.get('exercise_name', '') in exercise_names
+            ]
+
+        logger.info(
+            f"[Sheets] Session detail for {client_id} {session_id}: "
+            f"steps={len(result['steps'])}, bests={len(result['exercise_bests'])}"
+        )
+
+        return result
+
+    except RuntimeError:
+        raise
+    except Exception as e:
+        logger.error(f"[Sheets] Error building session detail for {client_id}, {session_id}: {e}")
+        return result
