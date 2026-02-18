@@ -42,7 +42,7 @@ class SessionPreview {
   }
 
   async loadSessionSteps() {
-    const data = await api.getSessionSteps(this.session.session_id);
+    const data = await api.getSessionDetail(this.session.session_id, app.sessionId);
     this.steps = data.steps || [];
     console.log('[Session Preview] Steps loaded:', this.steps.length);
 

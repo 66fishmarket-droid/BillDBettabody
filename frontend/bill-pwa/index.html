@@ -63,20 +63,28 @@
     // Login logic
     document.getElementById('enter-btn').addEventListener('click', async () => {
       const clientId = document.getElementById('client-id-input').value.trim();
-      
+
       if (!clientId) {
         alert('Please enter a Client ID');
         return;
       }
 
-      // For now, just save to session and redirect
-      // Later: call /initialize endpoint with device ID
-      app.saveSession({
-        session_id: 'sess_' + Date.now(),
-        client_id: clientId
-      });
+      try {
+        const init = await api.initialize(clientId);
+        if (!init || !init.session_id) {
+          throw new Error('Initialization failed');
+        }
 
-      window.location.href = '/dashboard.html';
+        app.saveSession({
+          session_id: init.session_id,
+          client_id: init.client_id || clientId
+        });
+
+        window.location.href = '/dashboard.html';
+      } catch (error) {
+        console.error('[Login] Initialize failed:', error);
+        alert('Failed to initialize. Check backend and try again.');
+      }
     });
 
     // Allow Enter key to submit

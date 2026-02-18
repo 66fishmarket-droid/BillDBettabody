@@ -197,12 +197,9 @@ This document serves as:
 6. User: Enter session → Log sets (reps, weight, RPE)
 7. User: Complete session → "Submit"
 8. Frontend → Backend: POST /session/{id}/complete (payload: all logged data)
-9. Backend → Make.com: Session Update webhook (writes to Plans_Steps)
-10. Make.com → Google Sheets: Update Plans_Steps with actual values
-11. Make.com: Trigger Exercise Bests scenario (check for PRs)
-12. Make.com → Google Sheets: Update Exercise_Bests if PR beaten
-13. Backend: Return success, updated stats
-14. Frontend: Show completion screen + stats
+9. Backend → Google Sheets: Direct write to Plans_Steps by step_id (actual_* + notes + status + completed_timestamp)
+10. Backend: Return success
+11. Frontend: Show completion screen + stats
 ```
 
 ### Training Block Generation Flow
@@ -2967,6 +2964,12 @@ print(f"Request cost: ${cost:.4f}")
 - **Monthly cost for 5 users: £10-15** ✅ Within target
 
 ## 4.2 Make.com Webhook Endpoints
+
+**Note (2026-02-18):** Athlete session logging no longer uses Make.com `Session Update`.
+The PWA submits `/session/<id>/complete` to the backend, which writes actuals
+directly into `Plans_Steps` by `step_id` (`actual_set*`, `notes_athlete`, `status`,
+`completed_timestamp`). Make.com `Session Update` remains Bill-only for coaching
+edits.
 
 ### Webhook URL Structure:
 
@@ -6020,6 +6023,11 @@ logging.basicConfig(
 - ✅ Backend code complete
 - ✅ Frontend code exists (needs mobile testing)
 - ✅ Make.com scenarios mostly complete
+- ✅ **Session endpoints added** — `/session/<id>` GET + `/session/<id>/complete` POST now implemented (2026-02-18)
+- ✅ **Profile endpoint added** — `/profile?session_id=...` returns client_profile (2026-02-18)
+- ✅ **PWA wired to real backend** — `/initialize`, `/dashboard`, `/session/<id>`, `/session/<id>/complete`, `/profile`, rest-day summary (2026-02-18)
+- ✅ **Session-active logging UI added** — per-set entry (5 rows × reps/value/metric), notes, RPE, submit flow (2026-02-18)
+- ✅ **Direct Sheets write flow added for athlete logging** — `Plans_Steps` updates by `step_id` with `actual_*`, `notes_athlete`, `status`, `completed_timestamp` (2026-02-18)
 - ✅ Contraindications added to Load Client Context V2 (2026-02-15)
 - ✅ All webhook URLs extracted and configured (2026-02-15)
 - ✅ `.env.example` and `config.py` updated with all active webhooks (2026-02-16)
@@ -6041,10 +6049,11 @@ logging.basicConfig(
 4. ~~Wire up tool calling pipeline in claude_client.py~~ ✅ DONE (2026-02-17)
 5. ~~Complete webhook schemas and validation~~ ✅ DONE (2026-02-17)
 6. ~~Flesh out V2 context formatting~~ ✅ DONE (2026-02-17)
-7. Create `.env` file with all variables (15 min)
-8. Deploy backend to Railway (1 hour)
-9. Test end-to-end — Claude → tool call → Make.com → response (2 hours)
-10. Invite first friend (the brave one!)
+7. Create/verify `.env` with Sheets editor creds + webhook URLs (15 min)
+8. Local end-to-end: PWA → `/initialize` → `/dashboard` → `/session/<id>` → `/session/<id>/complete` → Sheets updated (1-2 hours)
+9. Deploy backend to Railway (1 hour)
+10. Test deployed end-to-end (PWA + Sheets write + Claude tools) (2 hours)
+11. Invite first friend (the brave one!)
 
 **Estimated Time to Go-Live: 3-4 hours of focused work**
 

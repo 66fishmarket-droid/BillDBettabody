@@ -5,7 +5,7 @@
 const API_CONFIG = {
   // Switch this to your backend URL when ready
   BASE_URL: 'http://localhost:5000',
-  USE_MOCK_DATA: true, // Set to false when backend is ready
+  USE_MOCK_DATA: false, // Set to true to force mock data
   TIMEOUT: 30000
 };
 
@@ -63,12 +63,14 @@ class BillAPI {
   }
 
   // Session endpoints
-  async getTodaySession() {
-    return this.request('/sessions/today');
+  async getDashboard(billSessionId) {
+    return this.request(`/dashboard?session_id=${encodeURIComponent(billSessionId)}`);
   }
 
-  async getSessionSteps(sessionId) {
-    return this.request(`/sessions/${sessionId}/steps`);
+  async getSessionDetail(sessionId, billSessionId) {
+    return this.request(
+      `/session/${encodeURIComponent(sessionId)}?session_id=${encodeURIComponent(billSessionId)}`
+    );
   }
 
   async logStep(sessionId, stepData) {
@@ -86,15 +88,15 @@ class BillAPI {
   }
 
   async completeSession(sessionId, completionData) {
-    return this.request(`/sessions/${sessionId}/complete`, {
+    return this.request(`/session/${encodeURIComponent(sessionId)}/complete`, {
       method: 'POST',
       body: JSON.stringify(completionData)
     });
   }
 
   // Profile & nutrition
-  async getProfile() {
-    return this.request('/profile');
+  async getProfile(billSessionId) {
+    return this.request(`/profile?session_id=${encodeURIComponent(billSessionId)}`);
   }
 
   async getDailyNutrition() {
@@ -129,6 +131,10 @@ class BillAPI {
       method: 'POST',
       body: JSON.stringify({ client_id: clientId })
     });
+  }
+
+  async getRestDaySummary(billSessionId) {
+    return this.request(`/sessions/rest-day-summary?session_id=${encodeURIComponent(billSessionId)}`);
   }
 }
 

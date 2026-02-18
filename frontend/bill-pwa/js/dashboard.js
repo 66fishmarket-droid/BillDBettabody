@@ -3,9 +3,9 @@
 
 class Dashboard {
   constructor() {
+    this.dashboard = null;
+    this.restSummary = null;
     this.profile = null;
-    this.todaySession = null;
-    this.nutrition = null;
   }
 
   async init() {
@@ -14,11 +14,16 @@ class Dashboard {
     try {
       app.showLoading('Loading your day...');
 
-      // Load all dashboard data
+      if (!app.sessionId) {
+        console.warn('[Dashboard] No session found. Redirecting to login.');
+        window.location.href = '/index.html';
+        return;
+      }
+
+      // Load dashboard + profile
       await Promise.all([
-        this.loadProfile(),
-        this.loadTodaySession(),
-        this.loadNutrition()
+        this.loadDashboard(),
+        this.loadProfile()
       ]);
 
       // Render the dashboard
@@ -35,19 +40,28 @@ class Dashboard {
     }
   }
 
+  async loadDashboard() {
+    this.dashboard = await api.getDashboard(app.sessionId);
+    console.log('[Dashboard] Dashboard loaded:', this.dashboard);
+
+    if (!this.dashboard || !this.dashboard.next_session) {
+      try {
+        const rest = await api.getRestDaySummary(app.sessionId);
+        this.restSummary = rest && rest.summary ? rest.summary : null;
+      } catch (error) {
+        console.warn('[Dashboard] Rest day summary failed:', error);
+      }
+    }
+  }
+
   async loadProfile() {
-    this.profile = await api.getProfile();
-    console.log('[Dashboard] Profile loaded:', this.profile);
-  }
-
-  async loadTodaySession() {
-    this.todaySession = await api.getTodaySession();
-    console.log('[Dashboard] Today session loaded:', this.todaySession);
-  }
-
-  async loadNutrition() {
-    this.nutrition = await api.getDailyNutrition();
-    console.log('[Dashboard] Nutrition loaded:', this.nutrition);
+    try {
+      this.profile = await api.getProfile(app.sessionId);
+      console.log('[Dashboard] Profile loaded:', this.profile);
+    } catch (error) {
+      console.warn('[Dashboard] Profile load failed:', error);
+      this.profile = null;
+    }
   }
 
   render() {
@@ -60,52 +74,55 @@ class Dashboard {
     }
 
     // Client summary
-    if (this.profile) {
-      const nameEl = document.getElementById('client-name');
-      if (nameEl) {
-        nameEl.textContent = `${this.profile.first_name} ${this.profile.last_name}`;
-      }
-
-      const sessionsEl = document.getElementById('sessions-completed');
-      if (sessionsEl) {
-        sessionsEl.textContent = this.profile.sessions_completed || 0;
-      }
-
-      const weekEl = document.getElementById('current-week');
-      if (weekEl) {
-        weekEl.textContent = this.profile.current_phase || 'Starting soon';
+    const nameEl = document.getElementById('client-name');
+    if (nameEl) {
+      if (this.profile && (this.profile.first_name || this.profile.last_name)) {
+        nameEl.textContent = `${this.profile.first_name || ''} ${this.profile.last_name || ''}`.trim();
+      } else {
+        nameEl.textContent = app.clientId ? `Client: ${app.clientId}` : 'Client';
       }
     }
 
+    const sessionsEl = document.getElementById('sessions-completed');
+    if (sessionsEl) {
+      const completed = this.profile && this.profile.completed_sessions;
+      sessionsEl.textContent = completed || 0;
+    }
+
+    const weekEl = document.getElementById('current-week');
+    if (weekEl) {
+      const block = this.dashboard ? this.dashboard.block_summary : null;
+      weekEl.textContent = block && block.week_number
+        ? `Week ${block.week_number}`
+        : 'Starting soon';
+    }
+
     // Today's session
-    if (this.todaySession && this.todaySession.session) {
-      this.renderSession(this.todaySession);
+    if (this.dashboard && this.dashboard.next_session) {
+      this.renderSession(this.dashboard);
     } else {
       this.renderNoSession();
     }
 
-    // Nutrition
-    if (this.nutrition) {
-      const caloriesEl = document.getElementById('calories-target');
-      if (caloriesEl) {
-        caloriesEl.textContent = this.nutrition.calories || 0;
-      }
+    // Nutrition (not yet wired from backend)
+    const caloriesEl = document.getElementById('calories-target');
+    if (caloriesEl) {
+      caloriesEl.textContent = 0;
+    }
 
-      const proteinEl = document.getElementById('protein-target');
-      if (proteinEl) {
-        proteinEl.textContent = `${this.nutrition.protein || 0}g`;
-      }
+    const proteinEl = document.getElementById('protein-target');
+    if (proteinEl) {
+      proteinEl.textContent = '0g';
     }
   }
 
   renderSession(sessionData) {
-    const session = sessionData.session;
-    const stepCount = sessionData.stepCount;
+    const session = sessionData.next_session;
 
     // Session focus
     const focusEl = document.getElementById('session-focus');
     if (focusEl) {
-      focusEl.textContent = session.focus;
+      focusEl.textContent = session.focus || 'Training Session';
     }
 
     // Session details
@@ -115,28 +132,26 @@ class Dashboard {
         <div class="mb-3">
           <div class="flex justify-between items-center mb-2">
             <span class="font-semibold">Phase:</span>
-            <span>${session.phase}</span>
+            <span>${session.phase_name || ''}</span>
           </div>
           <div class="flex justify-between items-center mb-2">
             <span class="font-semibold">Location:</span>
-            <span class="capitalize">${session.location}</span>
+            <span class="capitalize">${session.location || ''}</span>
           </div>
           <div class="flex justify-between items-center mb-2">
             <span class="font-semibold">Duration:</span>
-            <span>${session.estimated_duration_minutes} min</span>
+            <span>${session.estimated_duration || session.estimated_duration_minutes || ''} min</span>
           </div>
           <div class="flex justify-between items-center">
             <span class="font-semibold">Intensity:</span>
-            <span>RPE ${session.intended_intensity_rpe}/10</span>
+            <span>${session.intended_intensity_rpe ? `RPE ${session.intended_intensity_rpe}/10` : 'As prescribed'}</span>
           </div>
         </div>
 
         <div class="bg-gray-50 p-3 rounded-lg">
           <p class="text-sm text-gray-600 mb-2">Session Overview:</p>
           <div class="flex justify-between text-sm">
-            <span><span class="badge badge-warmup">Warm-up</span> ${stepCount.warmup} exercises</span>
-            <span><span class="badge badge-main">Main</span> ${stepCount.main} exercises</span>
-            <span><span class="badge badge-cooldown">Cool-down</span> ${stepCount.cooldown} exercises</span>
+            <span>${session.exercise_count || 0} total exercises</span>
           </div>
         </div>
       `;
@@ -152,10 +167,14 @@ class Dashboard {
   renderNoSession() {
     const detailsEl = document.getElementById('session-details');
     if (detailsEl) {
+      const restMsg = this.restSummary
+        ? `<p class="text-sm text-gray-500 mt-2">${this.restSummary}</p>`
+        : '';
       detailsEl.innerHTML = `
         <div class="text-center py-4">
           <p class="text-gray-600 mb-2">No session scheduled for today</p>
           <p class="text-sm text-gray-500">Enjoy your rest day, or chat with Bill if you want to adjust your plan</p>
+          ${restMsg}
         </div>
       `;
     }
@@ -182,13 +201,13 @@ class Dashboard {
   }
 
   onStartSession() {
-    if (!this.todaySession || !this.todaySession.session) {
+    if (!this.dashboard || !this.dashboard.next_session) {
       app.showError('No session available to start');
       return;
     }
 
     // Save session to app state
-    app.setActiveSession(this.todaySession.session);
+    app.setActiveSession(this.dashboard.next_session);
 
     // Navigate to session preview
     window.location.href = '/session-preview.html';

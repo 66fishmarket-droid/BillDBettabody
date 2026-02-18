@@ -12,11 +12,11 @@ from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
 from core.sheets_client import get_dashboard_data, get_session_detail
+from core.sheets_writer import update_steps_actuals
 from models import client_context
 from core.context_loader import get_greeting_for_state
 from webhooks import webhook_handler
 from webhooks.context_integrity import determine_required_webhook, should_refresh_context_after
-from webhooks.webhook_validator import validate_or_raise
 
 # Initialize Flask
 app = Flask(__name__)
@@ -354,6 +354,51 @@ def dashboard():
 
 
 # ============================================================
+# PROFILE
+# ============================================================
+
+@app.route('/profile', methods=['GET'])
+def profile():
+    """
+    Return client profile for the active Bill session.
+
+    Query params:
+        session_id: Bill session identifier (from /initialize)
+    """
+    try:
+        session_id = request.args.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'Missing session_id parameter'}), 400
+
+        session = client_context.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Invalid session_id — please initialize first'}), 400
+
+        client_id = session.get('client_id')
+        if not client_id:
+            return jsonify({'error': 'No client_id in session — onboarding not complete'}), 400
+
+        context = session.get('context', {})
+        profile = context.get('client_profile') if context else None
+
+        # If no profile loaded yet, fetch context now
+        if not profile:
+            context = webhook_handler.load_client_context(client_id)
+            session['context'] = context
+            session['last_refresh'] = datetime.now().isoformat()
+            profile = context.get('client_profile', {})
+
+        return jsonify(profile or {})
+
+    except Exception as e:
+        print(f"[Profile] Error: {str(e)}")
+        return jsonify({
+            'error': 'Failed to load profile',
+            'details': str(e)
+        }), 500
+
+
+# ============================================================
 # SESSION DETAIL + COMPLETION
 # ============================================================
 
@@ -483,22 +528,16 @@ def complete_session(session_id):
             if not session_updates:
                 session_updates = None
 
-        payload = {
-            'client_id': client_id,
-            'session_id': session_id,
-            'steps_upsert': steps_upsert or []
-        }
-        if session_updates is not None:
-            payload['session_updates'] = session_updates
+        # Build step updates for Sheets writer
+        if not steps_upsert:
+            return jsonify({'error': 'No step updates provided'}), 400
 
-        # Validate payload against schema
-        validate_or_raise('session_update', payload)
-
-        webhook_url = Config.WEBHOOKS.get('session_update')
-        if not webhook_url:
-            return jsonify({'error': 'session_update webhook not configured'}), 500
-
-        result = webhook_handler.execute_webhook(webhook_url, payload)
+        # Write actuals directly to Plans_Steps
+        write_result = update_steps_actuals(
+            steps_upsert,
+            status='completed',
+            completed_timestamp=datetime.utcnow().isoformat()
+        )
 
         # Post-write context refresh
         if should_refresh_context_after('session_update') and bill_session:
@@ -510,8 +549,8 @@ def complete_session(session_id):
         return jsonify({
             'status': 'ok',
             'session_id': session_id,
-            'steps_updated': result.get('steps_updated') if isinstance(result, dict) else None,
-            'webhook_response': result,
+            'steps_updated': write_result.get('updated'),
+            'steps_missing': write_result.get('missing'),
             'timestamp': datetime.now().isoformat()
         })
 
@@ -651,6 +690,7 @@ def not_found(error):
             'GET /status',
             'POST /initialize',
             'POST /chat',
+            'GET /profile?session_id=...',
             'GET /dashboard?session_id=...',
             'GET /session/<session_id>?session_id=...',
             'POST /session/<session_id>/complete',
