@@ -1,0 +1,315 @@
+"""
+Bill D'Bettabody - Google Sheets Direct Reader
+
+Bypasses Make.com for read-only data that doesn't need automation logic.
+Used for:
+  - Exercise Bests (read into Bill's context + dashboard display)
+  - Dashboard data (next session + relevant PBs for home screen)
+
+Make.com is still used for ALL WRITE operations (Exercise Bests V2 scenario,
+user upsert, training block generation, etc.). This module is READ ONLY.
+
+Auth: Google Service Account via GOOGLE_SERVICE_ACCOUNT_JSON env var.
+      Sheet shared with: github-actions-sheets-reader@bill-dbettabody-automation.iam.gserviceaccount.com
+
+Column header names used here must match row 1 of each Google Sheet exactly.
+If a field returns empty/wrong, check the actual sheet header spelling first.
+"""
+
+import os
+import json
+import logging
+from datetime import datetime, timedelta
+
+import gspread
+from google.oauth2.service_account import Credentials
+
+logger = logging.getLogger(__name__)
+
+# Read-only scope is all we need
+_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
+
+# Sheet tab names — update here if any sheet is renamed
+SHEET_NAMES = {
+    'exercise_bests': 'Exercise_Bests',
+    'plans_sessions': 'Plans_Sessions',
+    'plans_steps':    'Plans_Steps',
+}
+
+# Module-level cached connection (one auth per process)
+_spreadsheet = None
+
+
+# ============================================================
+# CONNECTION
+# ============================================================
+
+def _get_spreadsheet():
+    """
+    Return authenticated Spreadsheet object, creating connection if needed.
+    Caches at module level — one connection per server process.
+    """
+    global _spreadsheet
+
+    if _spreadsheet is not None:
+        return _spreadsheet
+
+    sa_json = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
+    spreadsheet_id = os.environ.get('GOOGLE_SHEETS_SPREADSHEET_ID')
+
+    if not sa_json:
+        raise RuntimeError(
+            "GOOGLE_SERVICE_ACCOUNT_JSON not set. "
+            "Add service account JSON to .env or Railway environment variables."
+        )
+    if not spreadsheet_id:
+        raise RuntimeError(
+            "GOOGLE_SHEETS_SPREADSHEET_ID not set. "
+            "Add the spreadsheet ID to .env or Railway environment variables."
+        )
+
+    try:
+        sa_info = json.loads(sa_json)
+    except json.JSONDecodeError as e:
+        raise RuntimeError(
+            f"GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON: {e}. "
+            "Check it is single-line and wrapped in single quotes in .env."
+        )
+
+    try:
+        creds = Credentials.from_service_account_info(sa_info, scopes=_SCOPES)
+        client = gspread.authorize(creds)
+        _spreadsheet = client.open_by_key(spreadsheet_id)
+        logger.info("[Sheets] Connected to Google Spreadsheet successfully")
+        return _spreadsheet
+    except Exception as e:
+        raise RuntimeError(f"Failed to connect to Google Sheets: {e}")
+
+
+def _get_worksheet(sheet_name):
+    """Get a specific worksheet tab by name, with clear error on missing tab."""
+    spreadsheet = _get_spreadsheet()
+    try:
+        return spreadsheet.worksheet(sheet_name)
+    except gspread.WorksheetNotFound:
+        raise RuntimeError(
+            f"Sheet tab '{sheet_name}' not found in spreadsheet. "
+            "Check SHEET_NAMES dict in sheets_client.py matches actual tab names."
+        )
+
+
+def reset_connection():
+    """
+    Force a reconnect on the next call. Use this if the connection goes stale
+    or credentials are rotated. Call from server startup or health check if needed.
+    """
+    global _spreadsheet
+    _spreadsheet = None
+    logger.info("[Sheets] Connection reset — will reconnect on next call")
+
+
+# ============================================================
+# EXERCISE BESTS
+# ============================================================
+
+def get_exercise_bests(client_id):
+    """
+    Read all Exercise Bests for a client directly from Google Sheets.
+
+    Replaces the Make.com fetch in Load Client Context (modules 28-29).
+    Returns data in named-key format so context_loader._format_exercise_bests()
+    works without modification.
+
+    Actual Exercise_Bests sheet headers (row 1):
+      client_id, exercise_name, metric_key, metric_family, better_direction,
+      context_key, current_value, current_unit, current_timestamp,
+      current_evidence_type, current_evidence_ref, current_confidence,
+      first_value, first_unit, first_timestamp, first_evidence_type,
+      first_evidence_ref, strength_load_kg, strength_reps, strength_e1rm_kg,
+      distance_m, duration_s, avg_power_w, avg_hr_bpm, notes,
+      session_count, last_session_timestamp
+
+    Args:
+        client_id (str): Client identifier e.g. 'cli_matty'
+
+    Returns:
+        list[dict]: Exercise best records for this client.
+                    Empty list if client has no records or on read error.
+    """
+    try:
+        ws = _get_worksheet(SHEET_NAMES['exercise_bests'])
+        rows = ws.get_all_records()
+
+        # Filter by client_id (case-insensitive to be safe)
+        client_id_lower = str(client_id).lower()
+        client_rows = [
+            r for r in rows
+            if str(r.get('client_id', '')).lower() == client_id_lower
+        ]
+
+        logger.info(
+            f"[Sheets] Exercise Bests: {len(client_rows)} records for {client_id} "
+            f"(sheet total: {len(rows)} rows)"
+        )
+        return client_rows
+
+    except RuntimeError:
+        raise  # Propagate config/connection errors so caller knows something is wrong
+    except Exception as e:
+        logger.error(f"[Sheets] Error reading Exercise Bests for {client_id}: {e}")
+        return []
+
+
+# ============================================================
+# DASHBOARD DATA
+# ============================================================
+
+def get_dashboard_data(client_id):
+    """
+    Fetch everything the frontend home screen needs in a single call.
+
+    Does 3 direct sheet reads:
+      1. Plans_Sessions  → find next upcoming session
+      2. Plans_Steps     → exercises in that session (main segment only)
+      3. Exercise_Bests  → PBs for those exercises + recent PBs (last 7 days)
+
+    Expected Plans_Sessions headers (relevant columns):
+      client_id, session_id, session_date, day_of_week, focus,
+      session_summary, location, estimated_duration_minutes,
+      phase_name, week_number, block_id, status
+
+    Expected Plans_Steps headers (relevant columns):
+      session_id, step_order, segment_type, exercise_name,
+      sets, reps, load_kg
+
+    Args:
+        client_id (str): Client identifier
+
+    Returns:
+        dict with keys:
+          next_session          (dict | None)  — session card data
+          session_exercise_bests (list[dict])  — PBs for exercises in next session
+          recent_pbs            (list[dict])   — PBs achieved in last 7 days
+          block_summary         (dict | None)  — phase/week info for progress card
+
+        Returns safe empty structure on any non-fatal error so the
+        frontend can render gracefully with whatever is available.
+    """
+    result = {
+        "next_session": None,
+        "session_exercise_bests": [],
+        "recent_pbs": [],
+        "block_summary": None,
+    }
+
+    try:
+        today_str = datetime.utcnow().strftime('%Y-%m-%d')
+
+        # ----------------------------------------------------------
+        # 1. Find the next upcoming session
+        # ----------------------------------------------------------
+        sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+
+        client_id_lower = str(client_id).lower()
+        terminal_statuses = {'completed', 'skipped', 'cancelled'}
+
+        upcoming = [
+            s for s in all_sessions
+            if str(s.get('client_id', '')).lower() == client_id_lower
+            and str(s.get('status', '')).lower() not in terminal_statuses
+            and str(s.get('session_date', '')) >= today_str
+        ]
+
+        if not upcoming:
+            logger.info(f"[Sheets] Dashboard: no upcoming sessions for {client_id}")
+            return result
+
+        # Sort ascending by date — first entry is the next session
+        upcoming.sort(key=lambda s: str(s.get('session_date', '')))
+        next_sess = upcoming[0]
+        session_id = str(next_sess.get('session_id', ''))
+
+        result['next_session'] = {
+            'session_id':           session_id,
+            'session_date':         next_sess.get('session_date', ''),
+            'day_of_week':          next_sess.get('day_of_week', ''),
+            'focus':                next_sess.get('focus', ''),
+            'session_summary':      next_sess.get('session_summary', ''),
+            'location':             next_sess.get('location', ''),
+            'estimated_duration':   next_sess.get('estimated_duration_minutes', ''),
+            'phase_name':           next_sess.get('phase_name', ''),
+            'week_number':          next_sess.get('week_number', ''),
+            'exercise_count':       0,  # filled in step 2
+        }
+
+        result['block_summary'] = {
+            'phase_name':  next_sess.get('phase_name', ''),
+            'week_number': next_sess.get('week_number', ''),
+            'block_id':    next_sess.get('block_id', ''),
+        }
+
+        # ----------------------------------------------------------
+        # 2. Get main-body exercises from that session
+        # ----------------------------------------------------------
+        session_exercise_names = []
+
+        if session_id:
+            steps_ws = _get_worksheet(SHEET_NAMES['plans_steps'])
+            all_steps = steps_ws.get_all_records()
+
+            session_steps = [
+                s for s in all_steps
+                if str(s.get('session_id', '')) == session_id
+            ]
+
+            # Count all steps for the session card
+            result['next_session']['exercise_count'] = len(session_steps)
+
+            # Only pull PBs for main-body exercises (not warmup/cooldown)
+            main_steps = [
+                s for s in session_steps
+                if str(s.get('segment_type', '')).lower() == 'main'
+            ]
+
+            # Deduplicate exercise names (preserve order)
+            seen = set()
+            for step in main_steps:
+                name = step.get('exercise_name', '')
+                if name and name not in seen:
+                    session_exercise_names.append(name)
+                    seen.add(name)
+
+        # ----------------------------------------------------------
+        # 3. Exercise Bests — session-relevant + recent
+        # ----------------------------------------------------------
+        all_bests = get_exercise_bests(client_id)
+
+        # PBs for exercises appearing in the upcoming session
+        if session_exercise_names:
+            result['session_exercise_bests'] = [
+                b for b in all_bests
+                if b.get('exercise_name', '') in session_exercise_names
+            ]
+
+        # PBs set in the last 7 days (regardless of upcoming session)
+        seven_days_ago = (datetime.utcnow() - timedelta(days=7)).strftime('%Y-%m-%d')
+        result['recent_pbs'] = [
+            b for b in all_bests
+            if str(b.get('current_timestamp', ''))[:10] >= seven_days_ago
+        ]
+
+        logger.info(
+            f"[Sheets] Dashboard for {client_id}: "
+            f"next_session={result['next_session']['session_date']}, "
+            f"session_bests={len(result['session_exercise_bests'])}, "
+            f"recent_pbs={len(result['recent_pbs'])}"
+        )
+
+        return result
+
+    except RuntimeError:
+        raise  # Config/connection errors should surface, not be swallowed
+    except Exception as e:
+        logger.error(f"[Sheets] Error building dashboard for {client_id}: {e}")
+        return result  # Return whatever was built before the error

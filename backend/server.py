@@ -11,6 +11,7 @@ from flask_cors import CORS
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
+from core.sheets_client import get_dashboard_data
 from models import client_context
 from core.context_loader import get_greeting_for_state
 from webhooks import webhook_handler
@@ -286,6 +287,72 @@ def context_integrity_check():
 
 
 # ============================================================
+# DASHBOARD
+# ============================================================
+
+@app.route('/dashboard', methods=['GET'])
+def dashboard():
+    """
+    Home screen data for the PWA.
+
+    Reads directly from Google Sheets (no Make.com):
+      - Next upcoming session (date, focus, summary, duration)
+      - PBs for exercises in that session (so user can see what to beat)
+      - PBs set in the last 7 days
+      - Current block/week summary for the progress card
+
+    Query params:
+        session_id: Active session identifier (from /initialize)
+
+    Returns:
+        {
+            "next_session": { session_id, session_date, day_of_week, focus,
+                              session_summary, location, estimated_duration,
+                              phase_name, week_number, exercise_count },
+            "session_exercise_bests": [ { exercise_name, metric_key,
+                                          current_value, current_unit,
+                                          current_timestamp, strength_e1rm_kg,
+                                          strength_load_kg, strength_reps,
+                                          session_count }, ... ],
+            "recent_pbs": [ same shape as above ],
+            "block_summary": { phase_name, week_number, block_id }
+        }
+    """
+    try:
+        session_id = request.args.get('session_id')
+
+        if not session_id:
+            return jsonify({'error': 'Missing session_id parameter'}), 400
+
+        session = client_context.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Invalid session_id — please initialize first'}), 400
+
+        client_id = session.get('client_id')
+        if not client_id:
+            return jsonify({'error': 'No client_id in session — onboarding not complete'}), 400
+
+        data = get_dashboard_data(client_id)
+
+        return jsonify(data)
+
+    except RuntimeError as e:
+        # Config/connection errors (missing env var, wrong sheet name, etc.)
+        print(f"[Dashboard] Config error: {str(e)}")
+        return jsonify({
+            'error': 'Google Sheets connection failed',
+            'details': str(e)
+        }), 503
+
+    except Exception as e:
+        print(f"[Dashboard] Error: {str(e)}")
+        return jsonify({
+            'error': 'Failed to load dashboard data',
+            'details': str(e)
+        }), 500
+
+
+# ============================================================
 # REST DAY SUMMARY GENERATION
 # ============================================================
 
@@ -409,9 +476,10 @@ def not_found(error):
             'GET /status',
             'POST /initialize',
             'POST /chat',
+            'GET /dashboard?session_id=...',
             'POST /refresh-context',
             'POST /context-integrity-check',
-            'GET /sessions/rest-day-summary'
+            'GET /sessions/rest-day-summary?session_id=...'
         ]
     }), 404
 

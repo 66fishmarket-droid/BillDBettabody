@@ -9,6 +9,13 @@ import json
 from datetime import datetime
 from config import Config
 from core.bill_config import is_write_webhook
+from core.sheets_client import get_exercise_bests
+from webhooks.context_integrity import (
+    should_refresh_context_after,
+    validate_session_ids_present,
+    log_context_integrity_escalation
+)
+from webhooks.webhook_validator import validate_or_raise
 
 
 def parse_make_response(response):
@@ -162,11 +169,22 @@ def load_client_context(client_id):
         
         # Use centralized parsing
         context = parse_make_response(response)
-        
+
+        # Inject Exercise Bests directly from Google Sheets.
+        # This replaces the Make.com fetch (modules 28-29 in the scenario)
+        # and is faster, uses zero Make.com ops, and uses the real column names.
+        try:
+            bests = get_exercise_bests(client_id)
+            context['Exercise Bests'] = bests
+            print(f"[Context] Exercise Bests loaded from Sheets: {len(bests)} records for {client_id}")
+        except Exception as e:
+            # Non-fatal: fall back to whatever Make.com returned (may be empty)
+            print(f"[Context] WARNING: Direct Sheets read failed, keeping Make.com data: {e}")
+
         # Add metadata
         context['_loaded_at'] = datetime.now().isoformat()
         context['_client_id'] = client_id
-        
+
         return context
         
     except requests.RequestException as e:

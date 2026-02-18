@@ -1,6 +1,11 @@
 # Environment variables (contains API keys - never commit!)
 .env
 
+# Google Service Account key files (never commit!)
+*service-account*.json
+*-key.json
+google-credentials.json
+
 # Python
 __pycache__/
 *.py[cod]

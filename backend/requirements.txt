@@ -11,5 +11,9 @@ requests==2.31.0
 # Environment Variables
 python-dotenv==1.0.0
 
+# Google Sheets Direct Access (Exercise Bests reads + Dashboard endpoint)
+gspread==6.1.2
+google-auth==2.28.0
+
 # Development/Testing
 pytest==7.4.3

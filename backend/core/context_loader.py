@@ -498,13 +498,19 @@ def _format_sessions(parts, sessions_data):
 
 
 def _format_exercise_bests(parts, bests):
-    """Format Exercise Bests from V2 context (numeric-key Make.com rows).
+    """Format Exercise Bests for Claude's system prompt.
 
-    Exercise Bests column mapping:
-      1=exercise_name, 2=best_type, 3=category, 4=direction,
-      6=best_value, 7=best_unit, 8=best_date, 9=source,
-      10=session_id, 12=recent_value, 13=recent_unit, 14=recent_date,
-      17=total_sessions, 21=total_sets, 25=improvement_count
+    Supports data from Google Sheets direct reads (named headers) with
+    fallback to old Make.com numeric-key format for backward compatibility.
+
+    Actual Exercise_Bests sheet columns:
+      client_id, exercise_name, metric_key, metric_family, better_direction,
+      context_key, current_value, current_unit, current_timestamp,
+      current_evidence_type, current_evidence_ref, current_confidence,
+      first_value, first_unit, first_timestamp, first_evidence_type,
+      first_evidence_ref, strength_load_kg, strength_reps, strength_e1rm_kg,
+      distance_m, duration_s, avg_power_w, avg_hr_bpm, notes,
+      session_count, last_session_timestamp
     """
     if not bests:
         return
@@ -516,29 +522,36 @@ def _format_exercise_bests(parts, bests):
         if not isinstance(entry, dict):
             continue
 
-        name = entry.get('1', entry.get('exercise_name', '?'))
+        # Named keys (Google Sheets direct) with numeric fallbacks (Make.com legacy)
+        name = entry.get('exercise_name') or entry.get('1', '?')
         if not name:
             continue
 
-        best_val = entry.get('6', entry.get('best_value', ''))
-        best_unit = entry.get('7', entry.get('best_unit', ''))
-        best_date = entry.get('8', entry.get('best_date', ''))
-        best_type = entry.get('2', entry.get('best_type', ''))
-        total_sess = entry.get('17', entry.get('total_sessions', ''))
-        total_sets = entry.get('21', entry.get('total_sets', ''))
+        metric_key   = entry.get('metric_key')   or entry.get('2', '')
+        current_val  = entry.get('current_value') or entry.get('6', '')
+        current_unit = entry.get('current_unit')  or entry.get('7', '')
+        current_date = entry.get('current_timestamp') or entry.get('8', '')
+        e1rm         = entry.get('strength_e1rm_kg', '')
+        load_kg      = entry.get('strength_load_kg', '')
+        reps         = entry.get('strength_reps', '')
+        session_count = entry.get('session_count') or entry.get('17', '')
 
         line = f"  {name}:"
-        if best_val:
-            line += f" best={best_val}{best_unit}"
-        if best_type:
-            line += f" ({best_type})"
-        if best_date:
-            date_short = str(best_date)[:10]
-            line += f" on {date_short}"
-        if total_sess:
-            line += f" | {total_sess} sessions"
-        if total_sets:
-            line += f", {total_sets} sets"
+
+        # Prefer e1RM for strength exercises when available
+        if e1rm:
+            line += f" e1RM={e1rm}kg"
+            if load_kg and reps:
+                line += f" (from {load_kg}kg×{reps})"
+        elif current_val:
+            line += f" best={current_val}{current_unit}"
+
+        if metric_key:
+            line += f" [{metric_key}]"
+        if current_date:
+            line += f" on {str(current_date)[:10]}"
+        if session_count:
+            line += f" | {session_count} sessions"
 
         parts.append(line)
 
