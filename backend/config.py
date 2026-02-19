@@ -55,11 +55,9 @@ class Config:
     # Paths
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DOCS_DIR = os.path.join(BASE_DIR, '..', 'docs')
-    BILL_INSTRUCTIONS_PATH = os.path.join(DOCS_DIR, 'GPT Instructions', 'Bill_Instructions_current.txt')
-    SCENARIO_HELPER_PATH = os.path.join(DOCS_DIR, 'GPT Instructions', 'scenario_helper_instructions.txt')
-    # Exercise Library paths
-    EXERCISE_LIBRARY_QUICK_REF = os.path.join(DOCS_DIR, 'Exercise_Instructions', 'Exercise_Library_QuickRef_v2.txt')
-    EXERCISE_LIBRARY_CANONICAL = os.path.join(DOCS_DIR, 'Exercise_Instructions', 'Exercise_Library_Canonical_v2_full.txt')
+    BILL_INSTRUCTIONS_PATH = os.path.join(DOCS_DIR, 'GPT Instructions', 'Bill_Instructions_V2.txt')
+    SCENARIOS_DIR = os.path.join(DOCS_DIR, 'scenarios')
+    SCENARIO_INDEX_PATH = os.path.join(DOCS_DIR, 'scenarios', 'scenario_index.txt')
 
     @classmethod
     def validate(cls):

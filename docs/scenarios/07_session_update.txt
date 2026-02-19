@@ -1,0 +1,201 @@
+============================================================
+SCENARIO: Bill - Session Update
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Session Update blueprint (2).json)
+WEBHOOK LABEL: Bill Session Updater
+WEBHOOK URL: https://hook.eu2.make.com/hv7koluwt0mxtbj6m8exs4774oyk4e7g
+PURPOSE:
+Update an existing session row in Plans_Sessions and optionally update
+one or more step rows in Plans_Steps for that session.
+Uses ifempty() throughout — only fields explicitly sent by Bill are
+overwritten. Fields omitted or sent as empty preserve their existing
+sheet values.
+Called after Populate Training Week to correct prescription errors,
+after a session completes to record status, or mid-block to adjust
+upcoming sessions.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger — receives session_id, client_id,
+           session_updates object, steps_upsert array
+Module 2:  filterRows — Find session row in Plans_Sessions by session_id
+           (case-insensitive, col G, limit 1)
+Module 3:  updateRow — Update Plans_Sessions row with session_updates fields
+Module 6:  BasicFeeder — Steps Iterator (loops over steps_upsert array)
+Module 7:  filterRows — Find step row in Plans_Steps by step_id AND client_id
+           (double filter — defensive match)
+Module 10: SetVariable2 — Capture existing notes_athlete value from sheet
+Module 11: SetVariable2 — Build combined notes_athlete (append with timestamp)
+Module 8:  updateRow — Update Plans_Steps row
+Module 9:  BasicAggregator — Finish iterating, count steps updated
+Module 4:  WebhookRespond — Return response
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED
+- session_id (string) REQUIRED — used to locate the Plans_Sessions row;
+  must exist in the sheet or session update is silently skipped
+- session_updates (object) OPTIONAL — omit entirely if no session-level
+  changes needed, only steps need updating
+- steps_upsert (array) OPTIONAL — omit entirely if no step changes needed
+
+-----------------------------
+SESSION_UPDATES OBJECT
+-----------------------------
+All fields optional. Only send fields being explicitly changed.
+ifempty() in Make means omitted or empty fields preserve existing values.
+
+- phase (string)
+- location (string)
+- focus (string)
+- exercises (string) — comma-separated exercise name summary
+- macros (string)
+- supplements (string)
+- notes (string)
+- session_date (string) — format YYYY-MM-DD
+- session_day_of_week (string)
+- intended_intensity_rpe (string or number)
+- intended_hr_zone (string)
+- estimated_duration_minutes (number)
+- linked_sport (string)
+- session_status (string) — e.g. "Completed", "Populated", "Skipped"
+- session_summary (string) — PWA home screen preview text; Bill's voice;
+  2-4 sentences; send when correcting or updating the session preview
+
+FIELDS NOT UPDATABLE VIA THIS WEBHOOK:
+- session_notes — owned by backend process (PWA session logger writes
+  directly to Google Sheets); never send via this webhook
+- week_id, block_id, client_id, plan_id — structural IDs set at block
+  generation time; never overwrite via session update
+- google_form_url — managed separately
+
+-----------------------------
+STEPS_UPSERT ARRAY
+-----------------------------
+Each item is a step object representing one step to update.
+Only send steps that need changing — omit unchanged steps entirely.
+
+REQUIRED per step:
+- step_id (string) REQUIRED — used to locate the Plans_Steps row;
+  must match an existing step_id exactly (case-insensitive).
+  If no matching row found, that step update is silently skipped.
+
+ALL OTHER STEP FIELDS OPTIONAL:
+ifempty() means omitted or empty fields preserve existing sheet values.
+Only send fields being explicitly changed.
+
+Core fields:
+- step_order (number)
+- segment_type (string) — warmup / main / cooldown
+- step_type (string)
+- duration_type (string)
+- duration_value (number)
+- target_type (string)
+- target_value (string)
+- exercise_name (string)
+- sets (number)
+- reps (number)
+- load_kg (number)
+- rest_seconds (number)
+- notes_coach (string) — Bill's instructional voice only
+- notes_athlete (string) — see athlete notes rules below
+- status (string)
+
+Pattern fields (same rules as Populate Training Week apply):
+- pattern_type (string)
+- load_start_kg (number)
+- load_increment_kg (number)
+- load_peak_kg (number)
+- reps_pattern (string)
+- rpe_pattern (string)
+- tempo_pattern (string)
+- tempo_per_set_pattern (string)
+- pattern_notes (string)
+- interval_count (number)
+- interval_work_sec (number)
+- interval_rest_sec (number)
+- intensity_start (string)
+- intensity_end (string)
+
+-----------------------------
+ATHLETE NOTES RULES (CRITICAL)
+-----------------------------
+notes_athlete is handled differently from all other fields.
+Make does NOT use ifempty() for this field — it uses an append logic:
+
+- Module 10 reads the existing notes_athlete value from the sheet
+- Module 11 builds a new combined value:
+  - If both existing and incoming are empty → write empty
+  - If existing is empty → write timestamp + incoming notes_athlete
+  - If existing has content → append timestamp + incoming notes_athlete
+    to existing value (preserving full history)
+
+BILL RULES FOR notes_athlete:
+- Bill MUST NOT author content in notes_athlete
+- notes_athlete content comes from the athlete via PWA session logger
+- Bill routes athlete-entered feedback through this field only when
+  explicitly relaying athlete input, never when writing coaching content
+- If Bill has no athlete notes to relay, omit notes_athlete entirely
+  or send as empty string — Make will preserve the existing value
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Success response (HTTP 200):
+{
+  "status": "ok",
+  "action": "session_updated",
+  "client_id": "<string>",
+  "session_id": "<string>",
+  "sessions_updated": <0 or 1>,   // 1 if session row found, 0 if not
+  "steps_requested": <number>,     // length of steps_upsert sent
+  "steps_updated": <number>,       // steps actually matched and updated
+  "timestamp": "<ISO datetime>"
+}
+
+Interpretation notes:
+- sessions_updated: 0 means the session_id was not found in Plans_Sessions
+  — Bill should treat this as an error and not assume data was written
+- steps_updated less than steps_requested means one or more step_ids were
+  not found — check step_ids are correct before retrying
+- There is no separate error response shape — status is always "ok" even
+  if nothing was matched; use sessions_updated and steps_updated to verify
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always send client_id and session_id — both required
+- This is a partial update webhook — only send what is changing;
+  never send a full session object to "refresh" the row
+- Never send session_notes — backend owns that field
+- Never send structural IDs (week_id, block_id, plan_id) in
+  session_updates — these are never overwritten
+- Check sessions_updated and steps_updated in the response —
+  a value of 0 means nothing was written; treat as an error
+- notes_athlete should only be sent when explicitly relaying
+  athlete-entered feedback; never author notes_athlete content
+- Pattern field rules from Populate Training Week apply equally
+  here — if pattern_type is sent, all required pattern fields
+  for that type must also be sent
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "session_id": "sess_001",
+  "session_updates": {
+    "session_status": "Completed",
+    "session_summary": "Solid lower body session. Three working sets on squats and RDLs, finishing with farmer carries. Expect to feel this in your hamstrings tomorrow."
+  },
+  "steps_upsert": [
+    {
+      "step_id": "st_sess_001_20260224120000000_2",
+      "status": "completed",
+      "notes_athlete": "Managed RPE 7 across all sets, felt good."
+    }
+  ]
+}
+============================================================

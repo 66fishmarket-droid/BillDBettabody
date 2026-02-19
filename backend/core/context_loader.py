@@ -4,18 +4,50 @@ Selective instruction loading to optimize token usage
 NOW WITH: Structured system messages for Claude's prompt caching
 
 PROMPT CACHING STRATEGY:
-- Bill's instructions are CACHED (stable, ~75k tokens)
-- Client context is NOT cached (changes frequently, ~13k tokens)
+- Bill's instructions + scenario index are CACHED (stable)
+- Scenario group files are CACHED per operation type
+- Client context is NOT cached (changes frequently)
 - Cache TTL: 5 minutes (refreshed with each request)
 - Expected savings: 90% reduction on cached portions after first request
 
-Cache invalidation: Different instruction combinations create separate caches
-(e.g., coach vs developer mode). This is GOOD - each mode gets its own cache.
+SCENARIO LOADING STRATEGY:
+- scenario_index.txt is always loaded (slim, ~2KB)
+- Scenario group files are pre-loaded based on operation_type
+  onboarding → user_upsert, user_id_check, add_injury, update_injury,
+               add_chronic_condition, sync_contraindications_webhook
+  planning   → full_training_block_generator, exercise_filter,
+               populate_training_week, session_update
+  session    → load_client_context, session_update
+- Full scenario files can be loaded on demand via load_scenario(name)
+
+Cache invalidation: Different operation types create separate caches.
 """
 
 import os
 from config import Config
 from core.bill_config import OperatingMode, ClientState
+
+# Scenario groups — maps operation_type to list of scenario file names (without .txt)
+SCENARIO_GROUPS = {
+    'onboarding': [
+        '01_user_upsert',
+        '04_user_id_check',
+        '10_add_injury',
+        '11_update_injury_status',
+        '12_add_chronic_condition',
+        '02_sync_contraindications_webhook',
+    ],
+    'planning': [
+        '09_full_training_block_generator',
+        '08_exercise_filter',
+        '06_populate_training_week',
+        '07_session_update',
+    ],
+    'session': [
+        '05_load_client_context',
+        '07_session_update',
+    ],
+}
 
 
 def load_section_from_file(filepath, section_id=None):
@@ -49,16 +81,76 @@ def load_section_from_file(filepath, section_id=None):
         return ""
 
 
-def load_scenario_helper():
+def load_scenario_index():
     """
-    Load Scenario Helper Instructions (webhook contracts)
-    Section 3.0: SCENARIO HELPER IS EXECUTION LAW
-    
+    Load the slim scenario index. Always included in Bill's cached context.
+    Tells Bill what scenarios exist, their URLs, and when to call them.
+
     Returns:
-        str: Scenario helper content
+        str: Scenario index content (~2KB)
     """
-    filepath = Config.SCENARIO_HELPER_PATH
-    return load_section_from_file(filepath)
+    return load_section_from_file(Config.SCENARIO_INDEX_PATH)
+
+
+def load_scenario(scenario_name):
+    """
+    Load a single scenario file by name (without .txt extension).
+
+    Args:
+        scenario_name: e.g. '01_user_upsert' or 'user_upsert'
+
+    Returns:
+        str: Full scenario instructions, or empty string if not found
+    """
+    # Allow bare names like 'user_upsert' by checking for numeric prefix
+    if not scenario_name[0].isdigit():
+        # Search the scenarios dir for a file ending in _{scenario_name}.txt
+        try:
+            for fname in os.listdir(Config.SCENARIOS_DIR):
+                if fname.endswith(f'_{scenario_name}.txt'):
+                    scenario_name = fname[:-4]  # strip .txt
+                    break
+        except OSError:
+            pass
+
+    filepath = os.path.join(Config.SCENARIOS_DIR, f'{scenario_name}.txt')
+    content = load_section_from_file(filepath)
+    if content:
+        print(f"[Context Loader] Loaded scenario: {scenario_name}")
+    return content
+
+
+def load_scenario_group(operation_type):
+    """
+    Load all scenario files for a given operation type group.
+    Used to pre-load relevant scenarios into Bill's cached context.
+
+    Args:
+        operation_type: 'onboarding', 'planning', or 'session'
+
+    Returns:
+        str: Concatenated scenario file contents, or empty string
+    """
+    names = SCENARIO_GROUPS.get(operation_type, [])
+    if not names:
+        return ""
+
+    parts = []
+    parts.append("=" * 60)
+    parts.append(f"SCENARIO CONTRACTS — {operation_type.upper()} GROUP")
+    parts.append("=" * 60)
+    parts.append("")
+
+    for name in names:
+        content = load_scenario(name)
+        if content:
+            parts.append(content)
+            parts.append("")
+
+    loaded = sum(1 for n in names if os.path.exists(
+        os.path.join(Config.SCENARIOS_DIR, f'{n}.txt')))
+    print(f"[Context Loader] Scenario group '{operation_type}': {loaded}/{len(names)} files loaded")
+    return "\n".join(parts)
 
 
 def load_bill_core_instructions():
@@ -72,8 +164,6 @@ def load_bill_core_instructions():
     Returns:
         str: Core instruction content
     """
-    # For V1, load full file
-    # TODO: Optimize to load only Sections 0-1
     filepath = Config.BILL_INSTRUCTIONS_PATH
     return load_section_from_file(filepath)
 
@@ -82,35 +172,40 @@ def load_bill_instructions(mode, client_state, operation_type='chat'):
     """
     Load Bill instructions selectively based on context.
 
-    Exercise library is NOT loaded here — it lives in Google Sheets
-    (Exercise_Library tab) and is delivered to Bill at plan-generation
-    time via the exercise_filter Make.com webhook, and for session
-    enrichment via sheets_client.py.
+    Always includes:
+    - Core Bill instructions (Bill_Instructions_V2.txt)
+    - Scenario index (slim ~2KB — tells Bill what webhooks exist and when to call them)
+
+    Pre-loads scenario group files when operation_type matches a known group:
+    - 'onboarding' → client mgmt + contraindication scenarios
+    - 'planning'   → training block + exercise filter + population scenarios
+    - 'session'    → load context + session update scenarios
+
+    Exercise library is NOT loaded here — it lives in Google Sheets and is
+    delivered via the exercise_filter webhook at plan-generation time.
 
     Args:
         mode: OperatingMode value ('coach', 'tech', 'developer')
         client_state: ClientState value ('stranger', 'onboarding', 'ready')
-        operation_type: Type of operation ('chat', 'webhook', 'planning')
+        operation_type: 'chat', 'onboarding', 'planning', 'session'
 
     Returns:
         str: Assembled instruction text
     """
-    
+
     instructions_parts = []
-    
-    # ALWAYS LOAD: Core identity and rules
+
+    # ALWAYS: Core identity and rules
     instructions_parts.append("=" * 60)
     instructions_parts.append("BILL D'BETTABODY - CORE INSTRUCTIONS")
     instructions_parts.append("=" * 60)
     instructions_parts.append("")
-    
-    # Load full Bill instructions for V1
-    # TODO: Optimize to load selective sections
+
     core_instructions = load_bill_core_instructions()
     if core_instructions:
         instructions_parts.append(core_instructions)
-    
-    # Add mode-specific context
+
+    # Mode/state/operation header
     instructions_parts.append("")
     instructions_parts.append("=" * 60)
     instructions_parts.append(f"CURRENT OPERATING MODE: {mode.upper()}")
@@ -118,18 +213,25 @@ def load_bill_instructions(mode, client_state, operation_type='chat'):
     instructions_parts.append(f"OPERATION TYPE: {operation_type.upper()}")
     instructions_parts.append("=" * 60)
     instructions_parts.append("")
-    
-    # Load Scenario Helper if webhook operation
-    if operation_type == 'webhook' or mode == OperatingMode.DEVELOPER:
-        instructions_parts.append("=" * 60)
-        instructions_parts.append("SCENARIO HELPER INSTRUCTIONS (EXECUTION LAW)")
-        instructions_parts.append("=" * 60)
-        instructions_parts.append("")
-        
-        scenario_helper = load_scenario_helper()
-        if scenario_helper:
-            instructions_parts.append(scenario_helper)
-    
+
+    # ALWAYS: Scenario index (Bill needs to know what webhooks exist)
+    instructions_parts.append("=" * 60)
+    instructions_parts.append("SCENARIO INDEX (load full file before calling any webhook)")
+    instructions_parts.append("=" * 60)
+    instructions_parts.append("")
+    scenario_index = load_scenario_index()
+    if scenario_index:
+        instructions_parts.append(scenario_index)
+    else:
+        instructions_parts.append("WARNING: Scenario index not loaded — webhook calls may fail.")
+    instructions_parts.append("")
+
+    # CONDITIONAL: Pre-load scenario group files for the operation type
+    if operation_type in SCENARIO_GROUPS:
+        scenario_group = load_scenario_group(operation_type)
+        if scenario_group:
+            instructions_parts.append(scenario_group)
+
     return "\n".join(instructions_parts)
 
 

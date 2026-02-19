@@ -1,0 +1,78 @@
+============================================================
+SCENARIO: Bill - UserID Check
+CANONICAL SOURCE: Make Blueprint JSON (Bill - UserID Check.blueprint.json)
+WEBHOOK PURPOSE:
+WEBHOOK URL: https://hook.eu2.make.com/hvsvswhrdfacm7ag4flv1uhpb1nxbigh
+Check whether a client_id already exists in the Clients sheet.
+Returns exists: true/false. Used as a gate before upsert and
+plan generation flows to determine whether to create or update.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — expects client_id
+Module 2: filterRows — Search Clients sheet column A for client_id
+          (case-insensitive, limit 1)
+Router:
+  Branch A (found): __ROW_NUMBER__ > 0
+    WebhookRespond — exists: true, client_id from sheet row, row_index
+  Branch B (not found): __IMTLENGTH__ < 1
+    WebhookRespond — exists: false, client_id echoed from input
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. One key only:
+- client_id (string) REQUIRED
+
+No nesting. No other keys referenced.
+
+Fragile bits / must-follow rules:
+- filterRows searches Clients column A using case-insensitive text equal
+- limit is 1 — only first match returned
+- If client_id is missing the filter expression will fail and scenario errors
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Two possible response shapes:
+
+1) Found (exists: true):
+{
+  "exists": true,
+  "client_id": "<string>",
+  "row_index": <number>
+}
+client_id is returned from the sheet row (not echoed from input).
+row_index is the Google Sheets row number from the search module.
+
+2) Not found (exists: false):
+{
+  "exists": false,
+  "client_id": "<string>"
+}
+client_id is echoed from webhook input.
+row_index is NOT included in this branch.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Call this before post_user_upsert when it is unclear whether a client
+  profile already exists
+- If exists: true → proceed with update flow
+- If exists: false → proceed with create/onboarding flow
+- Never invent or assume a client_id exists without checking first
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A (expect exists: true if cli_001 is in Clients sheet):
+{
+  "client_id": "cli_001"
+}
+
+Test B (expect exists: false):
+{
+  "client_id": "cli_999999"
+}
+============================================================

@@ -1,0 +1,234 @@
+============================================================
+SCENARIO: Bill - Full Training Block Generator
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Full_Training_Block_Generator_blueprint.json)
+WEBHOOK LABEL: POST/plan/create_full_block
+WEBHOOK URL: https://hook.eu2.make.com/v35x7s4w3ksju9e4jgjes5rpsoxb3a22
+PURPOSE: Create a full training block skeleton in Google Sheets.
+         Writes one row to Plans_Blocks, one row per week to Plans_Weeks,
+         and one row per session to Plans_Sessions. Sessions are created
+         as empty skeletons — Populate Training Week fills them with content.
+         Includes duplicate detection and fallback error route.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger
+Module 23: filterRows — check Plans_Blocks for existing active block
+           (col C = client_id AND col N = "Active"). Runs before router.
+Module 2:  BasicRouter — two routes:
+           Route 0 (create): plan_action == "create_full_block"
+                             AND 23.__IMTLENGTH__ = 0 (no active block exists)
+           Fallback route: everything else — wrong plan_action OR duplicate block
+Module 3:  SetVariable2 — resolve plan_id (auto-generate or use supplied value)
+Module 4:  SetVariable2 — generate block_id
+Module 6:  addRow — write block to Plans_Blocks
+Module 7:  BasicRepeater — loop duration_weeks times (week iterator)
+Module 8:  SetVariable2 — generate week_id per iteration
+Module 10: SetVariable2 — calculate week_start_date per iteration (FIXED)
+Module 11: SetVariable2 — calculate week_end_date per iteration
+Module 9:  addRow — write week skeleton to Plans_Weeks
+Module 12: BasicRepeater — loop days_per_week times (session iterator)
+Module 13: SetVariable2 — generate session_id per iteration
+Module 14: addRow — write session skeleton to Plans_Sessions
+Module 18: BasicAggregator — collect values across iterations
+Module 19: WebhookRespond — success response
+Module 20: WebhookRespond — fallback error response
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- plan_action (string) REQUIRED
+- client (object) REQUIRED
+- plan (object) REQUIRED
+- goals (object) REQUIRED
+- availability (object) REQUIRED
+
+plan_action:
+- Must be exactly "create_full_block" (case-insensitive).
+- Any other value triggers the fallback error route.
+
+client (object):
+- client_id (string) REQUIRED
+  Used in ID generation and written to all sheet rows.
+  No other client fields are read by this scenario.
+
+plan (object):
+  Required fields:
+  - phase_name (string) REQUIRED — written to Plans_Blocks col D and Plans_Sessions col H
+  - phase_goal (string) REQUIRED — written to Plans_Blocks col E; fallback for session
+                                    focus if goals.primary is empty
+  - week_start (string, YYYY-MM-DD) REQUIRED — anchor date for all date calculations
+  - duration_weeks (number) REQUIRED — controls week repeater loop count; minimum 1
+  - days_per_week (number) REQUIRED — controls session repeater loop count; range 1-7
+
+  Optional fields (missing fields write blank cells — include if known):
+  - plan_id (string) OPTIONAL — see ID GENERATION section below
+  - constraints (string) — written to Plans_Blocks col I
+  - primary_locations (string) — written to Plans_Blocks col J and Plans_Sessions col I
+  - nutrition_targets (string) — written to Plans_Blocks col K
+  - supplement_protocol (string) — written to Plans_Blocks col L
+  - notes (string) — written to Plans_Blocks col M and Plans_Weeks col J
+
+goals (object):
+  - primary (string) REQUIRED — written to Plans_Weeks col G and Plans_Sessions col J
+                                 (falls back to plan.phase_goal if empty string)
+  - secondary (string) OPTIONAL — written to Plans_Weeks col H
+
+availability (object):
+  - default_session_minutes (number) OPTIONAL — written to Plans_Sessions col T
+                                                 Defaults to 60 if missing or empty
+
+-----------------------------
+ID GENERATION (MAKE OWNS THIS — BILL AND FLASK NEVER GENERATE THESE)
+-----------------------------
+plan_id:
+  - If plan.plan_id is supplied and non-empty: used as-is
+  - If plan.plan_id is "" or absent: Make generates "plan_YYYYMMDD_<client_id>"
+  - Formula: {{if(length(1.plan.plan_id) = 0; "plan_" + formatDate(now; "YYYYMMDD") + "_" + 1.client.client_id; 1.plan.plan_id)}}
+
+block_id:
+  - Always auto-generated. Never supplied by caller.
+  - Format: "blk_YYYYMMDDHHmmss_<client_id>"
+  - Example: "blk_20260219134426_cli_001"
+
+week_id:
+  - Format: "wk_<block_id>_<week_number>"
+  - Example: "wk_blk_20260219134426_cli_001_1"
+
+session_id:
+  - Format: "sess_<week_id>_<day_number>"
+  - Example: "sess_wk_blk_20260219134426_cli_001_1_1"
+
+IMPORTANT: Bill and Flask must never construct or guess these IDs.
+After block creation, retrieve them via Load Client Context V2.
+
+-----------------------------
+WEEK DATE CALCULATIONS (FIXED)
+-----------------------------
+week_start_date formula (module 10):
+{{if(7.i - 1 = 0; formatDate(1.plan.week_start; "YYYY-MM-DD"); formatDate(addDays(1.plan.week_start; ((7.i - 1) * 7)); "YYYY-MM-DD"))}}
+
+- Week 1 (i=1): uses plan.week_start directly
+- Week N (i=N): plan.week_start + ((N-1) * 7) days
+- Example with week_start 2026-02-23:
+  Week 1: 2026-02-23
+  Week 2: 2026-03-02
+  Week 3: 2026-03-09
+  Week 4: 2026-03-16
+
+week_end_date: always week_start_date + 6 days (correct).
+
+-----------------------------
+DUPLICATE DETECTION
+-----------------------------
+Module 23 runs before the router and searches Plans_Blocks for any row where:
+- col C (client_id) matches incoming client_id
+- col N (plan_status) = "Active"
+
+If a match is found (__IMTLENGTH__ > 0), the create route filter fails and
+the fallback route fires, returning an error response. No rows are written.
+
+Bill must never call this scenario if the client already has an active block.
+Check client context first — if plan_context.active_block is populated, do not call.
+
+-----------------------------
+PLANS_SESSIONS SKELETON — WHAT GETS WRITTEN
+-----------------------------
+- plan_id (col A), block_id (col B), client_id (col C)
+- week number (col D), week_id (col E), day number (col F), session_id (col G)
+- phase (col H) — from plan.phase_name
+- location (col I) — from plan.primary_locations
+- focus (col J) — from goals.primary (fallback: plan.phase_goal)
+- session_global_number (col Q) — ((week-1) * days_per_week) + day
+- estimated_duration_minutes (col T) — from availability.default_session_minutes
+- linked_sport (col U) — hardcoded "general"
+- session_status (col V) — hardcoded "awaiting content"
+
+All other columns left blank. Populate Training Week fills them.
+
+-----------------------------
+OUTPUT CONTRACT
+-----------------------------
+Success response:
+{
+  "status": "ok",
+  "action": "plan_created",
+  "client_id": "<client_id>",
+  "plan_id": "<resolved plan_id>",
+  "block_id": "<generated block_id>",
+  "weeks_created": <number>,
+  "sessions_created": <number>,
+  "timestamp": "<ISO 8601 UTC>"
+}
+
+Fallback/error response:
+{
+  "status": "error",
+  "message": "unknown plan_action"
+}
+
+NOTE: The fallback fires for BOTH wrong plan_action AND duplicate active block.
+The error message is generic — Bill should check client context before calling
+to distinguish between the two cases.
+Response does NOT return individual week_id or session_id arrays — counts only.
+Retrieve IDs via Load Client Context V2 after successful creation.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always check client context before calling — if active_block exists, do not call
+- Always pass plan_action: "create_full_block" exactly
+- Always pass plan.plan_id as "" for auto-generation — do not omit the key
+- Never supply block_id, week_id, or session_id — Make generates all of these
+- goals and availability are top-level objects, not nested inside plan
+- After successful call, retrieve IDs via Load Client Context V2 before
+  calling Populate Training Week
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "plan_action": "create_full_block",
+  "client": {
+    "client_id": "cli_001"
+  },
+  "plan": {
+    "plan_id": "",
+    "phase_name": "Foundation Block 1",
+    "phase_goal": "Build base strength and movement quality",
+    "week_start": "2026-02-23",
+    "duration_weeks": 4,
+    "days_per_week": 3,
+    "constraints": "Lower back niggle — avoid heavy deadlifts",
+    "primary_locations": "gym",
+    "nutrition_targets": "High protein, slight calorie surplus",
+    "supplement_protocol": "Creatine 5g daily, whey post-session",
+    "notes": "Client returning after 6-month break. Keep intensity conservative week 1."
+  },
+  "goals": {
+    "primary": "strength",
+    "secondary": "hypertrophy"
+  },
+  "availability": {
+    "default_session_minutes": 60
+  }
+}
+
+Expected success response:
+{
+  "status": "ok",
+  "action": "plan_created",
+  "client_id": "cli_001",
+  "plan_id": "plan_20260223_cli_001",
+  "block_id": "blk_<timestamp>_cli_001",
+  "weeks_created": 4,
+  "sessions_created": 12,
+  "timestamp": "<ISO 8601 UTC>"
+}
+
+Expected sheet writes:
+- 1 row in Plans_Blocks
+- 4 rows in Plans_Weeks (dates: 2026-02-23, 2026-03-02, 2026-03-09, 2026-03-16)
+- 12 rows in Plans_Sessions (4 weeks × 3 days)
+============================================================

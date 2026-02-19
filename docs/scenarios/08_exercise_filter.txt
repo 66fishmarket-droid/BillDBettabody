@@ -1,0 +1,171 @@
+============================================================
+SCENARIO: Bill - Exercise Filter
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Exercise Filter blueprint (1).json)
+WEBHOOK LABEL: B-ExFil | Webhook In
+WEBHOOK URL: https://hook.eu2.make.com/rjnd2mbbblulbk1xjlpmtejg5b9plblj
+PURPOSE:
+Filter the Exercises_Library sheet and return a shortlist of exercises
+matching Bill's criteria. Used during session planning to find appropriate
+exercises for a given segment, movement pattern, muscle group, or training
+focus. Returns exercise_code, exercise_name, and description only — not
+full exercise data.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 2:  Webhook trigger — receives filter criteria
+Module 3:  SetVariables — Capture incoming variables, auto-generate
+           query_id if not provided
+Module 4:  filterRows — Pull all active exercises from Exercises_Library
+           where segment_type contains the requested value
+Module 5:  SetVariables — Score each exercise against required_tags,
+           optional_tags, and exclude_tags (produces 0 or 1 per tag)
+Module 11: AggregateToJSON — Filter to exercises scoring >= 3 with no
+           exclusion flags; build response array
+Module 7:  WebhookRespond — Return query_id and exercises array
+
+-----------------------------
+HOW THE SCORING WORKS (CRITICAL)
+-----------------------------
+Each exercise is scored across five variables. Each returns 0 or 1.
+An exercise passes into the response ONLY if:
+  total score >= 3  AND  v_exclude_special_flags = 0
+
+Scoring variables:
+
+v_match_movement (required_tags.movement_pattern)
+  - If movement_pattern NOT sent → auto-scores 1 (pass through)
+  - If movement_pattern sent → 1 if exercise matches, 0 if not
+
+v_match_primary_muscles (required_tags.primary_muscles)
+  - If primary_muscles NOT sent → scores 0
+  - If primary_muscles sent → 1 if exercise matches, 0 if not
+
+v_match_training_focus (required_tags.training_focus)
+  - If training_focus NOT sent → scores 0
+  - If training_focus sent → 1 if exercise matches, 0 if not
+
+v_match_secondary_muscles (optional_tags.secondary_muscles)
+  - If secondary_muscles NOT sent → scores 0
+  - If secondary_muscles sent → 1 if exercise matches, 0 if not
+
+v_match_flags (optional_tags.special_flags)
+  - If special_flags NOT sent → scores 0
+  - If special_flags sent → 1 if exercise matches, 0 if not
+
+v_exclude_special_flags (exclude_tags.special_flags)
+  - If special_flags NOT sent → 0 (no exclusion)
+  - If special_flags sent and exercise matches → 1 (exercise excluded)
+
+MINIMUM TO GET RESULTS:
+If Bill only sends segment_type and nothing else, every exercise scores
+1 (movement auto-pass only) — nothing reaches the threshold of 3 and
+the response will be empty. Bill MUST send enough tags to generate
+meaningful scores. The minimum useful payload includes segment_type
+plus at least two of: movement_pattern, primary_muscles, training_focus.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level keys:
+- query_id (string) OPTIONAL — if omitted Make auto-generates as
+  "exfil_YYYYMMDD_HHmmss"; useful for correlating requests in logs
+- segment_type (string) REQUIRED — filters the exercise library before
+  scoring; only exercises whose segment_type field contains this value
+  are evaluated. Valid values: warmup / main / cooldown
+
+- required_tags (object) OPTIONAL — tags that must match to score points
+- optional_tags (object) OPTIONAL — tags that add score but are not
+  required for inclusion
+- exclude_tags (object) OPTIONAL — exercises matching these are excluded
+  regardless of score
+
+required_tags fields (all optional, send only what is relevant):
+- movement_pattern (string) — e.g. "push", "hinge", "squat", "pull",
+  "carry", "rotation", "gait", "cyclical"
+- primary_muscles (string) — e.g. "glutes", "quads", "chest",
+  "hamstrings", "lats", "deltoids"
+- training_focus (string) — e.g. "strength", "hypertrophy", "aerobic",
+  "anaerobic", "mobility", "endurance"
+
+optional_tags fields:
+- secondary_muscles (string) — e.g. "core", "calves", "biceps"
+- special_flags (string) — e.g. "low_impact", "joint_friendly",
+  "shoulder_intensive", "unilateral"
+
+exclude_tags fields:
+- special_flags (string) — exercises with this flag are excluded
+  e.g. "shoulder_intensive" to exclude exercises that load the shoulder
+  when a client has a shoulder contraindication
+
+IMPORTANT — ONE VALUE PER TAG:
+Each tag field accepts a single string value, not an array.
+Make reads the first element only: movement_pattern[1], primary_muscles[1] etc.
+Do not send comma-separated lists or arrays — only one value per field.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "query_id": "<string>",
+  "exercises": [
+    {
+      "exercise_code": "<string>",
+      "exercise_name": "<string>",
+      "description": "<string>"
+    },
+    ...
+  ]
+}
+
+Notes:
+- exercises is an array of matched exercises; may be empty if no
+  exercises reach the score threshold
+- Only exercise_code, exercise_name, and description are returned —
+  not full exercise data
+- Bill uses the returned exercise_names as canonical names for
+  prescription; never invent or modify names from the response
+- An empty exercises array is a valid response — it means no exercises
+  matched the criteria, not a scenario error
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always use exercise_name exactly as returned — these are canonical
+  names from the Exercise Library
+- Always send at least segment_type plus two meaningful tags — sending
+  only segment_type will return an empty result
+- Use exclude_tags.special_flags proactively when client has active
+  contraindications — e.g. exclude "shoulder_intensive" for shoulder
+  injuries, "high_impact" for knee issues
+- One value per tag field — do not attempt to send multiple values
+- If the response returns an empty exercises array, broaden the criteria
+  (remove a required_tag or change the value) rather than retrying
+  with identical parameters
+- query_id is optional but recommended when making multiple filter
+  calls in a single planning session — makes it easier to correlate
+  results if something goes wrong
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "query_id": "test_lower_strength_001",
+  "segment_type": "main",
+  "required_tags": {
+    "movement_pattern": "hinge",
+    "primary_muscles": "hamstrings",
+    "training_focus": "strength"
+  },
+  "optional_tags": {
+    "secondary_muscles": "glutes",
+    "special_flags": "joint_friendly"
+  },
+  "exclude_tags": {
+    "special_flags": "shoulder_intensive"
+  }
+}
+
+Expected: array of active hinge-pattern exercises targeting hamstrings
+with a strength focus, filtered to exclude shoulder-intensive movements.
+============================================================

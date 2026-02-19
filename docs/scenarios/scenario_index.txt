@@ -1,0 +1,103 @@
+SCENARIO INDEX — Bill D'Bettabody
+===========================================================
+This index is always loaded. Before calling any webhook,
+load the full scenario file via Flask to get the complete
+input contract, field rules, and known-good test payload.
+===========================================================
+
+LOADING GROUPS (Flask pre-loads these based on operation type)
+  onboarding  → 01, 04, 10, 11, 12, 02
+  planning    → 09, 08, 06, 07
+  session     → 05, 07
+
+===========================================================
+CLIENT MANAGEMENT
+===========================================================
+
+FILE: 01_user_upsert.txt
+URL:  https://hook.eu2.make.com/cwxh4f7a7akrfnr9ljilctodqm8355af
+WHEN: Create or update a client profile after gathering data from user.
+IN:   client_id (top-level) + data{} with profile fields
+RULE: Partial update only — omit fields not explicitly set.
+      NEVER write injuries or chronic_contraindications via this webhook.
+
+FILE: 04_user_id_check.txt
+URL:  https://hook.eu2.make.com/hvsvswhrdfacm7ag4flv1uhpb1nxbigh
+WHEN: Before onboarding or plan creation — check if client_id already exists.
+IN:   { "client_id": "..." }
+OUT:  exists: true/false
+
+FILE: 05_load_client_context.txt
+URL:  https://hook.eu2.make.com/4uq52ajluecic9p29n4dg3ypck6cgnxn
+WHEN: Start of every coaching session. After any context-invalidating write.
+IN:   { "client_id": "..." }
+OUT:  Full bundle: profile, plan, weeks, sessions, steps, nutrition, history.
+      Exercise Bests are NOT in this payload — loaded by Flask directly from Sheets.
+
+===========================================================
+CONTRAINDICATIONS
+===========================================================
+
+FILE: 10_add_injury.txt
+URL:  https://hook.eu2.make.com/7n8m9rg7chlxjrtfcdrekx1qc12smsyn
+WHEN: User mentions an active injury. Adds row to Contraindications_Temp.
+IN:   client_id, date_reported, type, description, expected_duration, notes, status
+AFTER: Call 02 (sync) once when ALL contraindication writes are done.
+
+FILE: 12_add_chronic_condition.txt
+URL:  https://hook.eu2.make.com/box83ye6ison8gbpsecr1pufermgdx0b
+WHEN: User mentions a chronic condition. Creates/updates Contraindications_Chronic.
+IN:   client_id, condition, severity, affected_system, contraindicated_movements, notes, status
+      record_id="" to create, record_id="chr_..." to update.
+AFTER: Call 02 (sync) once when ALL contraindication writes are done.
+
+FILE: 11_update_injury_status.txt
+URL:  https://hook.eu2.make.com/bkkygjml0fmc2rkguyesn4jeppg5ia9d
+WHEN: Injury is resolved or notes/duration need updating.
+IN:   client_id, description (used to find row), status, date_resolved (if resolving)
+AFTER: Call 02 (sync).
+
+FILE: 02_sync_contraindications_webhook.txt
+URL:  https://hook.eu2.make.com/8z02z38fdsrmqk06x3v5k56sdu2wroty
+WHEN: After ALL contraindication writes in a session are complete. ONE call at the end.
+IN:   { "client_id": "..." }
+
+FILE: 03_sync_contraindications_scheduled.txt
+SCHEDULED ONLY — Bill never calls this. Runs overnight for all clients automatically.
+
+===========================================================
+TRAINING PLAN GENERATION
+===========================================================
+
+FILE: 09_full_training_block_generator.txt
+URL:  https://hook.eu2.make.com/v35x7s4w3ksju9e4jgjes5rpsoxb3a22
+WHEN: Creating a new training block. Call ONCE per block.
+      Writes Plans_Blocks + Plans_Weeks skeleton + Plans_Sessions skeleton.
+IN:   client_id, phase_name, phase_goal, duration_weeks, days_per_week,
+      start_date, primary_locations, constraints
+
+FILE: 08_exercise_filter.txt
+URL:  https://hook.eu2.make.com/rjnd2mbbblulbk1xjlpmtejg5b9plblj
+WHEN: Before populating a week — get exercise shortlist from Exercise_Library.
+IN:   segment_type, training_focus, body_region, equipment (filters)
+OUT:  exercise_id, exercise_name, description shortlist (not full exercise data)
+
+FILE: 06_populate_training_week.txt
+URL:  https://hook.eu2.make.com/2vs9htbixx68m2hdbxinro9tdp55arao
+WHEN: After Full Training Block Generator. Writes session details + steps for one week.
+IN:   client_id, sessions[] — each with session_id + steps[]
+
+FILE: 07_session_update.txt
+URL:  https://hook.eu2.make.com/hv7koluwt0mxtbj6m8exs4774oyk4e7g
+WHEN: Correcting a session post-population, updating status, or adjusting a step mid-block.
+IN:   session_id, client_id, session_updates{} and/or steps_upsert[]
+RULE: Uses ifempty() — only fields explicitly sent are overwritten.
+
+===========================================================
+ADMIN
+===========================================================
+
+FILE: 13_issue_log_updater.txt
+URL:  https://hook.eu2.make.com/9cip80yob4ybt8qrkyaxsows81teldu5
+WHEN: Logging a system error, data inconsistency, or coaching concern.
+IN:   client_id, issue_type, entity_type, entity_id, description, severity

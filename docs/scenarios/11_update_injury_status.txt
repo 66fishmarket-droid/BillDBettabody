@@ -1,0 +1,107 @@
+============================================================
+SCENARIO: Bill - Update Injury Status
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Update_Injury_Status_blueprint.json)
+WEBHOOK LABEL: POST/injury/update
+WEBHOOK URL: https://hook.eu2.make.com/bkkygjml0fmc2rkguyesn4jeppg5ia9d
+PURPOSE: Update an existing Contraindications_Temp row — typically to resolve
+         an injury (set status to "resolved", add date_resolved) or update
+         notes and expected_duration as a situation evolves.
+         After calling this, call Injury to Client Load (Webhook) once to sync.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — receives flat JSON body
+Module 2: filterRows — find row in Contraindications_Temp where
+          col A (client_id) = client_id AND col D (description) = description
+          Limit 1, ascending. Returns __ROW_NUMBER__ for updateRow.
+Module 3: updateRow — update matched row using 2.__ROW_NUMBER__
+          Notes field appends incoming to existing rather than overwriting.
+Module 4: WebhookRespond — return updated confirmation
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. No nesting.
+
+Required:
+- client_id (string) REQUIRED — used as first match key in filterRows
+- description (string) REQUIRED — used as second match key in filterRows
+                                   Must match col D of the injury row EXACTLY.
+                                   Bill reads this from client context —
+                                   it is the segment between the 2nd and 3rd
+                                   pipe in the injuries string:
+                                   "date | type | DESCRIPTION | duration | notes"
+- status (string) REQUIRED — "active" or "resolved"
+
+Optional (send as "" if unchanged — do not omit keys):
+- expected_duration (string) — update if recovery timeline has changed
+- notes (string) — APPENDED to existing notes with a newline separator.
+                   Send "" to leave existing notes untouched.
+- date_resolved (string) — format YYYY-MM-DD; set when resolving injury
+
+-----------------------------
+MATCH KEY BEHAVIOUR
+-----------------------------
+filterRows searches col A (client_id) AND col D (description), case-insensitive.
+- If match found: updateRow fires on that row
+- If no match found: updateRow does not fire — no error returned, silent skip
+- If multiple rows match (same client + same description): first row updated only
+
+Bill must use the description exactly as it appears in client context.
+The injuries field in the Clients sheet is populated by Make from
+Contraindications_Temp, so the description is always an exact copy of col D.
+
+-----------------------------
+COLUMNS UPDATED (Contraindications_Temp)
+-----------------------------
+Col A (0): client_id — always overwritten
+Col E (4): expected_duration — overwritten
+Col F (5): status — overwritten
+Col G (6): notes — APPENDED (existing + newline + incoming) if both present;
+                   incoming only if existing blank; existing preserved if incoming blank
+Col H (7): date_resolved — overwritten
+
+NOT UPDATED by this scenario:
+- date_reported (col B)
+- type (col C)
+- description (col D) — also used as match key, never modified
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "updated": true,
+  "record_id": "<description echoed from input>",
+  "client_id": "<client_id echoed from input>"
+}
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always read description from client context injuries string — segment between
+  2nd and 3rd pipe: "date | type | DESCRIPTION | duration | notes"
+- Never modify or paraphrase the description — match must be exact
+- Send "" for notes if you only want to update status/date_resolved
+- Always call Injury to Client Load (Webhook) after resolving an injury
+- When resolving: set status "resolved", set date_resolved to today's date
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "description": "Right knee strain (mild), sore on stairs and under load",
+  "status": "resolved",
+  "expected_duration": "",
+  "notes": "Symptoms resolved after 10 days rest. Returning to full training gradually.",
+  "date_resolved": "2026-02-19"
+}
+
+Expected response:
+{
+  "updated": true,
+  "record_id": "Right knee strain (mild), sore on stairs and under load",
+  "client_id": "cli_001"
+}
+============================================================

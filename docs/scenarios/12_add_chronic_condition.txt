@@ -1,0 +1,154 @@
+============================================================
+SCENARIO: Bill - Add Chronic Condition
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Add_Chronic_Condition_blueprint.json)
+WEBHOOK LABEL: POST/condition/add-or-update
+WEBHOOK URL: https://hook.eu2.make.com/box83ye6ison8gbpsecr1pufermgdx0b
+PURPOSE: Create or update a chronic contraindication in Contraindications_Chronic.
+         Router uses record_id to decide path — empty string creates, populated
+         chr_... value updates. After all contraindication writes complete, call
+         Injury to Client Load (Webhook) once to sync to Clients sheet.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — receives flat JSON body
+Module 6: BasicRouter — branches on record_id
+          Route 1 "No Record ID":  length(record_id) = 0  → create path
+          Route 2 "Has Record ID": length(record_id) > 0  → update path
+
+CREATE PATH (Route 1):
+  Module 2: addRow — insert new row to Contraindications_Chronic (col A blank)
+  Module 3: SetVariable2 — generate record_id
+            Format: "chr_YYYYMMDDHHmmss_<client_id>"
+            Example: "chr_20260219134426_cli_001"
+  Module 4: updateRow — write generated record_id back to col A
+  Module 5: WebhookRespond — return logged: true + record_id
+
+UPDATE PATH (Route 2):
+  Module 8:  filterRows — find row where col A (record_id) = 1.record_id
+  Module 10: updateRow — update severity, notes (append), last_reviewed, status
+  Module 12: WebhookRespond — return Updated: true + record_id
+
+-----------------------------
+INPUT CONTRACT — CREATE (record_id: "")
+-----------------------------
+- record_id (string) REQUIRED — pass as "" to trigger create path
+- client_id (string) REQUIRED
+- condition (string) REQUIRED
+- severity (string) OPTIONAL — e.g. "mild", "moderate", "severe"
+- affected_system (string) OPTIONAL — e.g. "cardiovascular", "musculoskeletal"
+- contraindicated_movements (string) OPTIONAL
+- notes (string) OPTIONAL
+- date_added (string) OPTIONAL — format YYYY-MM-DD
+- last_reviewed (string) OPTIONAL — format YYYY-MM-DD
+- status (string) REQUIRED — use "active" for new conditions
+
+-----------------------------
+INPUT CONTRACT — UPDATE (record_id: "chr_...")
+-----------------------------
+- record_id (string) REQUIRED — must be exact chr_... value from create response
+- client_id (string) REQUIRED
+- severity (string) OPTIONAL — send "" to leave unchanged
+- notes (string) OPTIONAL — APPENDED to existing if existing notes present;
+                             send "" to leave existing notes untouched
+- last_reviewed (string) OPTIONAL — Make auto-sets to today; send "" is fine
+- status (string) OPTIONAL — e.g. "active", "resolved", "monitoring"
+
+Fields NOT updated by update path (permanent record fields):
+- condition, affected_system, contraindicated_movements, date_added
+
+-----------------------------
+COLUMN MAPPING (Contraindications_Chronic)
+-----------------------------
+Col A (0): record_id
+Col B (1): client_id
+Col C (2): condition
+Col D (3): severity
+Col E (4): affected_system
+Col F (5): contraindicated_movements
+Col G (6): notes
+Col H (7): date_added
+Col I (8): last_reviewed — auto-set to today on update path
+Col J (9): status
+
+-----------------------------
+NOTES APPEND FORMULA (update path module 10)
+-----------------------------
+{{if(length(trim(8.`6`)) > 0; 8.`6` + " \n " + 1.notes; 1.notes)}}
+If existing notes present: existing + newline + incoming.
+If no existing notes: incoming only.
+If incoming notes blank: trailing newline written — acceptable for a rarely-used scenario.
+
+-----------------------------
+OUTPUT CONTRACT
+-----------------------------
+Create response:
+{
+  "logged": true,
+  "record_id": "chr_<timestamp>_<client_id>",
+  "client_id": "<client_id>"
+}
+
+Update response:
+{
+  "Updated": true,
+  "record_id": "<record_id from matched row>",
+  "client_id": "<client_id>"
+}
+
+NOTE: "Updated" is capitalised in the update response — this is as-built in Make.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always pass record_id — use "" for new conditions, chr_... for updates
+- Never omit record_id from the payload — router will not fire correctly
+- Store the record_id from the create response if you may need to update
+  this condition later in the same session
+- Always call Injury to Client Load (Webhook) after ALL contraindication
+  writes are complete — not after each individual write
+- Never write chronic conditions directly to the Clients sheet via User Upsert
+- Update path only touches severity, notes, last_reviewed, status —
+  never attempt to update condition name, affected_system, or contraindicated_movements
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Create:
+{
+  "record_id": "",
+  "client_id": "cli_001",
+  "condition": "Hypertension (controlled)",
+  "severity": "mild",
+  "affected_system": "cardiovascular",
+  "contraindicated_movements": "Heavy Valsalva manoeuvre, extreme isometric holds",
+  "notes": "Managed with medication. Monitor HR and BP response. Avoid sustained breath-holding under load.",
+  "date_added": "2026-02-19",
+  "last_reviewed": "2026-02-19",
+  "status": "active"
+}
+
+Expected create response:
+{
+  "logged": true,
+  "record_id": "chr_20260219134426_cli_001",
+  "client_id": "cli_001"
+}
+
+Update:
+{
+  "record_id": "chr_20260219134426_cli_001",
+  "client_id": "cli_001",
+  "severity": "moderate",
+  "notes": "Cleared for higher intensity work following cardiology review.",
+  "last_reviewed": "2026-02-19",
+  "status": "active"
+}
+
+Expected update response:
+{
+  "Updated": true,
+  "record_id": "chr_20260219134426_cli_001",
+  "client_id": "cli_001"
+}
+============================================================

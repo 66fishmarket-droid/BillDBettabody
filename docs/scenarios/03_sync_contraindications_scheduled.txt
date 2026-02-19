@@ -1,0 +1,41 @@
+============================================================
+SCENARIO: Bill - Injury to Client Load (Scheduled)
+CANONICAL SOURCE: Make Scenario (cloned from webhook version, timed trigger)
+WEBHOOK PURPOSE:
+Overnight scheduled sync of active contraindications from Contraindications_Temp
+and Contraindications_Chronic into the Clients sheet for ALL clients.
+Runs automatically — Bill does not call this. It is a safety net to ensure
+the Clients sheet stays current even if the webhook version was not called.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+No webhook trigger — timed execution only.
+Module 1:  filterRows — Search Clients sheet, no filter (returns ALL client rows)
+           Acts as iterator — processes one client bundle at a time
+Module 2:  filterRows — Search Contraindications_Temp where:
+             client_id = current client row client_id
+             status = "active" (case-insensitive)
+Module 3:  TextAggregator — Aggregate active injuries (same logic as webhook version)
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → date_reported | type | description | expected_duration | notes
+Module 4:  filterRows — Search Contraindications_Chronic where:
+             client_id = current client row client_id
+             status = "active"
+Module 5:  TextAggregator — Aggregate active chronic conditions (same logic as webhook version)
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → condition | severity | affected_system | contraindicated_movements | notes
+Module 6:  updateRow — Update Clients sheet columns AE + AF for current client row
+
+NOTE: Module numbers will differ from the webhook version due to absence of
+webhook trigger module. Always verify module references match actual scenario
+when making changes.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Bill does NOT call this scenario — it is timer-triggered only
+- Bill calls the webhook version for immediate same-session updates
+- This scenario is a safety net, not the primary sync mechanism
+- No webhook URL exists for this scenario — it cannot be called via API
+============================================================
