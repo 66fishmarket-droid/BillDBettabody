@@ -56,6 +56,7 @@ class Config:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DOCS_DIR = os.path.join(BASE_DIR, '..', 'docs')
     BILL_INSTRUCTIONS_PATH = os.path.join(DOCS_DIR, 'GPT Instructions', 'Bill_Instructions_V2.txt')
+    BILL_CALCULATIONS_PATH = os.path.join(DOCS_DIR, 'GPT Instructions', 'Bill_Calculations_Reference.txt')
     SCENARIOS_DIR = os.path.join(DOCS_DIR, 'scenarios')
     SCENARIO_INDEX_PATH = os.path.join(DOCS_DIR, 'scenarios', 'scenario_index.txt')
 

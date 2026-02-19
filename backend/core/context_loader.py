@@ -156,16 +156,33 @@ def load_scenario_group(operation_type):
 def load_bill_core_instructions():
     """
     Load core Bill instructions (always loaded)
-    
+
     Includes:
     - Section 0: Priority order & core principles
     - Section 1: Operating modes, identity, safety
-    
+
     Returns:
         str: Core instruction content
     """
     filepath = Config.BILL_INSTRUCTIONS_PATH
     return load_section_from_file(filepath)
+
+
+def load_bill_calculations():
+    """
+    Load Bill's calculations reference (always loaded alongside core instructions).
+    Contains e1RM formulas, protein/calorie targets, VO2max, RPE/RIR tables, etc.
+
+    Returns:
+        str: Calculations reference content, or empty string if not found
+    """
+    filepath = Config.BILL_CALCULATIONS_PATH
+    content = load_section_from_file(filepath)
+    if content:
+        print(f"[Context Loader] Loaded calculations reference: ~{len(content)} chars")
+    else:
+        print(f"[Context Loader] WARNING: Calculations reference not found at {filepath}")
+    return content
 
 
 def load_bill_instructions(mode, client_state, operation_type='chat'):
@@ -204,6 +221,16 @@ def load_bill_instructions(mode, client_state, operation_type='chat'):
     core_instructions = load_bill_core_instructions()
     if core_instructions:
         instructions_parts.append(core_instructions)
+
+    # ALWAYS: Calculations reference (companion to V2 instructions)
+    calculations = load_bill_calculations()
+    if calculations:
+        instructions_parts.append("")
+        instructions_parts.append("=" * 60)
+        instructions_parts.append("CALCULATIONS REFERENCE")
+        instructions_parts.append("=" * 60)
+        instructions_parts.append("")
+        instructions_parts.append(calculations)
 
     # Mode/state/operation header
     instructions_parts.append("")
