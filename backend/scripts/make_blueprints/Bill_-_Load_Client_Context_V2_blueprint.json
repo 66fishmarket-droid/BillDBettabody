@@ -1,12 +1,12 @@
 {
-    "name": "Bill - Load Client Context",
+    "name": "Bill - Load Client Context V2",
     "flow": [
         {
             "id": 1,
             "module": "gateway:CustomWebHook",
             "version": 1,
             "parameters": {
-                "hook": 3687214,
+                "hook": 3851730,
                 "maxResults": 1
             },
             "mapper": {},
@@ -22,7 +22,7 @@
                             "data": {
                                 "editable": "true"
                             },
-                            "label": "Bill Get Client Context"
+                            "label": "Bill - Client ID Receiver V2"
                         }
                     }
                 },
@@ -809,12 +809,10 @@
                 {
                     "flow": [
                         {
-                            "id": 3,
-                            "module": "google-sheets:filterRows",
-                            "version": 2,
-                            "parameters": {
-                                "__IMTCONN__": 6600568
-                            },
+                            "id": 30,
+                            "module": "util:SetVariables",
+                            "version": 1,
+                            "parameters": {},
                             "filter": {
                                 "name": "Client Found",
                                 "conditions": [
@@ -826,6 +824,111 @@
                                         }
                                     ]
                                 ]
+                            },
+                            "mapper": {
+                                "scope": "roundtrip",
+                                "variables": [
+                                    {
+                                        "name": "date_two_weeks_ago",
+                                        "value": "{{formatDate(addDays(now; -14); \"YYYY-MM-DD\")}}"
+                                    },
+                                    {
+                                        "name": "date_one_week_ahead",
+                                        "value": "{{formatDate(addDays(now; 7); \"YYYY-MM-DD\")}}"
+                                    },
+                                    {
+                                        "name": "date_one_week_ago",
+                                        "value": "{{formatDate(addDays(now; -7); \"YYYY-MM-DD\")}}"
+                                    },
+                                    {
+                                        "name": "date_today",
+                                        "value": "{{formatDate(now; \"YYYY-MM-DD\")}}"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 0,
+                                    "name": "B-Client | Set Date Vars"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        },
+                                        "variables": {
+                                            "items": [
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            ]
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "variables",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Variable name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "any",
+                                                "label": "Variable value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Variables"
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "date_two_weeks_ago",
+                                        "type": "any",
+                                        "label": "date_two_weeks_ago"
+                                    },
+                                    {
+                                        "name": "date_one_week_ahead",
+                                        "type": "any",
+                                        "label": "date_one_week_ahead"
+                                    },
+                                    {
+                                        "name": "date_one_week_ago",
+                                        "type": "any",
+                                        "label": "date_one_week_ago"
+                                    },
+                                    {
+                                        "name": "date_today",
+                                        "type": "any",
+                                        "label": "date_today"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 3,
+                            "module": "google-sheets:filterRows",
+                            "version": 2,
+                            "parameters": {
+                                "__IMTCONN__": 6600568
                             },
                             "mapper": {
                                 "from": "drive",
@@ -854,7 +957,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 900,
+                                    "x": 1200,
                                     "y": 0,
                                     "name": "B-Client | Get Active Block"
                                 },
@@ -1604,7 +1707,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 1200,
+                                    "x": 1500,
                                     "y": 0,
                                     "name": "B-Client | Get Completed Blocks"
                                 },
@@ -2350,7 +2453,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 1500,
+                                    "x": 1800,
                                     "y": 0,
                                     "name": "B-Client | Completed Blocks Array"
                                 },
@@ -2401,7 +2504,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 1800,
+                                    "x": 2100,
                                     "y": 0,
                                     "name": "B-Client | Get Active Week"
                                 },
@@ -3151,7 +3254,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 2100,
+                                    "x": 2400,
                                     "y": 0,
                                     "name": "B-Client | Get Upcoming Weeks"
                                 },
@@ -3895,7 +3998,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 2400,
+                                    "x": 2700,
                                     "y": 0,
                                     "name": "B-Client | Upcoming Week Aggregator"
                                 },
@@ -3945,7 +4048,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 2700,
+                                    "x": 3000,
                                     "y": 0,
                                     "name": "B-Client | Get Completed Weeks"
                                 },
@@ -4689,7 +4792,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 3000,
+                                    "x": 3300,
                                     "y": 0,
                                     "name": "B-Client | Completed Week Aggregator"
                                 },
@@ -4744,7 +4847,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 3300,
+                                    "x": 3600,
                                     "y": 0,
                                     "name": "B-Client | Get Active Sessions"
                                 },
@@ -5051,12 +5154,12 @@
                                     {
                                         "name": "22",
                                         "type": "text",
-                                        "label": "(W)"
+                                        "label": "google_form_url (W)"
                                     },
                                     {
                                         "name": "23",
                                         "type": "text",
-                                        "label": "(X)"
+                                        "label": "session_summary (X)"
                                     },
                                     {
                                         "name": "24",
@@ -5491,12 +5594,13 @@
                                 "19": "{{11.`19`}}",
                                 "20": "{{11.`20`}}",
                                 "21": "{{11.`21`}}",
+                                "23": "{{11.`23`}}",
                                 "__IMTINDEX__": "{{11.`__IMTINDEX__`}}",
                                 "__ROW_NUMBER__": "{{11.`__ROW_NUMBER__`}}"
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 3600,
+                                    "x": 3900,
                                     "y": 0,
                                     "name": "B-Client | Active Sessions Array"
                                 },
@@ -5536,8 +5640,10 @@
                                         }
                                     ]
                                 ],
+                                "orderBy": "O",
                                 "sheetId": "Plans_Sessions",
-                                "sortOrder": "asc",
+                                "fieldType": "date",
+                                "sortOrder": "desc",
                                 "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
                                 "tableFirstRow": "A1:CZ1",
                                 "includesHeaders": true,
@@ -5546,7 +5652,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 3900,
+                                    "x": 4200,
                                     "y": 0,
                                     "name": "B-Client | Get Completed Sessions"
                                 },
@@ -5557,15 +5663,19 @@
                                         },
                                         "orderBy": {
                                             "mode": "chose",
-                                            "label": "Empty"
+                                            "label": "session_date (O)"
                                         },
                                         "sheetId": {
                                             "mode": "chose",
                                             "label": "Plans_Sessions"
                                         },
+                                        "fieldType": {
+                                            "mode": "chose",
+                                            "label": "Date"
+                                        },
                                         "sortOrder": {
                                             "mode": "chose",
-                                            "label": "Ascending"
+                                            "label": "Descending"
                                         },
                                         "spreadsheetId": {
                                             "mode": "chose",
@@ -5713,6 +5823,18 @@
                                                 "desc"
                                             ]
                                         }
+                                    },
+                                    {
+                                        "name": "fieldType",
+                                        "type": "select",
+                                        "label": "Field Type",
+                                        "validate": {
+                                            "enum": [
+                                                "string",
+                                                "number",
+                                                "date"
+                                            ]
+                                        }
                                     }
                                 ],
                                 "interface": [
@@ -5854,17 +5976,17 @@
                                     {
                                         "name": "22",
                                         "type": "text",
-                                        "label": "(W)"
+                                        "label": "google_form_url (W)"
                                     },
                                     {
                                         "name": "23",
                                         "type": "text",
-                                        "label": "(X)"
+                                        "label": "session_summary (X)"
                                     },
                                     {
                                         "name": "24",
                                         "type": "text",
-                                        "label": "(Y)"
+                                        "label": "session_notes (Y)"
                                     },
                                     {
                                         "name": "25",
@@ -6294,12 +6416,13 @@
                                 "19": "{{13.`19`}}",
                                 "20": "{{13.`20`}}",
                                 "21": "{{13.`21`}}",
+                                "23": "{{13.`23`}}",
                                 "__IMTINDEX__": "{{13.`__IMTINDEX__`}}",
                                 "__ROW_NUMBER__": "{{13.`__ROW_NUMBER__`}}"
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 4200,
+                                    "x": 4500,
                                     "y": 0,
                                     "name": "B-Client | Completed Sessions Array"
                                 },
@@ -6313,6 +6436,63 @@
                                         }
                                     }
                                 }
+                            }
+                        },
+                        {
+                            "id": 40,
+                            "module": "util:SetVariable2",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "name": "most_recent_session_id",
+                                "scope": "roundtrip",
+                                "value": "{{14.array[1].`6`}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 4800,
+                                    "y": 0,
+                                    "name": "B-Client | Most recent Session"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "scope": {
+                                            "label": "One cycle"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "name",
+                                        "type": "text",
+                                        "label": "Variable name",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "scope",
+                                        "type": "select",
+                                        "label": "Variable lifetime",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "roundtrip",
+                                                "execution"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "value",
+                                        "type": "any",
+                                        "label": "Variable value"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "most_recent_session_id",
+                                        "type": "any",
+                                        "label": "most_recent_session_id"
+                                    }
+                                ]
                             }
                         },
                         {
@@ -6335,7 +6515,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 4500,
+                                    "x": 5100,
                                     "y": 0,
                                     "name": "B-Client | Nutri+Supp Vars"
                                 },
@@ -6431,7 +6611,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 4800,
+                                    "x": 5400,
                                     "y": 0,
                                     "name": "B-Client | Get Active Steps"
                                 },
@@ -7182,7 +7362,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 5100,
+                                    "x": 5700,
                                     "y": 0,
                                     "name": "B-Client | Aggregate Active Steps"
                                 },
@@ -7219,6 +7399,11 @@
                                             "a": "T",
                                             "b": "completed",
                                             "o": "text:equal:ci"
+                                        },
+                                        {
+                                            "a": "B",
+                                            "b": "{{40.most_recent_session_id}}",
+                                            "o": "text:equal"
                                         }
                                     ]
                                 ],
@@ -7232,7 +7417,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 5400,
+                                    "x": 6000,
                                     "y": 0,
                                     "name": "B-Client | Get Completed Steps"
                                 },
@@ -7242,8 +7427,7 @@
                                             "label": "Select from My Drive"
                                         },
                                         "orderBy": {
-                                            "mode": "chose",
-                                            "label": "Empty"
+                                            "mode": "chose"
                                         },
                                         "sheetId": {
                                             "mode": "chose",
@@ -7530,217 +7714,217 @@
                                     {
                                         "name": "20",
                                         "type": "text",
-                                        "label": "(U)"
+                                        "label": "pattern_type (U)"
                                     },
                                     {
                                         "name": "21",
                                         "type": "text",
-                                        "label": "(V)"
+                                        "label": "load_start_kg (V)"
                                     },
                                     {
                                         "name": "22",
                                         "type": "text",
-                                        "label": "(W)"
+                                        "label": "load_increment_kg (W)"
                                     },
                                     {
                                         "name": "23",
                                         "type": "text",
-                                        "label": "(X)"
+                                        "label": "load_peak_kg (X)"
                                     },
                                     {
                                         "name": "24",
                                         "type": "text",
-                                        "label": "(Y)"
+                                        "label": "reps_pattern (Y)"
                                     },
                                     {
                                         "name": "25",
                                         "type": "text",
-                                        "label": "(Z)"
+                                        "label": "rpe_pattern (Z)"
                                     },
                                     {
                                         "name": "26",
                                         "type": "text",
-                                        "label": "(AA)"
+                                        "label": "tempo_pattern (AA)"
                                     },
                                     {
                                         "name": "27",
                                         "type": "text",
-                                        "label": "(AB)"
+                                        "label": "tempo_per_set_pattern (AB)"
                                     },
                                     {
                                         "name": "28",
                                         "type": "text",
-                                        "label": "(AC)"
+                                        "label": "pattern_notes (AC)"
                                     },
                                     {
                                         "name": "29",
                                         "type": "text",
-                                        "label": "(AD)"
+                                        "label": "interval_count (AD)"
                                     },
                                     {
                                         "name": "30",
                                         "type": "text",
-                                        "label": "(AE)"
+                                        "label": "interval_work_sec (AE)"
                                     },
                                     {
                                         "name": "31",
                                         "type": "text",
-                                        "label": "(AF)"
+                                        "label": "interval_rest_sec (AF)"
                                     },
                                     {
                                         "name": "32",
                                         "type": "text",
-                                        "label": "(AG)"
+                                        "label": "intensity_start (AG)"
                                     },
                                     {
                                         "name": "33",
                                         "type": "text",
-                                        "label": "(AH)"
+                                        "label": "intensity_end (AH)"
                                     },
                                     {
                                         "name": "34",
                                         "type": "text",
-                                        "label": "(AI)"
+                                        "label": "actual_set1_reps (AI)"
                                     },
                                     {
                                         "name": "35",
                                         "type": "text",
-                                        "label": "(AJ)"
+                                        "label": "actual_set2_reps (AJ)"
                                     },
                                     {
                                         "name": "36",
                                         "type": "text",
-                                        "label": "(AK)"
+                                        "label": "actual_set3_reps (AK)"
                                     },
                                     {
                                         "name": "37",
                                         "type": "text",
-                                        "label": "(AL)"
+                                        "label": "actual_set4_reps (AL)"
                                     },
                                     {
                                         "name": "38",
                                         "type": "text",
-                                        "label": "(AM)"
+                                        "label": "actual_set5_reps (AM)"
                                     },
                                     {
                                         "name": "39",
                                         "type": "text",
-                                        "label": "(AN)"
+                                        "label": "actual_set1_value (AN)"
                                     },
                                     {
                                         "name": "40",
                                         "type": "text",
-                                        "label": "(AO)"
+                                        "label": "actual_set2_value (AO)"
                                     },
                                     {
                                         "name": "41",
                                         "type": "text",
-                                        "label": "(AP)"
+                                        "label": "actual_set3_value (AP)"
                                     },
                                     {
                                         "name": "42",
                                         "type": "text",
-                                        "label": "(AQ)"
+                                        "label": "actual_set4_value (AQ)"
                                     },
                                     {
                                         "name": "43",
                                         "type": "text",
-                                        "label": "(AR)"
+                                        "label": "actual_set5_value (AR)"
                                     },
                                     {
                                         "name": "44",
                                         "type": "text",
-                                        "label": "(AS)"
+                                        "label": "actual_set1_metric (AS)"
                                     },
                                     {
                                         "name": "45",
                                         "type": "text",
-                                        "label": "(AT)"
+                                        "label": "actual_set2_metric (AT)"
                                     },
                                     {
                                         "name": "46",
                                         "type": "text",
-                                        "label": "(AU)"
+                                        "label": "actual_set3_metric (AU)"
                                     },
                                     {
                                         "name": "47",
                                         "type": "text",
-                                        "label": "(AV)"
+                                        "label": "actual_set4_metric (AV)"
                                     },
                                     {
                                         "name": "48",
                                         "type": "text",
-                                        "label": "(AW)"
+                                        "label": "actual_set5_metric (AW)"
                                     },
                                     {
                                         "name": "49",
                                         "type": "text",
-                                        "label": "(AX)"
+                                        "label": "actual_set1_rpe (AX)"
                                     },
                                     {
                                         "name": "50",
                                         "type": "text",
-                                        "label": "(AY)"
+                                        "label": "actual_set2_rpe (AY)"
                                     },
                                     {
                                         "name": "51",
                                         "type": "text",
-                                        "label": "(AZ)"
+                                        "label": "actual_set3_rpe (AZ)"
                                     },
                                     {
                                         "name": "52",
                                         "type": "text",
-                                        "label": "(BA)"
+                                        "label": "actual_set4_rpe (BA)"
                                     },
                                     {
                                         "name": "53",
                                         "type": "text",
-                                        "label": "(BB)"
+                                        "label": "actual_set5_rpe (BB)"
                                     },
                                     {
                                         "name": "54",
                                         "type": "text",
-                                        "label": "(BC)"
+                                        "label": "actual_top_set_value (BC)"
                                     },
                                     {
                                         "name": "55",
                                         "type": "text",
-                                        "label": "(BD)"
+                                        "label": "actual_top_set_metric (BD)"
                                     },
                                     {
                                         "name": "56",
                                         "type": "text",
-                                        "label": "(BE)"
+                                        "label": "actual_top_set_reps (BE)"
                                     },
                                     {
                                         "name": "57",
                                         "type": "text",
-                                        "label": "(BF)"
+                                        "label": "actual_top_set_rpe (BF)"
                                     },
                                     {
                                         "name": "58",
                                         "type": "text",
-                                        "label": "(BG)"
+                                        "label": "metric_key (BG)"
                                     },
                                     {
                                         "name": "59",
                                         "type": "text",
-                                        "label": "(BH)"
+                                        "label": "metric_context_key (BH)"
                                     },
                                     {
                                         "name": "60",
                                         "type": "text",
-                                        "label": "(BI)"
+                                        "label": "better_value (BI)"
                                     },
                                     {
                                         "name": "61",
                                         "type": "text",
-                                        "label": "(BJ)"
+                                        "label": "completed_timestamp (BJ)"
                                     },
                                     {
                                         "name": "62",
                                         "type": "text",
-                                        "label": "(BK)"
+                                        "label": "bests_processed_at (BK)"
                                     },
                                     {
                                         "name": "63",
@@ -7983,7 +8167,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 5700,
+                                    "x": 6300,
                                     "y": 0,
                                     "name": "B-Client | Aggregate Completed Steps"
                                 },
@@ -8044,7 +8228,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 6000,
+                                    "x": 6600,
                                     "y": 0,
                                     "name": "B-Client | Session Counts"
                                 },
@@ -8155,7 +8339,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 6300,
+                                    "x": 6900,
                                     "y": 0,
                                     "name": "B-Client | Total Blocks"
                                 },
@@ -8212,7 +8396,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 6600,
+                                    "x": 7200,
                                     "y": 0,
                                     "name": "B-Client | Engagement State"
                                 },
@@ -8258,803 +8442,6 @@
                             }
                         },
                         {
-                            "id": 28,
-                            "module": "google-sheets:filterRows",
-                            "version": 2,
-                            "parameters": {
-                                "__IMTCONN__": 6600568
-                            },
-                            "mapper": {
-                                "from": "drive",
-                                "filter": [
-                                    [
-                                        {
-                                            "a": "A",
-                                            "b": "{{1.client_id}}",
-                                            "o": "text:equal:ci"
-                                        }
-                                    ]
-                                ],
-                                "sheetId": "Exercise_Bests",
-                                "sortOrder": "asc",
-                                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
-                                "tableFirstRow": "A1:CZ1",
-                                "includesHeaders": true,
-                                "valueRenderOption": "FORMATTED_VALUE",
-                                "dateTimeRenderOption": "FORMATTED_STRING"
-                            },
-                            "metadata": {
-                                "designer": {
-                                    "x": 6900,
-                                    "y": 0,
-                                    "name": "B-Client | Get Exercise Bests"
-                                },
-                                "restore": {
-                                    "expect": {
-                                        "from": {
-                                            "label": "Select from My Drive"
-                                        },
-                                        "orderBy": {
-                                            "mode": "chose",
-                                            "label": "Empty"
-                                        },
-                                        "sheetId": {
-                                            "mode": "chose",
-                                            "label": "Exercise_Bests"
-                                        },
-                                        "sortOrder": {
-                                            "mode": "chose",
-                                            "label": "Ascending"
-                                        },
-                                        "spreadsheetId": {
-                                            "mode": "chose",
-                                            "label": "Bill D'Bettabody System Core"
-                                        },
-                                        "tableFirstRow": {
-                                            "label": "A-CZ"
-                                        },
-                                        "includesHeaders": {
-                                            "mode": "chose",
-                                            "label": "Yes"
-                                        },
-                                        "valueRenderOption": {
-                                            "mode": "chose",
-                                            "label": "Formatted value"
-                                        },
-                                        "dateTimeRenderOption": {
-                                            "mode": "chose",
-                                            "label": "Formatted string"
-                                        }
-                                    },
-                                    "parameters": {
-                                        "__IMTCONN__": {
-                                            "data": {
-                                                "scoped": "true",
-                                                "connection": "google"
-                                            },
-                                            "label": "66Fish (66fishmarket@gmail.com)"
-                                        }
-                                    }
-                                },
-                                "parameters": [
-                                    {
-                                        "name": "__IMTCONN__",
-                                        "type": "account:google",
-                                        "label": "Connection",
-                                        "required": true
-                                    }
-                                ],
-                                "expect": [
-                                    {
-                                        "name": "from",
-                                        "type": "select",
-                                        "label": "Search Method",
-                                        "required": true,
-                                        "validate": {
-                                            "enum": [
-                                                "drive",
-                                                "share"
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "valueRenderOption",
-                                        "type": "select",
-                                        "label": "Value render option",
-                                        "validate": {
-                                            "enum": [
-                                                "FORMATTED_VALUE",
-                                                "UNFORMATTED_VALUE",
-                                                "FORMULA"
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "dateTimeRenderOption",
-                                        "type": "select",
-                                        "label": "Date and time render option",
-                                        "validate": {
-                                            "enum": [
-                                                "SERIAL_NUMBER",
-                                                "FORMATTED_STRING"
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "limit",
-                                        "type": "uinteger",
-                                        "label": "Limit"
-                                    },
-                                    {
-                                        "name": "spreadsheetId",
-                                        "type": "select",
-                                        "label": "Spreadsheet ID",
-                                        "required": true
-                                    },
-                                    {
-                                        "name": "sheetId",
-                                        "type": "select",
-                                        "label": "Sheet Name",
-                                        "required": true
-                                    },
-                                    {
-                                        "name": "includesHeaders",
-                                        "type": "select",
-                                        "label": "Table contains headers",
-                                        "required": true,
-                                        "validate": {
-                                            "enum": [
-                                                true,
-                                                false
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "tableFirstRow",
-                                        "type": "select",
-                                        "label": "Column range",
-                                        "required": true,
-                                        "validate": {
-                                            "enum": [
-                                                "A1:Z1",
-                                                "A1:BZ1",
-                                                "A1:CZ1",
-                                                "A1:DZ1",
-                                                "A1:MZ1",
-                                                "A1:ZZ1",
-                                                "A1:AZZ1",
-                                                "A1:BZZ1",
-                                                "A1:CZZ1",
-                                                "A1:DZZ1",
-                                                "A1:MZZ1",
-                                                "A1:ZZZ1"
-                                            ]
-                                        }
-                                    },
-                                    {
-                                        "name": "filter",
-                                        "type": "filter",
-                                        "label": "Filter",
-                                        "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
-                                    },
-                                    {
-                                        "name": "orderBy",
-                                        "type": "select",
-                                        "label": "Order by"
-                                    },
-                                    {
-                                        "name": "sortOrder",
-                                        "type": "select",
-                                        "label": "Sort order",
-                                        "validate": {
-                                            "enum": [
-                                                "asc",
-                                                "desc"
-                                            ]
-                                        }
-                                    }
-                                ],
-                                "interface": [
-                                    {
-                                        "name": "__IMTLENGTH__",
-                                        "type": "uinteger",
-                                        "label": "Total number of bundles"
-                                    },
-                                    {
-                                        "name": "__IMTINDEX__",
-                                        "type": "uinteger",
-                                        "label": "Bundle order position"
-                                    },
-                                    {
-                                        "name": "__ROW_NUMBER__",
-                                        "type": "number",
-                                        "label": "Row number"
-                                    },
-                                    {
-                                        "name": "__SPREADSHEET_ID__",
-                                        "type": "text",
-                                        "label": "Spreadsheet ID"
-                                    },
-                                    {
-                                        "name": "__SHEET__",
-                                        "type": "text",
-                                        "label": "Sheet"
-                                    },
-                                    {
-                                        "name": "0",
-                                        "type": "text",
-                                        "label": "client_id (A)"
-                                    },
-                                    {
-                                        "name": "1",
-                                        "type": "text",
-                                        "label": "exercise_name (B)"
-                                    },
-                                    {
-                                        "name": "2",
-                                        "type": "text",
-                                        "label": "metric_key (C)"
-                                    },
-                                    {
-                                        "name": "3",
-                                        "type": "text",
-                                        "label": "metric_family (D)"
-                                    },
-                                    {
-                                        "name": "4",
-                                        "type": "text",
-                                        "label": "better_direction (E)"
-                                    },
-                                    {
-                                        "name": "5",
-                                        "type": "text",
-                                        "label": "context_key (F)"
-                                    },
-                                    {
-                                        "name": "6",
-                                        "type": "text",
-                                        "label": "current_value (G)"
-                                    },
-                                    {
-                                        "name": "7",
-                                        "type": "text",
-                                        "label": "current_unit (H)"
-                                    },
-                                    {
-                                        "name": "8",
-                                        "type": "text",
-                                        "label": "current_timestamp (I)"
-                                    },
-                                    {
-                                        "name": "9",
-                                        "type": "text",
-                                        "label": "current_evidence_type (J)"
-                                    },
-                                    {
-                                        "name": "10",
-                                        "type": "text",
-                                        "label": "current_evidence_ref (K)"
-                                    },
-                                    {
-                                        "name": "11",
-                                        "type": "text",
-                                        "label": "current_confidence (L)"
-                                    },
-                                    {
-                                        "name": "12",
-                                        "type": "text",
-                                        "label": "first_value (M)"
-                                    },
-                                    {
-                                        "name": "13",
-                                        "type": "text",
-                                        "label": "first_unit (N)"
-                                    },
-                                    {
-                                        "name": "14",
-                                        "type": "text",
-                                        "label": "first_timestamp (O)"
-                                    },
-                                    {
-                                        "name": "15",
-                                        "type": "text",
-                                        "label": "first_evidence_type (P)"
-                                    },
-                                    {
-                                        "name": "16",
-                                        "type": "text",
-                                        "label": "first_evidence_ref (Q)"
-                                    },
-                                    {
-                                        "name": "17",
-                                        "type": "text",
-                                        "label": "strength_load_kg (R)"
-                                    },
-                                    {
-                                        "name": "18",
-                                        "type": "text",
-                                        "label": "strength_reps (S)"
-                                    },
-                                    {
-                                        "name": "19",
-                                        "type": "text",
-                                        "label": "strength_e1rm_kg (T)"
-                                    },
-                                    {
-                                        "name": "20",
-                                        "type": "text",
-                                        "label": "distance_m (U)"
-                                    },
-                                    {
-                                        "name": "21",
-                                        "type": "text",
-                                        "label": "duration_s (V)"
-                                    },
-                                    {
-                                        "name": "22",
-                                        "type": "text",
-                                        "label": "avg_power_w (W)"
-                                    },
-                                    {
-                                        "name": "23",
-                                        "type": "text",
-                                        "label": "avg_hr_bpm (X)"
-                                    },
-                                    {
-                                        "name": "24",
-                                        "type": "text",
-                                        "label": "notes (Y)"
-                                    },
-                                    {
-                                        "name": "25",
-                                        "type": "text",
-                                        "label": "(Z)"
-                                    },
-                                    {
-                                        "name": "26",
-                                        "type": "text",
-                                        "label": "(AA)"
-                                    },
-                                    {
-                                        "name": "27",
-                                        "type": "text",
-                                        "label": "(AB)"
-                                    },
-                                    {
-                                        "name": "28",
-                                        "type": "text",
-                                        "label": "(AC)"
-                                    },
-                                    {
-                                        "name": "29",
-                                        "type": "text",
-                                        "label": "(AD)"
-                                    },
-                                    {
-                                        "name": "30",
-                                        "type": "text",
-                                        "label": "(AE)"
-                                    },
-                                    {
-                                        "name": "31",
-                                        "type": "text",
-                                        "label": "(AF)"
-                                    },
-                                    {
-                                        "name": "32",
-                                        "type": "text",
-                                        "label": "(AG)"
-                                    },
-                                    {
-                                        "name": "33",
-                                        "type": "text",
-                                        "label": "(AH)"
-                                    },
-                                    {
-                                        "name": "34",
-                                        "type": "text",
-                                        "label": "(AI)"
-                                    },
-                                    {
-                                        "name": "35",
-                                        "type": "text",
-                                        "label": "(AJ)"
-                                    },
-                                    {
-                                        "name": "36",
-                                        "type": "text",
-                                        "label": "(AK)"
-                                    },
-                                    {
-                                        "name": "37",
-                                        "type": "text",
-                                        "label": "(AL)"
-                                    },
-                                    {
-                                        "name": "38",
-                                        "type": "text",
-                                        "label": "(AM)"
-                                    },
-                                    {
-                                        "name": "39",
-                                        "type": "text",
-                                        "label": "(AN)"
-                                    },
-                                    {
-                                        "name": "40",
-                                        "type": "text",
-                                        "label": "(AO)"
-                                    },
-                                    {
-                                        "name": "41",
-                                        "type": "text",
-                                        "label": "(AP)"
-                                    },
-                                    {
-                                        "name": "42",
-                                        "type": "text",
-                                        "label": "(AQ)"
-                                    },
-                                    {
-                                        "name": "43",
-                                        "type": "text",
-                                        "label": "(AR)"
-                                    },
-                                    {
-                                        "name": "44",
-                                        "type": "text",
-                                        "label": "(AS)"
-                                    },
-                                    {
-                                        "name": "45",
-                                        "type": "text",
-                                        "label": "(AT)"
-                                    },
-                                    {
-                                        "name": "46",
-                                        "type": "text",
-                                        "label": "(AU)"
-                                    },
-                                    {
-                                        "name": "47",
-                                        "type": "text",
-                                        "label": "(AV)"
-                                    },
-                                    {
-                                        "name": "48",
-                                        "type": "text",
-                                        "label": "(AW)"
-                                    },
-                                    {
-                                        "name": "49",
-                                        "type": "text",
-                                        "label": "(AX)"
-                                    },
-                                    {
-                                        "name": "50",
-                                        "type": "text",
-                                        "label": "(AY)"
-                                    },
-                                    {
-                                        "name": "51",
-                                        "type": "text",
-                                        "label": "(AZ)"
-                                    },
-                                    {
-                                        "name": "52",
-                                        "type": "text",
-                                        "label": "(BA)"
-                                    },
-                                    {
-                                        "name": "53",
-                                        "type": "text",
-                                        "label": "(BB)"
-                                    },
-                                    {
-                                        "name": "54",
-                                        "type": "text",
-                                        "label": "(BC)"
-                                    },
-                                    {
-                                        "name": "55",
-                                        "type": "text",
-                                        "label": "(BD)"
-                                    },
-                                    {
-                                        "name": "56",
-                                        "type": "text",
-                                        "label": "(BE)"
-                                    },
-                                    {
-                                        "name": "57",
-                                        "type": "text",
-                                        "label": "(BF)"
-                                    },
-                                    {
-                                        "name": "58",
-                                        "type": "text",
-                                        "label": "(BG)"
-                                    },
-                                    {
-                                        "name": "59",
-                                        "type": "text",
-                                        "label": "(BH)"
-                                    },
-                                    {
-                                        "name": "60",
-                                        "type": "text",
-                                        "label": "(BI)"
-                                    },
-                                    {
-                                        "name": "61",
-                                        "type": "text",
-                                        "label": "(BJ)"
-                                    },
-                                    {
-                                        "name": "62",
-                                        "type": "text",
-                                        "label": "(BK)"
-                                    },
-                                    {
-                                        "name": "63",
-                                        "type": "text",
-                                        "label": "(BL)"
-                                    },
-                                    {
-                                        "name": "64",
-                                        "type": "text",
-                                        "label": "(BM)"
-                                    },
-                                    {
-                                        "name": "65",
-                                        "type": "text",
-                                        "label": "(BN)"
-                                    },
-                                    {
-                                        "name": "66",
-                                        "type": "text",
-                                        "label": "(BO)"
-                                    },
-                                    {
-                                        "name": "67",
-                                        "type": "text",
-                                        "label": "(BP)"
-                                    },
-                                    {
-                                        "name": "68",
-                                        "type": "text",
-                                        "label": "(BQ)"
-                                    },
-                                    {
-                                        "name": "69",
-                                        "type": "text",
-                                        "label": "(BR)"
-                                    },
-                                    {
-                                        "name": "70",
-                                        "type": "text",
-                                        "label": "(BS)"
-                                    },
-                                    {
-                                        "name": "71",
-                                        "type": "text",
-                                        "label": "(BT)"
-                                    },
-                                    {
-                                        "name": "72",
-                                        "type": "text",
-                                        "label": "(BU)"
-                                    },
-                                    {
-                                        "name": "73",
-                                        "type": "text",
-                                        "label": "(BV)"
-                                    },
-                                    {
-                                        "name": "74",
-                                        "type": "text",
-                                        "label": "(BW)"
-                                    },
-                                    {
-                                        "name": "75",
-                                        "type": "text",
-                                        "label": "(BX)"
-                                    },
-                                    {
-                                        "name": "76",
-                                        "type": "text",
-                                        "label": "(BY)"
-                                    },
-                                    {
-                                        "name": "77",
-                                        "type": "text",
-                                        "label": "(BZ)"
-                                    },
-                                    {
-                                        "name": "78",
-                                        "type": "text",
-                                        "label": "(CA)"
-                                    },
-                                    {
-                                        "name": "79",
-                                        "type": "text",
-                                        "label": "(CB)"
-                                    },
-                                    {
-                                        "name": "80",
-                                        "type": "text",
-                                        "label": "(CC)"
-                                    },
-                                    {
-                                        "name": "81",
-                                        "type": "text",
-                                        "label": "(CD)"
-                                    },
-                                    {
-                                        "name": "82",
-                                        "type": "text",
-                                        "label": "(CE)"
-                                    },
-                                    {
-                                        "name": "83",
-                                        "type": "text",
-                                        "label": "(CF)"
-                                    },
-                                    {
-                                        "name": "84",
-                                        "type": "text",
-                                        "label": "(CG)"
-                                    },
-                                    {
-                                        "name": "85",
-                                        "type": "text",
-                                        "label": "(CH)"
-                                    },
-                                    {
-                                        "name": "86",
-                                        "type": "text",
-                                        "label": "(CI)"
-                                    },
-                                    {
-                                        "name": "87",
-                                        "type": "text",
-                                        "label": "(CJ)"
-                                    },
-                                    {
-                                        "name": "88",
-                                        "type": "text",
-                                        "label": "(CK)"
-                                    },
-                                    {
-                                        "name": "89",
-                                        "type": "text",
-                                        "label": "(CL)"
-                                    },
-                                    {
-                                        "name": "90",
-                                        "type": "text",
-                                        "label": "(CM)"
-                                    },
-                                    {
-                                        "name": "91",
-                                        "type": "text",
-                                        "label": "(CN)"
-                                    },
-                                    {
-                                        "name": "92",
-                                        "type": "text",
-                                        "label": "(CO)"
-                                    },
-                                    {
-                                        "name": "93",
-                                        "type": "text",
-                                        "label": "(CP)"
-                                    },
-                                    {
-                                        "name": "94",
-                                        "type": "text",
-                                        "label": "(CQ)"
-                                    },
-                                    {
-                                        "name": "95",
-                                        "type": "text",
-                                        "label": "(CR)"
-                                    },
-                                    {
-                                        "name": "96",
-                                        "type": "text",
-                                        "label": "(CS)"
-                                    },
-                                    {
-                                        "name": "97",
-                                        "type": "text",
-                                        "label": "(CT)"
-                                    },
-                                    {
-                                        "name": "98",
-                                        "type": "text",
-                                        "label": "(CU)"
-                                    },
-                                    {
-                                        "name": "99",
-                                        "type": "text",
-                                        "label": "(CV)"
-                                    },
-                                    {
-                                        "name": "100",
-                                        "type": "text",
-                                        "label": "(CW)"
-                                    },
-                                    {
-                                        "name": "101",
-                                        "type": "text",
-                                        "label": "(CX)"
-                                    },
-                                    {
-                                        "name": "102",
-                                        "type": "text",
-                                        "label": "(CY)"
-                                    },
-                                    {
-                                        "name": "103",
-                                        "type": "text",
-                                        "label": "(CZ)"
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "id": 29,
-                            "module": "builtin:BasicAggregator",
-                            "version": 1,
-                            "parameters": {
-                                "feeder": 28
-                            },
-                            "mapper": {
-                                "1": "{{28.`1`}}",
-                                "2": "{{28.`2`}}",
-                                "3": "{{28.`3`}}",
-                                "4": "{{28.`4`}}",
-                                "5": "{{28.`5`}}",
-                                "6": "{{28.`6`}}",
-                                "7": "{{28.`7`}}",
-                                "8": "{{28.`8`}}",
-                                "9": "{{28.`9`}}",
-                                "10": "{{28.`10`}}",
-                                "11": "{{28.`11`}}",
-                                "12": "{{28.`12`}}",
-                                "13": "{{28.`13`}}",
-                                "14": "{{28.`14`}}",
-                                "15": "{{28.`15`}}",
-                                "16": "{{28.`16`}}",
-                                "17": "{{28.`17`}}",
-                                "18": "{{28.`18`}}",
-                                "19": "{{28.`19`}}",
-                                "20": "{{28.`20`}}",
-                                "21": "{{28.`21`}}",
-                                "22": "{{28.`22`}}",
-                                "23": "{{28.`23`}}",
-                                "24": "{{28.`24`}}"
-                            },
-                            "metadata": {
-                                "designer": {
-                                    "x": 7200,
-                                    "y": 0,
-                                    "name": "B-Client | Exercise Bests Array"
-                                },
-                                "restore": {
-                                    "extra": {
-                                        "feeder": {
-                                            "label": "B-Client | Get Exercise Bests - Search Rows [28]"
-                                        },
-                                        "target": {
-                                            "label": "Custom"
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
                             "id": 20,
                             "module": "json:CreateJSON",
                             "version": 1,
@@ -9063,182 +8450,157 @@
                                 "space": "tab"
                             },
                             "mapper": {
-                                "steps": {
-                                    "active": "{{17.array}}",
-                                    "completed": "{{19.array}}"
+                                "status": "OK",
+                                "client_id": "{{2.`0`}}",
+                                "timestamp": "{{formatDate(now; \"YYYY-MM-DD HHmmss\"; \"UTC\")}}",
+                                "client_engagement_state": "{{23.ctx_engagement_state}}",
+                                "context_validity": {
+                                    "completed_blocks_count": "{{21.ctx_completed_blocks}}",
+                                    "total_blocks": "{{22.ctx_total_blocks}}",
+                                    "active_sessions_count": "{{21.ctx_active_sessions}}",
+                                    "completed_sessions_count": "{{21.ctx_completed_sessions}}",
+                                    "total_sessions": "{{21.ctx_active_sessions + 21.ctx_completed_sessions}}",
+                                    "upcoming_weeks_count": "{{21.ctx_upcoming_weeks}}",
+                                    "completed_weeks_count": "{{21.ctx_completed_weeks}}",
+                                    "active_steps_count": "{{21.ctx_active_steps}}",
+                                    "completed_steps_count": "{{21.ctx_completed_steps}}"
+                                },
+                                "client_profile": {
+                                    "client_id": "{{2.`0`}}",
+                                    "first_name": "{{2.`1`}}",
+                                    "last_name": "{{2.`2`}}",
+                                    "email": "{{2.`3`}}",
+                                    "timezone": "{{2.`4`}}",
+                                    "sex": "{{2.`5`}}",
+                                    "age_years": "{{2.`6`}}",
+                                    "height_cm": "{{2.`7`}}",
+                                    "weight_kg": "{{2.`8`}}",
+                                    "waist_circumference_cm": "{{2.`9`}}",
+                                    "training_experience": "{{2.`10`}}",
+                                    "primary_background": "{{2.`11`}}",
+                                    "last_trained_date": "{{2.`12`}}",
+                                    "typical_sessions_per_week_last_3_months": "{{2.`13`}}",
+                                    "cardio_fitness_level": "{{2.`14`}}",
+                                    "strength_level": "{{2.`15`}}",
+                                    "movement_quality": "{{2.`16`}}",
+                                    "goals": "{{2.`17`}}",
+                                    "goal_primary": "{{2.`18`}}",
+                                    "goal_secondary": "{{2.`19`}}",
+                                    "goal_tertiary": "{{2.`20`}}",
+                                    "goal_timeframe_months": "{{2.`21`}}",
+                                    "schedule": "{{2.`22`}}",
+                                    "equipment": "{{2.`23`}}",
+                                    "equipment_home": "{{2.`24`}}",
+                                    "equipment_gym": "{{2.`25`}}",
+                                    "equipment_preference": "{{2.`26`}}",
+                                    "gym_travel_time_minutes": "{{2.`29`}}",
+                                    "chronic_contraindications": "{{2.`30`}}",
+                                    "injuries": "{{2.`31`}}",
+                                    "risk_summary": "{{2.`32`}}",
+                                    "diet_style": "{{2.`33`}}",
+                                    "calorie_target": "{{2.`34`}}",
+                                    "protein_min": "{{2.`35`}}",
+                                    "supplements": "{{2.`36`}}",
+                                    "sleep_quality": "{{2.`37`}}",
+                                    "stress_level": "{{2.`38`}}",
+                                    "work_pattern": "{{2.`39`}}",
+                                    "family_responsibilities": "{{2.`40`}}",
+                                    "watch_platform": "{{2.`41`}}",
+                                    "watch_user_id": "{{2.`42`}}",
+                                    "preferences": "{{2.`43`}}",
+                                    "notes": "{{2.`44`}}",
+                                    "last_profile_update": "{{2.`45`}}"
+                                },
+                                "plan_context": {
+                                    "active_block": {
+                                        "plan_id": "{{3.`0`}}",
+                                        "block_id": "{{3.`1`}}",
+                                        "client_id": "{{3.`2`}}",
+                                        "phase_name": "{{3.`3`}}",
+                                        "phase_goal": "{{3.`4`}}",
+                                        "week_start": "{{3.`5`}}",
+                                        "duration_weeks": "{{3.`6`}}",
+                                        "days_per_week": "{{3.`7`}}",
+                                        "constraints": "{{3.`8`}}",
+                                        "primary_locations": "{{3.`9`}}",
+                                        "nutrition_targets": "{{15.var_nutrition_targets}}",
+                                        "supplement_protocol": "{{15.var_supplement_protocol}}",
+                                        "notes": "{{3.`12`}}",
+                                        "plan_status": "{{3.`13`}}",
+                                        "created_at": "{{3.`14`}}",
+                                        "updated_at": "{{3.`15`}}"
+                                    },
+                                    "completed_blocks": "{{5.array}}"
                                 },
                                 "weeks": {
                                     "active": {
-                                        "notes": "{{6.`9`}}",
-                                        "plan_id": "{{6.`1`}}",
                                         "week_id": "{{6.`0`}}",
+                                        "plan_id": "{{6.`1`}}",
                                         "block_id": "{{6.`2`}}",
                                         "client_id": "{{6.`3`}}",
-                                        "week_type": "{{6.`5`}}",
                                         "week_number": "{{6.`4`}}",
-                                        "week_status": "{{6.`12`}}",
+                                        "week_type": "{{6.`5`}}",
                                         "primary_focus": "{{6.`6`}}",
-                                        "week_end_date": "{{6.`11`}}",
                                         "secondary_focus": "{{6.`7`}}",
+                                        "intensity_pattern": "{{6.`8`}}",
+                                        "notes": "{{6.`9`}}",
                                         "week_start_date": "{{6.`10`}}",
-                                        "intensity_pattern": "{{6.`8`}}"
+                                        "week_end_date": "{{6.`11`}}",
+                                        "week_status": "{{6.`12`}}"
                                     },
                                     "upcoming": "{{8.array}}",
                                     "completed": "{{10.array}}"
                                 },
-                                "status": "OK",
                                 "sessions": {
                                     "active": "{{12.array}}",
                                     "completed": "{{14.array}}"
                                 },
-                                "client_id": "{{2.`0`}}",
+                                "steps": {
+                                    "active": "{{17.array}}",
+                                    "completed": "{{19.array}}"
+                                },
                                 "nutrition": {
                                     "nutrition_targets": "{{15.var_nutrition_targets}}",
                                     "supplement_protocol": "{{15.var_supplement_protocol}}"
                                 },
-                                "timestamp": "{{formatDate(now; \"YYYY-MM-DD HHmmss\"; \"UTC\")}}",
-                                "plan_context": {
-                                    "active_block": {
-                                        "notes": "{{3.`12`}}",
-                                        "plan_id": "{{3.`0`}}",
-                                        "block_id": "{{3.`1`}}",
-                                        "client_id": "{{3.`2`}}",
-                                        "created_at": "{{3.`14`}}",
-                                        "phase_goal": "{{3.`4`}}",
-                                        "phase_name": "{{3.`3`}}",
-                                        "updated_at": "{{3.`15`}}",
-                                        "week_start": "{{3.`5`}}",
-                                        "constraints": "{{3.`8`}}",
-                                        "plan_status": "{{3.`13`}}",
-                                        "days_per_week": "{{3.`7`}}",
-                                        "duration_weeks": "{{3.`6`}}",
-                                        "nutrition_targets": "{{15.var_nutrition_targets}}",
-                                        "primary_locations": "{{3.`9`}}",
-                                        "supplement_protocol": "{{15.var_supplement_protocol}}"
-                                    },
-                                    "completed_blocks": "{{5.array}}"
-                                },
-                                "Exercise Bests": "{{29.array}}",
-                                "client_profile": {
-                                    "sex": "{{2.`5`}}",
-                                    "email": "{{2.`3`}}",
-                                    "goals": "{{2.`17`}}",
-                                    "notes": "{{2.`44`}}",
-                                    "injuries": "{{2.`31`}}",
-                                    "schedule": "{{2.`22`}}",
-                                    "timezone": "{{2.`4`}}",
-                                    "age_years": "{{2.`6`}}",
-                                    "client_id": "{{2.`0`}}",
-                                    "equipment": "{{2.`23`}}",
-                                    "height_cm": "{{2.`7`}}",
-                                    "last_name": "{{2.`2`}}",
-                                    "weight_kg": "{{2.`8`}}",
-                                    "diet_style": "{{2.`33`}}",
-                                    "first_name": "{{2.`1`}}",
-                                    "preferences": "{{2.`43`}}",
-                                    "protein_min": "{{2.`35`}}",
-                                    "supplements": "{{2.`36`}}",
-                                    "goal_primary": "{{2.`18`}}",
-                                    "risk_summary": "{{2.`32`}}",
-                                    "stress_level": "{{2.`38`}}",
-                                    "work_pattern": "{{2.`39`}}",
-                                    "equipment_gym": "{{2.`25`}}",
-                                    "goal_tertiary": "{{2.`20`}}",
-                                    "sleep_quality": "{{2.`37`}}",
-                                    "watch_user_id": "{{2.`42`}}",
-                                    "calorie_target": "{{2.`34`}}",
-                                    "equipment_home": "{{2.`24`}}",
-                                    "goal_secondary": "{{2.`19`}}",
-                                    "strength_level": "{{2.`15`}}",
-                                    "watch_platform": "{{2.`41`}}",
-                                    "movement_quality": "{{2.`16`}}",
-                                    "last_trained_date": "{{2.`12`}}",
-                                    "primary_background": "{{2.`11`}}",
-                                    "last_profile_update": "{{2.`45`}}",
-                                    "training_experience": "{{2.`10`}}",
-                                    "cardio_fitness_level": "{{2.`14`}}",
-                                    "equipment_preference": "{{2.`26`}}",
-                                    "goal_timeframe_months": "{{2.`21`}}",
-                                    "waist_circumference_cm": "{{2.`9`}}",
-                                    "family_responsibilities": "{{2.`40`}}",
-                                    "gym_travel_time_minutes": "{{2.`29`}}",
-                                    "chronic_contraindications": "{{2.`30`}}",
-                                    "typical_sessions_per_week_last_3_months": "{{2.`13`}}"
-                                },
                                 "history_summary": {
-                                    "total_blocks": "{{22.ctx_total_blocks}}",
-                                    "completed_steps": "{{21.ctx_completed_steps}}",
-                                    "completed_weeks": "{{21.ctx_completed_weeks}}",
                                     "completed_blocks": "{{21.ctx_completed_blocks}}",
-                                    "completed_sessions": "{{21.ctx_completed_sessions}}"
-                                },
-                                "context_validity": {
                                     "total_blocks": "{{22.ctx_total_blocks}}",
-                                    "total_sessions": "{{21.ctx_active_sessions + 21.ctx_completed_sessions}}",
-                                    "active_steps_count": "{{21.ctx_active_steps}}",
-                                    "upcoming_weeks_count": "{{21.ctx_upcoming_weeks}}",
-                                    "active_sessions_count": "{{21.ctx_active_sessions}}",
-                                    "completed_steps_count": "{{21.ctx_completed_steps}}",
-                                    "completed_weeks_count": "{{21.ctx_completed_weeks}}",
-                                    "completed_blocks_count": "{{21.ctx_completed_blocks}}",
-                                    "completed_sessions_count": "{{21.ctx_completed_sessions}}"
+                                    "completed_weeks": "{{21.ctx_completed_weeks}}",
+                                    "completed_sessions": "{{21.ctx_completed_sessions}}",
+                                    "completed_steps": "{{21.ctx_completed_steps}}"
                                 },
-                                "client_engagement_state": "{{23.ctx_engagement_state}}"
+                                "contraindications_temp": "",
+                                "contraindications_chronic": []
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 7566,
+                                    "x": 7500,
                                     "y": 0,
                                     "name": "B-Client | Prepare Response JSON"
                                 },
                                 "restore": {
+                                    "parameters": {
+                                        "type": {
+                                            "label": "Bill Client Fetch"
+                                        },
+                                        "space": {
+                                            "label": "1 tab"
+                                        }
+                                    },
                                     "expect": {
-                                        "steps": {
+                                        "context_validity": {
                                             "nested": {
-                                                "active": {
-                                                    "mode": "edit",
-                                                    "collapsed": true
+                                                "client_profile_loaded": {
+                                                    "mode": "chose"
                                                 },
-                                                "completed": {
-                                                    "mode": "edit",
-                                                    "collapsed": true
-                                                }
-                                            }
-                                        },
-                                        "weeks": {
-                                            "nested": {
-                                                "upcoming": {
-                                                    "mode": "edit",
-                                                    "collapsed": true
+                                                "has_active_block": {
+                                                    "mode": "chose"
                                                 },
-                                                "completed": {
-                                                    "mode": "edit",
-                                                    "collapsed": true
+                                                "has_active_week": {
+                                                    "mode": "chose"
                                                 }
                                             }
-                                        },
-                                        "sessions": {
-                                            "nested": {
-                                                "active": {
-                                                    "mode": "edit",
-                                                    "collapsed": true
-                                                },
-                                                "completed": {
-                                                    "mode": "edit",
-                                                    "collapsed": true
-                                                }
-                                            }
-                                        },
-                                        "plan_context": {
-                                            "nested": {
-                                                "completed_blocks": {
-                                                    "mode": "edit",
-                                                    "collapsed": true
-                                                }
-                                            }
-                                        },
-                                        "Exercise Bests": {
-                                            "mode": "edit"
                                         },
                                         "client_profile": {
                                             "nested": {
@@ -9250,26 +8612,49 @@
                                                 }
                                             }
                                         },
-                                        "context_validity": {
+                                        "plan_context": {
                                             "nested": {
-                                                "has_active_week": {
-                                                    "mode": "chose"
-                                                },
-                                                "has_active_block": {
-                                                    "mode": "chose"
-                                                },
-                                                "client_profile_loaded": {
-                                                    "mode": "chose"
+                                                "completed_blocks": {
+                                                    "mode": "edit",
+                                                    "collapsed": true
                                                 }
                                             }
-                                        }
-                                    },
-                                    "parameters": {
-                                        "type": {
-                                            "label": "Bill Client Fetch"
                                         },
-                                        "space": {
-                                            "label": "1 tab"
+                                        "weeks": {
+                                            "nested": {
+                                                "upcoming": {
+                                                    "mode": "edit"
+                                                },
+                                                "completed": {
+                                                    "mode": "edit"
+                                                }
+                                            }
+                                        },
+                                        "sessions": {
+                                            "nested": {
+                                                "active": {
+                                                    "mode": "edit"
+                                                },
+                                                "completed": {
+                                                    "mode": "edit"
+                                                }
+                                            }
+                                        },
+                                        "steps": {
+                                            "nested": {
+                                                "active": {
+                                                    "mode": "edit"
+                                                },
+                                                "completed": {
+                                                    "mode": "edit"
+                                                }
+                                            }
+                                        },
+                                        "contraindications_temp": {
+                                            "mode": "edit"
+                                        },
+                                        "contraindications_chronic": {
+                                            "mode": "chose"
                                         }
                                     }
                                 },
@@ -9316,6 +8701,8 @@
                                     },
                                     {
                                         "name": "context_validity",
+                                        "type": "collection",
+                                        "label": "Context validity",
                                         "spec": [
                                             {
                                                 "name": "client_profile_loaded",
@@ -9377,12 +8764,12 @@
                                                 "type": "number",
                                                 "label": "Completed steps count"
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "Context validity"
+                                        ]
                                     },
                                     {
                                         "name": "client_profile",
+                                        "type": "collection",
+                                        "label": "Client profile",
                                         "spec": [
                                             {
                                                 "name": "client_id",
@@ -9614,15 +9001,17 @@
                                                 "type": "text",
                                                 "label": "Last profile update"
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "Client profile"
+                                        ]
                                     },
                                     {
                                         "name": "plan_context",
+                                        "type": "collection",
+                                        "label": "Plan context",
                                         "spec": [
                                             {
                                                 "name": "active_block",
+                                                "type": "collection",
+                                                "label": "Active block",
                                                 "spec": [
                                                     {
                                                         "name": "plan_id",
@@ -9704,110 +9093,110 @@
                                                         "type": "text",
                                                         "label": "Updated at"
                                                     }
-                                                ],
-                                                "type": "collection",
-                                                "label": "Active block"
+                                                ]
                                             },
                                             {
                                                 "name": "completed_blocks",
+                                                "type": "array",
+                                                "label": "Completed blocks",
                                                 "spec": {
-                                                    "name": "value",
+                                                    "type": "collection",
                                                     "spec": [
                                                         {
                                                             "name": "plan_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "block_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "client_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "phase_name",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "phase_goal",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_start",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "duration_weeks",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "days_per_week",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "constraints",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "primary_locations",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "nutrition_targets",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "supplement_protocol",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "notes",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "plan_status",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "created_at",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "updated_at",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         }
                                                     ],
-                                                    "type": "collection"
-                                                },
-                                                "type": "array",
-                                                "label": "Completed blocks"
+                                                    "name": "value"
+                                                }
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "Plan context"
+                                        ]
                                     },
                                     {
                                         "name": "weeks",
+                                        "type": "collection",
+                                        "label": "Weeks",
                                         "spec": [
                                             {
                                                 "name": "active",
+                                                "type": "collection",
+                                                "label": "Active",
                                                 "spec": [
                                                     {
                                                         "name": "week_id",
@@ -9874,626 +9263,624 @@
                                                         "type": "text",
                                                         "label": "Week status"
                                                     }
-                                                ],
-                                                "type": "collection",
-                                                "label": "Active"
+                                                ]
                                             },
                                             {
                                                 "name": "upcoming",
+                                                "type": "array",
+                                                "label": "Upcoming",
                                                 "spec": {
-                                                    "name": "value",
+                                                    "type": "collection",
                                                     "spec": [
                                                         {
                                                             "name": "week_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "plan_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "block_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "client_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_number",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "week_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "primary_focus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "secondary_focus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "intensity_pattern",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "notes",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_start_date",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_end_date",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_status",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         }
                                                     ],
-                                                    "type": "collection"
-                                                },
-                                                "type": "array",
-                                                "label": "Upcoming"
+                                                    "name": "value"
+                                                }
                                             },
                                             {
                                                 "name": "completed",
+                                                "type": "array",
+                                                "label": "Completed",
                                                 "spec": {
-                                                    "name": "value",
+                                                    "type": "collection",
                                                     "spec": [
                                                         {
                                                             "name": "week_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "plan_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "block_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "client_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_number",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "week_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "primary_focus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "secondary_focus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "intensity_pattern",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "notes",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_start_date",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_end_date",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_status",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         }
                                                     ],
-                                                    "type": "collection"
-                                                },
-                                                "type": "array",
-                                                "label": "Completed"
+                                                    "name": "value"
+                                                }
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "Weeks"
+                                        ]
                                     },
                                     {
                                         "name": "sessions",
+                                        "type": "collection",
+                                        "label": "Sessions",
                                         "spec": [
                                             {
                                                 "name": "active",
+                                                "type": "array",
+                                                "label": "Active",
                                                 "spec": {
-                                                    "name": "value",
+                                                    "type": "collection",
                                                     "spec": [
                                                         {
                                                             "name": "plan_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "block_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "client_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "week_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "day",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "session_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "phase",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "location",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "focus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "subfocus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "goal",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "macros",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "supplements",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "notes",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "session_order",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "session_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "duration_minutes",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "difficulty_tag",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "status",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         }
                                                     ],
-                                                    "type": "collection"
-                                                },
-                                                "type": "array",
-                                                "label": "Active"
+                                                    "name": "value"
+                                                }
                                             },
                                             {
                                                 "name": "completed",
+                                                "type": "array",
+                                                "label": "Completed",
                                                 "spec": {
-                                                    "name": "value",
+                                                    "type": "collection",
                                                     "spec": [
                                                         {
                                                             "name": "plan_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "block_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "client_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "week_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "day",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "session_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "phase",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "location",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "focus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "subfocus",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "goal",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "macros",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "supplements",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "notes",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "session_order",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "session_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "duration_minutes",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "difficulty_tag",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "status",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         }
                                                     ],
-                                                    "type": "collection"
-                                                },
-                                                "type": "array",
-                                                "label": "Completed"
+                                                    "name": "value"
+                                                }
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "Sessions"
+                                        ]
                                     },
                                     {
                                         "name": "steps",
+                                        "type": "collection",
+                                        "label": "Steps",
                                         "spec": [
                                             {
                                                 "name": "active",
+                                                "type": "array",
+                                                "label": "Active",
                                                 "spec": {
-                                                    "name": "value",
+                                                    "type": "collection",
                                                     "spec": [
                                                         {
                                                             "name": "step_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "session_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "block_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "client_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "step_order",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "segment_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "step_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "duration_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "duration_value",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "target_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "target_value",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "exercise_name",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "sets",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "reps",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "load_kg",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "rest_seconds",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "notes_coach",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "notes_athlete",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "status",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         }
                                                     ],
-                                                    "type": "collection"
-                                                },
-                                                "type": "array",
-                                                "label": "Active"
+                                                    "name": "value"
+                                                }
                                             },
                                             {
                                                 "name": "completed",
+                                                "type": "array",
+                                                "label": "Completed",
                                                 "spec": {
-                                                    "name": "value",
+                                                    "type": "collection",
                                                     "spec": [
                                                         {
                                                             "name": "step_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "session_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "week_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "block_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "client_id",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "step_order",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "segment_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "step_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "duration_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "duration_value",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "target_type",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "target_value",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "exercise_name",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "sets",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "reps",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "load_kg",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "rest_seconds",
-                                                            "type": "number",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "number"
                                                         },
                                                         {
                                                             "name": "notes_coach",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "notes_athlete",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         },
                                                         {
                                                             "name": "status",
-                                                            "type": "text",
-                                                            "label": null
+                                                            "label": null,
+                                                            "type": "text"
                                                         }
                                                     ],
-                                                    "type": "collection"
-                                                },
-                                                "type": "array",
-                                                "label": "Completed"
+                                                    "name": "value"
+                                                }
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "Steps"
+                                        ]
                                     },
                                     {
                                         "name": "nutrition",
+                                        "type": "collection",
+                                        "label": "Nutrition",
                                         "spec": [
                                             {
                                                 "name": "nutrition_targets",
@@ -10505,12 +9892,12 @@
                                                 "type": "text",
                                                 "label": "Supplement protocol"
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "Nutrition"
+                                        ]
                                     },
                                     {
                                         "name": "history_summary",
+                                        "type": "collection",
+                                        "label": "History summary",
                                         "spec": [
                                             {
                                                 "name": "completed_blocks",
@@ -10537,18 +9924,25 @@
                                                 "type": "number",
                                                 "label": "Completed steps"
                                             }
-                                        ],
-                                        "type": "collection",
-                                        "label": "History summary"
+                                        ]
                                     },
                                     {
-                                        "name": "Exercise Bests",
-                                        "spec": {
-                                            "name": "value",
-                                            "type": "text"
-                                        },
+                                        "name": "contraindications_temp",
                                         "type": "array",
-                                        "label": null
+                                        "label": null,
+                                        "spec": {
+                                            "type": "text",
+                                            "name": "value"
+                                        }
+                                    },
+                                    {
+                                        "name": "contraindications_chronic",
+                                        "type": "array",
+                                        "label": null,
+                                        "spec": {
+                                            "type": "text",
+                                            "name": "value"
+                                        }
                                     }
                                 ],
                                 "advanced": true
@@ -10560,14 +9954,14 @@
                             "version": 1,
                             "parameters": {},
                             "mapper": {
-                                "body": "{\r\n  \"body\": \"{{20.json}}\",\r\n  \"headers\": [\r\n    {\r\n      \"key\": \"Content-Type\",\r\n      \"value\": \"application/json\"\r\n    }\r\n  ]\r\n}",
+                                "body": "{{20.json}}",
                                 "status": "200",
                                 "headers": []
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 7932,
-                                    "y": 4,
+                                    "x": 7800,
+                                    "y": 0,
                                     "name": "B-Client | Client Details Response"
                                 },
                                 "restore": {

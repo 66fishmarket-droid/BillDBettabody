@@ -7,21 +7,22 @@
             "version": 1,
             "parameters": {
                 "hook": 3635757,
-                "maxResults": 1
+                "maxResults": 5
             },
             "mapper": {},
             "metadata": {
                 "designer": {
                     "x": 0,
-                    "y": 150
+                    "y": 150,
+                    "name": "B-UsUp | Ingest Data"
                 },
                 "restore": {
                     "parameters": {
                         "hook": {
+                            "label": "POST/user/upsert",
                             "data": {
                                 "editable": "true"
-                            },
-                            "label": "POST/user/upsert"
+                            }
                         }
                     }
                 },
@@ -40,11 +41,483 @@
                 ],
                 "interface": [
                     {
+                        "name": "client_id",
+                        "label": "Client ID",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "data",
+                        "label": "Data",
+                        "help": "",
+                        "type": "collection",
+                        "spec": [
+                            {
+                                "name": "client_id",
+                                "label": "Client ID",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "first_name",
+                                "label": "First name",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "last_name",
+                                "label": "Last name",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "email",
+                                "label": "Email",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "timezone",
+                                "label": "Timezone",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "sex",
+                                "label": "Sex",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "age_years",
+                                "label": "Age years",
+                                "help": "",
+                                "type": "number",
+                                "default": null,
+                                "required": false
+                            },
+                            {
+                                "name": "height_cm",
+                                "label": "Height cm",
+                                "help": "",
+                                "type": "number",
+                                "default": null,
+                                "required": false
+                            },
+                            {
+                                "name": "weight_kg",
+                                "label": "Weight kg",
+                                "help": "",
+                                "type": "number",
+                                "default": null,
+                                "required": false
+                            },
+                            {
+                                "name": "waist_circumference_cm",
+                                "label": "Waist circumference cm",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "training_experience",
+                                "label": "Training experience",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "primary_background",
+                                "label": "Primary background",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "last_trained_date",
+                                "label": "Last trained date",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "typical_sessions_per_week_last_3_months",
+                                "label": "Typical sessions per week last 3 months",
+                                "help": "",
+                                "type": "number",
+                                "default": null,
+                                "required": false
+                            },
+                            {
+                                "name": "cardio_fitness_level",
+                                "label": "Cardio fitness level",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "strength_level",
+                                "label": "Strength level",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "movement_quality",
+                                "label": "Movement quality",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "goals",
+                                "label": "Goals",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "goal_primary",
+                                "label": "Goal primary",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "goal_secondary",
+                                "label": "Goal secondary",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "goal_tertiary",
+                                "label": "Goal tertiary",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "goal_timeframe_months",
+                                "label": "Goal timeframe months",
+                                "help": "",
+                                "type": "number",
+                                "default": null,
+                                "required": false
+                            },
+                            {
+                                "name": "schedule",
+                                "label": "Schedule",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "equipment",
+                                "label": "Equipment",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "equipment_home",
+                                "label": "Equipment home",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "equipment_gym",
+                                "label": "Equipment gym",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "equipment_preference",
+                                "label": "Equipment preference",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "has_pool",
+                                "label": "Has pool",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "has_track_or_safe_run",
+                                "label": "Has track or safe run",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "gym_travel_time_minutes",
+                                "label": "Gym travel time minutes",
+                                "help": "",
+                                "type": "number",
+                                "default": null,
+                                "required": false
+                            },
+                            {
+                                "name": "chronic_contraindications",
+                                "label": "Chronic contraindications",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "injuries",
+                                "label": "Injuries",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "risk_summary",
+                                "label": "Risk summary",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "diet_style",
+                                "label": "Diet style",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "calorie_target",
+                                "label": "Calorie target",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "protein_min",
+                                "label": "Protein min",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "supplements",
+                                "label": "Supplements",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "sleep_quality",
+                                "label": "Sleep quality",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "stress_level",
+                                "label": "Stress level",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "work_pattern",
+                                "label": "Work pattern",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "family_responsibilities",
+                                "label": "Family responsibilities",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "watch_platform",
+                                "label": "Watch platform",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "watch_user_id",
+                                "label": "Watch user ID",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "preferences",
+                                "label": "Preferences",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "notes",
+                                "label": "Notes",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "last_profile_update",
+                                "label": "Last profile update",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "home_location",
+                                "label": "Home location",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "upcoming_travel",
+                                "label": "Upcoming travel",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "understands_tempo",
+                                "label": "Understands tempo",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "understands_loading_patterns",
+                                "label": "Understands loading patterns",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "detail_level_preference",
+                                "label": "Detail level preference",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            }
+                        ],
+                        "required": false
+                    },
+                    {
                         "name": "__IMTMETHOD__",
                         "type": "text",
                         "label": "Method"
                     }
-                ]
+                ],
+                "advanced": true
             }
         },
         {
@@ -177,7 +650,7 @@
                     {
                         "name": "spreadsheetId",
                         "type": "select",
-                        "label": "Spreadsheet ID",
+                        "label": "Spreadsheet Name",
                         "required": true
                     },
                     {
@@ -512,7 +985,7 @@
                     {
                         "name": "48",
                         "type": "text",
-                        "label": "undertands_tempo (AW)"
+                        "label": "understands_tempo (AW)"
                     },
                     {
                         "name": "49",
@@ -663,143 +1136,13 @@
             }
         },
         {
-            "id": 8,
-            "module": "util:SetVariables",
-            "version": 1,
-            "parameters": {},
-            "mapper": {
-                "scope": "roundtrip",
-                "variables": [
-                    {
-                        "name": "chronic_old",
-                        "value": "{{10.`30`}}"
-                    }
-                ]
-            },
-            "metadata": {
-                "designer": {
-                    "x": 600,
-                    "y": 150,
-                    "name": "B-UsUp | Get old Chronic Conditions"
-                },
-                "restore": {
-                    "expect": {
-                        "scope": {
-                            "label": "One cycle"
-                        },
-                        "variables": {
-                            "items": [
-                                null
-                            ]
-                        }
-                    }
-                },
-                "expect": [
-                    {
-                        "name": "variables",
-                        "spec": [
-                            {
-                                "name": "name",
-                                "type": "text",
-                                "label": "Variable name",
-                                "required": true
-                            },
-                            {
-                                "name": "value",
-                                "type": "any",
-                                "label": "Variable value"
-                            }
-                        ],
-                        "type": "array",
-                        "label": "Variables"
-                    },
-                    {
-                        "name": "scope",
-                        "type": "select",
-                        "label": "Variable lifetime",
-                        "required": true,
-                        "validate": {
-                            "enum": [
-                                "roundtrip",
-                                "execution"
-                            ]
-                        }
-                    }
-                ],
-                "interface": [
-                    {
-                        "name": "chronic_old",
-                        "type": "any",
-                        "label": "chronic_old"
-                    }
-                ]
-            }
-        },
-        {
-            "id": 9,
-            "module": "util:SetVariable2",
-            "version": 1,
-            "parameters": {},
-            "mapper": {
-                "name": "chronic_new",
-                "scope": "roundtrip",
-                "value": "{{if(8.chronic_old = \"\"; 1.data.chronic_contraindications; if(1.data.chronic_contraindications = 8.chronic_old; 8.chronic_old; 8.chronic_old + \", \" + 1.data.chronic_contraindications))}}"
-            },
-            "metadata": {
-                "designer": {
-                    "x": 900,
-                    "y": 150,
-                    "name": "B-UsUp | New Chronic Condition"
-                },
-                "restore": {
-                    "expect": {
-                        "scope": {
-                            "label": "One cycle"
-                        }
-                    }
-                },
-                "expect": [
-                    {
-                        "name": "name",
-                        "type": "text",
-                        "label": "Variable name",
-                        "required": true
-                    },
-                    {
-                        "name": "scope",
-                        "type": "select",
-                        "label": "Variable lifetime",
-                        "required": true,
-                        "validate": {
-                            "enum": [
-                                "roundtrip",
-                                "execution"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "value",
-                        "type": "any",
-                        "label": "Variable value"
-                    }
-                ],
-                "interface": [
-                    {
-                        "name": "chronic_new",
-                        "type": "any",
-                        "label": "chronic_new"
-                    }
-                ]
-            }
-        },
-        {
             "id": 3,
             "module": "builtin:BasicRouter",
             "version": 1,
             "mapper": null,
             "metadata": {
                 "designer": {
-                    "x": 1200,
+                    "x": 600,
                     "y": 150
                 }
             },
@@ -859,8 +1202,6 @@
                                     "27": "{{1.data.has_pool}}",
                                     "28": "{{1.data.has_track_or_safe_run}}",
                                     "29": "{{1.data.gym_travel_time_minutes}}",
-                                    "30": "{{9.chronic_new}}",
-                                    "31": "{{1.data.injuries}}",
                                     "32": "{{1.data.risk_summary}}",
                                     "33": "{{1.data.diet_style}}",
                                     "34": "{{1.data.calorie_target}}",
@@ -885,11 +1226,12 @@
                                 "rowNumber": "{{10.`__ROW_NUMBER__`}}",
                                 "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
                                 "includesHeaders": true,
+                                "useColumnHeaders": false,
                                 "valueInputOption": "USER_ENTERED"
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 1500,
+                                    "x": 900,
                                     "y": 0,
                                     "name": "B-UsUp | Update CLient Record"
                                 },
@@ -911,7 +1253,10 @@
                                             ]
                                         },
                                         "includesHeaders": {
-                                            "label": "Yes",
+                                            "label": "Yes"
+                                        },
+                                        "useColumnHeaders": {
+                                            "label": "No",
                                             "nested": [
                                                 {
                                                     "name": "values",
@@ -1159,7 +1504,7 @@
                                                         {
                                                             "name": "48",
                                                             "type": "text",
-                                                            "label": "undertands_tempo (AW)"
+                                                            "label": "understands_tempo (AW)"
                                                         },
                                                         {
                                                             "name": "49",
@@ -1298,7 +1643,64 @@
                                                         }
                                                     ],
                                                     "type": "collection",
-                                                    "label": "Values"
+                                                    "label": "Values in columns",
+                                                    "metadata": [
+                                                        [
+                                                            [
+                                                                "client_id",
+                                                                "first_name",
+                                                                "last_name",
+                                                                "email",
+                                                                "timezone",
+                                                                "sex",
+                                                                "age_years",
+                                                                "height_cm",
+                                                                "weight_kg",
+                                                                "waist_circumference_cm",
+                                                                "training_experience",
+                                                                "primary_background",
+                                                                "last_trained_date",
+                                                                "typical_sessions_per_week_last_3_months",
+                                                                "cardio_fitness_level",
+                                                                "strength_level",
+                                                                "movement_quality",
+                                                                "goals",
+                                                                "goal_primary",
+                                                                "goal_secondary",
+                                                                "goal_tertiary",
+                                                                "goal_timeframe_months",
+                                                                "schedule",
+                                                                "equipment",
+                                                                "equipment_home",
+                                                                "equipment_gym",
+                                                                "equipment_preference",
+                                                                "has_pool",
+                                                                "has_track_or_safe_run",
+                                                                "gym_travel_time_minutes",
+                                                                "chronic_contraindications",
+                                                                "injuries",
+                                                                "risk_summary",
+                                                                "diet_style",
+                                                                "calorie_target",
+                                                                "protein_min",
+                                                                "supplements",
+                                                                "sleep_quality",
+                                                                "stress_level",
+                                                                "work_pattern",
+                                                                "family_responsibilities",
+                                                                "watch_platform",
+                                                                "watch_user_id",
+                                                                "preferences",
+                                                                "notes",
+                                                                "last_profile_update",
+                                                                "home_location",
+                                                                "upcoming_travel",
+                                                                "understands_tempo",
+                                                                "understands_loading_patterns",
+                                                                "detail_level_preference"
+                                                            ]
+                                                        ]
+                                                    ]
                                                 }
                                             ]
                                         },
@@ -1366,7 +1768,7 @@
                                     {
                                         "name": "spreadsheetId",
                                         "type": "file",
-                                        "label": "Spreadsheet ID",
+                                        "label": "Spreadsheet Name",
                                         "required": true
                                     },
                                     {
@@ -1385,6 +1787,18 @@
                                         "name": "includesHeaders",
                                         "type": "select",
                                         "label": "Table contains headers",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                true,
+                                                false
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "useColumnHeaders",
+                                        "type": "select",
+                                        "label": "Use column headers as IDs of the columns",
                                         "required": true,
                                         "validate": {
                                             "enum": [
@@ -1639,7 +2053,7 @@
                                             {
                                                 "name": "48",
                                                 "type": "text",
-                                                "label": "undertands_tempo (AW)"
+                                                "label": "understands_tempo (AW)"
                                             },
                                             {
                                                 "name": "49",
@@ -1778,7 +2192,64 @@
                                             }
                                         ],
                                         "type": "collection",
-                                        "label": "Values"
+                                        "label": "Values in columns",
+                                        "metadata": [
+                                            [
+                                                [
+                                                    "client_id",
+                                                    "first_name",
+                                                    "last_name",
+                                                    "email",
+                                                    "timezone",
+                                                    "sex",
+                                                    "age_years",
+                                                    "height_cm",
+                                                    "weight_kg",
+                                                    "waist_circumference_cm",
+                                                    "training_experience",
+                                                    "primary_background",
+                                                    "last_trained_date",
+                                                    "typical_sessions_per_week_last_3_months",
+                                                    "cardio_fitness_level",
+                                                    "strength_level",
+                                                    "movement_quality",
+                                                    "goals",
+                                                    "goal_primary",
+                                                    "goal_secondary",
+                                                    "goal_tertiary",
+                                                    "goal_timeframe_months",
+                                                    "schedule",
+                                                    "equipment",
+                                                    "equipment_home",
+                                                    "equipment_gym",
+                                                    "equipment_preference",
+                                                    "has_pool",
+                                                    "has_track_or_safe_run",
+                                                    "gym_travel_time_minutes",
+                                                    "chronic_contraindications",
+                                                    "injuries",
+                                                    "risk_summary",
+                                                    "diet_style",
+                                                    "calorie_target",
+                                                    "protein_min",
+                                                    "supplements",
+                                                    "sleep_quality",
+                                                    "stress_level",
+                                                    "work_pattern",
+                                                    "family_responsibilities",
+                                                    "watch_platform",
+                                                    "watch_user_id",
+                                                    "preferences",
+                                                    "notes",
+                                                    "last_profile_update",
+                                                    "home_location",
+                                                    "upcoming_travel",
+                                                    "understands_tempo",
+                                                    "understands_loading_patterns",
+                                                    "detail_level_preference"
+                                                ]
+                                            ]
+                                        ]
                                     }
                                 ]
                             }
@@ -1795,7 +2266,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 1800,
+                                    "x": 1200,
                                     "y": 0,
                                     "name": "B-UsUp| Update Response"
                                 },
@@ -1909,8 +2380,6 @@
                                     "27": "{{1.data.has_pool}}",
                                     "28": "{{1.data.has_track_or_safe_run}}",
                                     "29": "{{1.data.gym_travel_time_minutes}}",
-                                    "30": "{{1.data.chronic_contraindications}}",
-                                    "31": "{{1.data.injuries}}",
                                     "32": "{{1.data.risk_summary}}",
                                     "33": "{{1.data.diet_style}}",
                                     "34": "{{1.data.calorie_target}}",
@@ -1935,12 +2404,13 @@
                                 "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
                                 "includesHeaders": true,
                                 "insertDataOption": "INSERT_ROWS",
+                                "useColumnHeaders": false,
                                 "valueInputOption": "USER_ENTERED",
                                 "insertUnformatted": false
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 1500,
+                                    "x": 900,
                                     "y": 300,
                                     "name": "B-UsUp | Create Client Record"
                                 },
@@ -1962,7 +2432,14 @@
                                             ]
                                         },
                                         "includesHeaders": {
-                                            "label": "Yes",
+                                            "label": "Yes"
+                                        },
+                                        "insertDataOption": {
+                                            "mode": "chose",
+                                            "label": "Insert rows"
+                                        },
+                                        "useColumnHeaders": {
+                                            "label": "No",
                                             "nested": [
                                                 {
                                                     "name": "values",
@@ -2210,7 +2687,7 @@
                                                         {
                                                             "name": "48",
                                                             "type": "text",
-                                                            "label": "undertands_tempo (AW)"
+                                                            "label": "understands_tempo (AW)"
                                                         },
                                                         {
                                                             "name": "49",
@@ -2349,13 +2826,66 @@
                                                         }
                                                     ],
                                                     "type": "collection",
-                                                    "label": "Values"
+                                                    "label": "Values in columns",
+                                                    "metadata": [
+                                                        [
+                                                            [
+                                                                "client_id",
+                                                                "first_name",
+                                                                "last_name",
+                                                                "email",
+                                                                "timezone",
+                                                                "sex",
+                                                                "age_years",
+                                                                "height_cm",
+                                                                "weight_kg",
+                                                                "waist_circumference_cm",
+                                                                "training_experience",
+                                                                "primary_background",
+                                                                "last_trained_date",
+                                                                "typical_sessions_per_week_last_3_months",
+                                                                "cardio_fitness_level",
+                                                                "strength_level",
+                                                                "movement_quality",
+                                                                "goals",
+                                                                "goal_primary",
+                                                                "goal_secondary",
+                                                                "goal_tertiary",
+                                                                "goal_timeframe_months",
+                                                                "schedule",
+                                                                "equipment",
+                                                                "equipment_home",
+                                                                "equipment_gym",
+                                                                "equipment_preference",
+                                                                "has_pool",
+                                                                "has_track_or_safe_run",
+                                                                "gym_travel_time_minutes",
+                                                                "chronic_contraindications",
+                                                                "injuries",
+                                                                "risk_summary",
+                                                                "diet_style",
+                                                                "calorie_target",
+                                                                "protein_min",
+                                                                "supplements",
+                                                                "sleep_quality",
+                                                                "stress_level",
+                                                                "work_pattern",
+                                                                "family_responsibilities",
+                                                                "watch_platform",
+                                                                "watch_user_id",
+                                                                "preferences",
+                                                                "notes",
+                                                                "last_profile_update",
+                                                                "home_location",
+                                                                "upcoming_travel",
+                                                                "understands_tempo",
+                                                                "understands_loading_patterns",
+                                                                "detail_level_preference"
+                                                            ]
+                                                        ]
+                                                    ]
                                                 }
                                             ]
-                                        },
-                                        "insertDataOption": {
-                                            "mode": "chose",
-                                            "label": "Insert rows"
                                         },
                                         "valueInputOption": {
                                             "mode": "chose",
@@ -2441,7 +2971,7 @@
                                     {
                                         "name": "spreadsheetId",
                                         "type": "file",
-                                        "label": "Spreadsheet ID",
+                                        "label": "Spreadsheet Name",
                                         "required": true
                                     },
                                     {
@@ -2454,6 +2984,18 @@
                                         "name": "includesHeaders",
                                         "type": "select",
                                         "label": "Table contains headers",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                true,
+                                                false
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "useColumnHeaders",
+                                        "type": "select",
+                                        "label": "Use column headers as IDs of the columns",
                                         "required": true,
                                         "validate": {
                                             "enum": [
@@ -2708,7 +3250,7 @@
                                             {
                                                 "name": "48",
                                                 "type": "text",
-                                                "label": "undertands_tempo (AW)"
+                                                "label": "understands_tempo (AW)"
                                             },
                                             {
                                                 "name": "49",
@@ -2847,7 +3389,64 @@
                                             }
                                         ],
                                         "type": "collection",
-                                        "label": "Values"
+                                        "label": "Values in columns",
+                                        "metadata": [
+                                            [
+                                                [
+                                                    "client_id",
+                                                    "first_name",
+                                                    "last_name",
+                                                    "email",
+                                                    "timezone",
+                                                    "sex",
+                                                    "age_years",
+                                                    "height_cm",
+                                                    "weight_kg",
+                                                    "waist_circumference_cm",
+                                                    "training_experience",
+                                                    "primary_background",
+                                                    "last_trained_date",
+                                                    "typical_sessions_per_week_last_3_months",
+                                                    "cardio_fitness_level",
+                                                    "strength_level",
+                                                    "movement_quality",
+                                                    "goals",
+                                                    "goal_primary",
+                                                    "goal_secondary",
+                                                    "goal_tertiary",
+                                                    "goal_timeframe_months",
+                                                    "schedule",
+                                                    "equipment",
+                                                    "equipment_home",
+                                                    "equipment_gym",
+                                                    "equipment_preference",
+                                                    "has_pool",
+                                                    "has_track_or_safe_run",
+                                                    "gym_travel_time_minutes",
+                                                    "chronic_contraindications",
+                                                    "injuries",
+                                                    "risk_summary",
+                                                    "diet_style",
+                                                    "calorie_target",
+                                                    "protein_min",
+                                                    "supplements",
+                                                    "sleep_quality",
+                                                    "stress_level",
+                                                    "work_pattern",
+                                                    "family_responsibilities",
+                                                    "watch_platform",
+                                                    "watch_user_id",
+                                                    "preferences",
+                                                    "notes",
+                                                    "last_profile_update",
+                                                    "home_location",
+                                                    "upcoming_travel",
+                                                    "understands_tempo",
+                                                    "understands_loading_patterns",
+                                                    "detail_level_preference"
+                                                ]
+                                            ]
+                                        ]
                                     }
                                 ]
                             }
@@ -2864,7 +3463,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 1800,
+                                    "x": 1200,
                                     "y": 300,
                                     "name": "B-UsUp | Create Response"
                                 },

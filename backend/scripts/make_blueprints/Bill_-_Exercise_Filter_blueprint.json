@@ -19,10 +19,10 @@
                 "restore": {
                     "parameters": {
                         "hook": {
+                            "label": "Bill - Exercise List Search",
                             "data": {
                                 "editable": "true"
-                            },
-                            "label": "Bill - Exercise List Search"
+                            }
                         }
                     }
                 },
@@ -41,137 +41,137 @@
                 ],
                 "interface": [
                     {
-                        "help": "",
                         "name": "query_id",
-                        "type": "text",
                         "label": "Query ID",
+                        "help": "",
+                        "type": "text",
                         "default": null,
                         "required": false,
                         "multiline": false
                     },
                     {
-                        "help": "",
                         "name": "segment_type",
+                        "label": "Segment type",
+                        "help": "",
+                        "type": "array",
                         "spec": {
                             "type": "text",
                             "default": null,
                             "required": false,
                             "multiline": false
                         },
-                        "type": "array",
-                        "label": "Segment type",
                         "required": false
                     },
                     {
-                        "help": "",
                         "name": "required_tags",
-                        "spec": [
-                            {
-                                "help": "",
-                                "name": "movement_pattern",
-                                "spec": {
-                                    "type": "text",
-                                    "default": null,
-                                    "required": false,
-                                    "multiline": false
-                                },
-                                "type": "array",
-                                "label": "Movement pattern",
-                                "required": false
-                            },
-                            {
-                                "help": "",
-                                "name": "training_focus",
-                                "spec": {
-                                    "type": "text",
-                                    "default": null,
-                                    "required": false,
-                                    "multiline": false
-                                },
-                                "type": "array",
-                                "label": "Training focus",
-                                "required": false
-                            },
-                            {
-                                "help": "",
-                                "name": "primary_muscles",
-                                "spec": {
-                                    "type": "text",
-                                    "default": null,
-                                    "required": false,
-                                    "multiline": false
-                                },
-                                "type": "array",
-                                "label": null,
-                                "required": false
-                            }
-                        ],
-                        "type": "collection",
                         "label": "Required tags",
-                        "required": false
-                    },
-                    {
                         "help": "",
-                        "name": "optional_tags",
+                        "type": "collection",
                         "spec": [
                             {
+                                "name": "movement_pattern",
+                                "label": "Movement pattern",
                                 "help": "",
-                                "name": "secondary_muscles",
+                                "type": "array",
                                 "spec": {
                                     "type": "text",
                                     "default": null,
                                     "required": false,
                                     "multiline": false
                                 },
-                                "type": "array",
-                                "label": "Secondary muscles",
                                 "required": false
                             },
                             {
+                                "name": "training_focus",
+                                "label": "Training focus",
                                 "help": "",
-                                "name": "special_flags",
+                                "type": "array",
                                 "spec": {
                                     "type": "text",
                                     "default": null,
                                     "required": false,
                                     "multiline": false
                                 },
+                                "required": false
+                            },
+                            {
+                                "name": "primary_muscles",
+                                "label": null,
+                                "help": "",
                                 "type": "array",
-                                "label": "Special flags",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
                                 "required": false
                             }
                         ],
-                        "type": "collection",
-                        "label": "Optional tags",
                         "required": false
                     },
                     {
+                        "name": "optional_tags",
+                        "label": "Optional tags",
                         "help": "",
-                        "name": "exclude_tags",
+                        "type": "collection",
                         "spec": [
                             {
+                                "name": "secondary_muscles",
+                                "label": "Secondary muscles",
                                 "help": "",
-                                "name": "special_flags",
+                                "type": "array",
                                 "spec": {
                                     "type": "text",
                                     "default": null,
                                     "required": false,
                                     "multiline": false
                                 },
-                                "type": "array",
+                                "required": false
+                            },
+                            {
+                                "name": "special_flags",
                                 "label": "Special flags",
+                                "help": "",
+                                "type": "array",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
                                 "required": false
                             }
                         ],
-                        "type": "collection",
-                        "label": "Exclude tags",
                         "required": false
                     },
                     {
+                        "name": "exclude_tags",
+                        "label": "Exclude tags",
                         "help": "",
+                        "type": "collection",
+                        "spec": [
+                            {
+                                "name": "special_flags",
+                                "label": "Special flags",
+                                "help": "",
+                                "type": "array",
+                                "spec": {
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                "required": false
+                            }
+                        ],
+                        "required": false
+                    },
+                    {
                         "name": "minimum_match_threshold",
-                        "type": "number",
                         "label": "Minimum match threshold",
+                        "help": "",
+                        "type": "number",
                         "default": null,
                         "required": false
                     },

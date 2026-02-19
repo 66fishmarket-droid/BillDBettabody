@@ -19,10 +19,10 @@
                 "restore": {
                     "parameters": {
                         "hook": {
+                            "label": "Bill Session Updater",
                             "data": {
                                 "editable": "true"
-                            },
-                            "label": "Bill Session Updater"
+                            }
                         }
                     }
                 },
@@ -41,6 +41,447 @@
                 ],
                 "interface": [
                     {
+                        "name": "client_id",
+                        "label": "Client ID",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "session_id",
+                        "label": "Session ID",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "session_updates",
+                        "label": "Session updates",
+                        "help": "",
+                        "type": "collection",
+                        "spec": [
+                            {
+                                "name": "phase",
+                                "label": "Phase",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "location",
+                                "label": "Location",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "focus",
+                                "label": "Focus",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "exercises",
+                                "label": "Exercises",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "macros",
+                                "label": "Macros",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "supplements",
+                                "label": "Supplements",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "notes",
+                                "label": "Notes",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "session_date",
+                                "label": "Session date",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "session_day_of_week",
+                                "label": "Session day of week",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "intended_intensity_rpe",
+                                "label": "Intended intensity rpe",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "intended_hr_zone",
+                                "label": "Intended hr zone",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "estimated_duration_minutes",
+                                "label": "Estimated duration minutes",
+                                "help": "",
+                                "type": "number",
+                                "default": null,
+                                "required": false
+                            },
+                            {
+                                "name": "linked_sport",
+                                "label": "Linked sport",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "session_status",
+                                "label": "Session status",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            },
+                            {
+                                "name": "session_summary",
+                                "label": "Session summary",
+                                "help": "",
+                                "type": "text",
+                                "default": null,
+                                "required": false,
+                                "multiline": false
+                            }
+                        ],
+                        "required": false
+                    },
+                    {
+                        "name": "steps_upsert",
+                        "label": "Steps upsert",
+                        "help": "",
+                        "type": "array",
+                        "spec": {
+                            "type": "collection",
+                            "spec": [
+                                {
+                                    "name": "step_id",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "step_order",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "number",
+                                    "default": null,
+                                    "required": false
+                                },
+                                {
+                                    "name": "segment_type",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "step_type",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "duration_type",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "duration_value",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "number",
+                                    "default": null,
+                                    "required": false
+                                },
+                                {
+                                    "name": "target_type",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "target_value",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "exercise_name",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "sets",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "number",
+                                    "default": null,
+                                    "required": false
+                                },
+                                {
+                                    "name": "reps",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "load_kg",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "rest_seconds",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "notes_coach",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "notes_athlete",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "pattern_type",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "load_start_kg",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "load_increment_kg",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "load_peak_kg",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "reps_pattern",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "rpe_pattern",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "tempo_pattern",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "tempo_per_set_pattern",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "pattern_notes",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "interval_count",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "interval_work_sec",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "interval_rest_sec",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "intensity_start",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "intensity_end",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                },
+                                {
+                                    "name": "status",
+                                    "label": null,
+                                    "help": "",
+                                    "type": "text",
+                                    "default": null,
+                                    "required": false,
+                                    "multiline": false
+                                }
+                            ],
+                            "required": false
+                        },
+                        "required": false
+                    },
+                    {
                         "name": "__IMTMETHOD__",
                         "type": "text",
                         "label": "Method"
@@ -57,28 +498,28 @@
             },
             "mapper": {
                 "from": "drive",
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING",
                 "limit": "1",
+                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "sheetId": "Plans_Sessions",
+                "includesHeaders": true,
+                "tableFirstRow": "A1:BZ1",
                 "filter": [
                     [
                         {
                             "a": "G",
-                            "b": "{{1.session_id}}",
-                            "o": "text:equal:ci"
+                            "o": "text:equal:ci",
+                            "b": "{{1.session_id}}"
                         },
                         {
                             "a": "C",
-                            "b": "{{1.client_id}}",
-                            "o": "text:equal:ci"
+                            "o": "text:equal:ci",
+                            "b": "{{1.client_id}}"
                         }
                     ]
                 ],
-                "sheetId": "Plans_Sessions",
-                "sortOrder": "asc",
-                "spreadsheetId": "1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
-                "tableFirstRow": "A1:BZ1",
-                "includesHeaders": true,
-                "valueRenderOption": "FORMATTED_VALUE",
-                "dateTimeRenderOption": "FORMATTED_STRING"
+                "sortOrder": "asc"
             },
             "metadata": {
                 "designer": {
@@ -87,31 +528,18 @@
                     "name": "B-SessUp | Find Session"
                 },
                 "restore": {
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "66Fish (66fishmarket@gmail.com)",
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            }
+                        }
+                    },
                     "expect": {
                         "from": {
                             "label": "Select from My Drive"
-                        },
-                        "orderBy": {
-                            "mode": "chose"
-                        },
-                        "sheetId": {
-                            "mode": "chose",
-                            "label": "Plans_Sessions"
-                        },
-                        "sortOrder": {
-                            "mode": "chose",
-                            "label": "Ascending"
-                        },
-                        "spreadsheetId": {
-                            "mode": "chose",
-                            "label": "Bill D'Bettabody System Core"
-                        },
-                        "tableFirstRow": {
-                            "label": "A-BZ"
-                        },
-                        "includesHeaders": {
-                            "mode": "chose",
-                            "label": "Yes"
                         },
                         "valueRenderOption": {
                             "mode": "chose",
@@ -120,15 +548,28 @@
                         "dateTimeRenderOption": {
                             "mode": "chose",
                             "label": "Formatted string"
-                        }
-                    },
-                    "parameters": {
-                        "__IMTCONN__": {
-                            "data": {
-                                "scoped": "true",
-                                "connection": "google"
-                            },
-                            "label": "66Fish (66fishmarket@gmail.com)"
+                        },
+                        "spreadsheetId": {
+                            "mode": "chose",
+                            "label": "Bill D'Bettabody System Core"
+                        },
+                        "sheetId": {
+                            "mode": "chose",
+                            "label": "Plans_Sessions"
+                        },
+                        "includesHeaders": {
+                            "mode": "chose",
+                            "label": "Yes"
+                        },
+                        "tableFirstRow": {
+                            "label": "A-BZ"
+                        },
+                        "orderBy": {
+                            "mode": "chose"
+                        },
+                        "sortOrder": {
+                            "mode": "chose",
+                            "label": "Ascending"
                         }
                     }
                 },
@@ -184,7 +625,7 @@
                     {
                         "name": "spreadsheetId",
                         "type": "select",
-                        "label": "Spreadsheet ID",
+                        "label": "Spreadsheet Name",
                         "required": true
                     },
                     {
@@ -253,418 +694,418 @@
                 "interface": [
                     {
                         "name": "__IMTLENGTH__",
-                        "type": "uinteger",
-                        "label": "Total number of bundles"
+                        "label": "Total number of bundles",
+                        "type": "uinteger"
                     },
                     {
                         "name": "__IMTINDEX__",
-                        "type": "uinteger",
-                        "label": "Bundle order position"
+                        "label": "Bundle order position",
+                        "type": "uinteger"
                     },
                     {
                         "name": "__ROW_NUMBER__",
-                        "type": "number",
-                        "label": "Row number"
+                        "label": "Row number",
+                        "type": "number"
                     },
                     {
                         "name": "__SPREADSHEET_ID__",
-                        "type": "text",
-                        "label": "Spreadsheet ID"
+                        "label": "Spreadsheet ID",
+                        "type": "text"
                     },
                     {
                         "name": "__SHEET__",
-                        "type": "text",
-                        "label": "Sheet"
+                        "label": "Sheet",
+                        "type": "text"
                     },
                     {
                         "name": "0",
-                        "type": "text",
-                        "label": "plan_id (A)"
+                        "label": "plan_id (A)",
+                        "type": "text"
                     },
                     {
                         "name": "1",
-                        "type": "text",
-                        "label": "block_id (B)"
+                        "label": "block_id (B)",
+                        "type": "text"
                     },
                     {
                         "name": "2",
-                        "type": "text",
-                        "label": "client_id (C)"
+                        "label": "client_id (C)",
+                        "type": "text"
                     },
                     {
                         "name": "3",
-                        "type": "text",
-                        "label": "week (D)"
+                        "label": "week (D)",
+                        "type": "text"
                     },
                     {
                         "name": "4",
-                        "type": "text",
-                        "label": "week_id (E)"
+                        "label": "week_id (E)",
+                        "type": "text"
                     },
                     {
                         "name": "5",
-                        "type": "text",
-                        "label": "day (F)"
+                        "label": "day (F)",
+                        "type": "text"
                     },
                     {
                         "name": "6",
-                        "type": "text",
-                        "label": "session_id (G)"
+                        "label": "session_id (G)",
+                        "type": "text"
                     },
                     {
                         "name": "7",
-                        "type": "text",
-                        "label": "phase (H)"
+                        "label": "phase (H)",
+                        "type": "text"
                     },
                     {
                         "name": "8",
-                        "type": "text",
-                        "label": "location (I)"
+                        "label": "location (I)",
+                        "type": "text"
                     },
                     {
                         "name": "9",
-                        "type": "text",
-                        "label": "focus (J)"
+                        "label": "focus (J)",
+                        "type": "text"
                     },
                     {
                         "name": "10",
-                        "type": "text",
-                        "label": "exercises (K)"
+                        "label": "exercises (K)",
+                        "type": "text"
                     },
                     {
                         "name": "11",
-                        "type": "text",
-                        "label": "macros (L)"
+                        "label": "macros (L)",
+                        "type": "text"
                     },
                     {
                         "name": "12",
-                        "type": "text",
-                        "label": "supplements (M)"
+                        "label": "supplements (M)",
+                        "type": "text"
                     },
                     {
                         "name": "13",
-                        "type": "text",
-                        "label": "notes (N)"
+                        "label": "notes (N)",
+                        "type": "text"
                     },
                     {
                         "name": "14",
-                        "type": "text",
-                        "label": "session_date (O)"
+                        "label": "session_date (O)",
+                        "type": "text"
                     },
                     {
                         "name": "15",
-                        "type": "text",
-                        "label": "session_day_of_week (P)"
+                        "label": "session_day_of_week (P)",
+                        "type": "text"
                     },
                     {
                         "name": "16",
-                        "type": "text",
-                        "label": "session_global_number (Q)"
+                        "label": "session_global_number (Q)",
+                        "type": "text"
                     },
                     {
                         "name": "17",
-                        "type": "text",
-                        "label": "intended_intensity_rpe (R)"
+                        "label": "intended_intensity_rpe (R)",
+                        "type": "text"
                     },
                     {
                         "name": "18",
-                        "type": "text",
-                        "label": "intended_hr_zone (S)"
+                        "label": "intended_hr_zone (S)",
+                        "type": "text"
                     },
                     {
                         "name": "19",
-                        "type": "text",
-                        "label": "estimated_duration_minutes (T)"
+                        "label": "estimated_duration_minutes (T)",
+                        "type": "text"
                     },
                     {
                         "name": "20",
-                        "type": "text",
-                        "label": "linked_sport (U)"
+                        "label": "linked_sport (U)",
+                        "type": "text"
                     },
                     {
                         "name": "21",
-                        "type": "text",
-                        "label": "session_status (V)"
+                        "label": "session_status (V)",
+                        "type": "text"
                     },
                     {
                         "name": "22",
-                        "type": "text",
-                        "label": "google_form_url (W)"
+                        "label": "google_form_url (W)",
+                        "type": "text"
                     },
                     {
                         "name": "23",
-                        "type": "text",
-                        "label": "session_summary (X)"
+                        "label": "session_summary (X)",
+                        "type": "text"
                     },
                     {
                         "name": "24",
-                        "type": "text",
-                        "label": "(Y)"
+                        "label": "session_notes (Y)",
+                        "type": "text"
                     },
                     {
                         "name": "25",
-                        "type": "text",
-                        "label": "(Z)"
+                        "label": "(Z)",
+                        "type": "text"
                     },
                     {
                         "name": "26",
-                        "type": "text",
-                        "label": "(AA)"
+                        "label": "(AA)",
+                        "type": "text"
                     },
                     {
                         "name": "27",
-                        "type": "text",
-                        "label": "(AB)"
+                        "label": "(AB)",
+                        "type": "text"
                     },
                     {
                         "name": "28",
-                        "type": "text",
-                        "label": "(AC)"
+                        "label": "(AC)",
+                        "type": "text"
                     },
                     {
                         "name": "29",
-                        "type": "text",
-                        "label": "(AD)"
+                        "label": "(AD)",
+                        "type": "text"
                     },
                     {
                         "name": "30",
-                        "type": "text",
-                        "label": "(AE)"
+                        "label": "(AE)",
+                        "type": "text"
                     },
                     {
                         "name": "31",
-                        "type": "text",
-                        "label": "(AF)"
+                        "label": "(AF)",
+                        "type": "text"
                     },
                     {
                         "name": "32",
-                        "type": "text",
-                        "label": "(AG)"
+                        "label": "(AG)",
+                        "type": "text"
                     },
                     {
                         "name": "33",
-                        "type": "text",
-                        "label": "(AH)"
+                        "label": "(AH)",
+                        "type": "text"
                     },
                     {
                         "name": "34",
-                        "type": "text",
-                        "label": "(AI)"
+                        "label": "(AI)",
+                        "type": "text"
                     },
                     {
                         "name": "35",
-                        "type": "text",
-                        "label": "(AJ)"
+                        "label": "(AJ)",
+                        "type": "text"
                     },
                     {
                         "name": "36",
-                        "type": "text",
-                        "label": "(AK)"
+                        "label": "(AK)",
+                        "type": "text"
                     },
                     {
                         "name": "37",
-                        "type": "text",
-                        "label": "(AL)"
+                        "label": "(AL)",
+                        "type": "text"
                     },
                     {
                         "name": "38",
-                        "type": "text",
-                        "label": "(AM)"
+                        "label": "(AM)",
+                        "type": "text"
                     },
                     {
                         "name": "39",
-                        "type": "text",
-                        "label": "(AN)"
+                        "label": "(AN)",
+                        "type": "text"
                     },
                     {
                         "name": "40",
-                        "type": "text",
-                        "label": "(AO)"
+                        "label": "(AO)",
+                        "type": "text"
                     },
                     {
                         "name": "41",
-                        "type": "text",
-                        "label": "(AP)"
+                        "label": "(AP)",
+                        "type": "text"
                     },
                     {
                         "name": "42",
-                        "type": "text",
-                        "label": "(AQ)"
+                        "label": "(AQ)",
+                        "type": "text"
                     },
                     {
                         "name": "43",
-                        "type": "text",
-                        "label": "(AR)"
+                        "label": "(AR)",
+                        "type": "text"
                     },
                     {
                         "name": "44",
-                        "type": "text",
-                        "label": "(AS)"
+                        "label": "(AS)",
+                        "type": "text"
                     },
                     {
                         "name": "45",
-                        "type": "text",
-                        "label": "(AT)"
+                        "label": "(AT)",
+                        "type": "text"
                     },
                     {
                         "name": "46",
-                        "type": "text",
-                        "label": "(AU)"
+                        "label": "(AU)",
+                        "type": "text"
                     },
                     {
                         "name": "47",
-                        "type": "text",
-                        "label": "(AV)"
+                        "label": "(AV)",
+                        "type": "text"
                     },
                     {
                         "name": "48",
-                        "type": "text",
-                        "label": "(AW)"
+                        "label": "(AW)",
+                        "type": "text"
                     },
                     {
                         "name": "49",
-                        "type": "text",
-                        "label": "(AX)"
+                        "label": "(AX)",
+                        "type": "text"
                     },
                     {
                         "name": "50",
-                        "type": "text",
-                        "label": "(AY)"
+                        "label": "(AY)",
+                        "type": "text"
                     },
                     {
                         "name": "51",
-                        "type": "text",
-                        "label": "(AZ)"
+                        "label": "(AZ)",
+                        "type": "text"
                     },
                     {
                         "name": "52",
-                        "type": "text",
-                        "label": "(BA)"
+                        "label": "(BA)",
+                        "type": "text"
                     },
                     {
                         "name": "53",
-                        "type": "text",
-                        "label": "(BB)"
+                        "label": "(BB)",
+                        "type": "text"
                     },
                     {
                         "name": "54",
-                        "type": "text",
-                        "label": "(BC)"
+                        "label": "(BC)",
+                        "type": "text"
                     },
                     {
                         "name": "55",
-                        "type": "text",
-                        "label": "(BD)"
+                        "label": "(BD)",
+                        "type": "text"
                     },
                     {
                         "name": "56",
-                        "type": "text",
-                        "label": "(BE)"
+                        "label": "(BE)",
+                        "type": "text"
                     },
                     {
                         "name": "57",
-                        "type": "text",
-                        "label": "(BF)"
+                        "label": "(BF)",
+                        "type": "text"
                     },
                     {
                         "name": "58",
-                        "type": "text",
-                        "label": "(BG)"
+                        "label": "(BG)",
+                        "type": "text"
                     },
                     {
                         "name": "59",
-                        "type": "text",
-                        "label": "(BH)"
+                        "label": "(BH)",
+                        "type": "text"
                     },
                     {
                         "name": "60",
-                        "type": "text",
-                        "label": "(BI)"
+                        "label": "(BI)",
+                        "type": "text"
                     },
                     {
                         "name": "61",
-                        "type": "text",
-                        "label": "(BJ)"
+                        "label": "(BJ)",
+                        "type": "text"
                     },
                     {
                         "name": "62",
-                        "type": "text",
-                        "label": "(BK)"
+                        "label": "(BK)",
+                        "type": "text"
                     },
                     {
                         "name": "63",
-                        "type": "text",
-                        "label": "(BL)"
+                        "label": "(BL)",
+                        "type": "text"
                     },
                     {
                         "name": "64",
-                        "type": "text",
-                        "label": "(BM)"
+                        "label": "(BM)",
+                        "type": "text"
                     },
                     {
                         "name": "65",
-                        "type": "text",
-                        "label": "(BN)"
+                        "label": "(BN)",
+                        "type": "text"
                     },
                     {
                         "name": "66",
-                        "type": "text",
-                        "label": "(BO)"
+                        "label": "(BO)",
+                        "type": "text"
                     },
                     {
                         "name": "67",
-                        "type": "text",
-                        "label": "(BP)"
+                        "label": "(BP)",
+                        "type": "text"
                     },
                     {
                         "name": "68",
-                        "type": "text",
-                        "label": "(BQ)"
+                        "label": "(BQ)",
+                        "type": "text"
                     },
                     {
                         "name": "69",
-                        "type": "text",
-                        "label": "(BR)"
+                        "label": "(BR)",
+                        "type": "text"
                     },
                     {
                         "name": "70",
-                        "type": "text",
-                        "label": "(BS)"
+                        "label": "(BS)",
+                        "type": "text"
                     },
                     {
                         "name": "71",
-                        "type": "text",
-                        "label": "(BT)"
+                        "label": "(BT)",
+                        "type": "text"
                     },
                     {
                         "name": "72",
-                        "type": "text",
-                        "label": "(BU)"
+                        "label": "(BU)",
+                        "type": "text"
                     },
                     {
                         "name": "73",
-                        "type": "text",
-                        "label": "(BV)"
+                        "label": "(BV)",
+                        "type": "text"
                     },
                     {
                         "name": "74",
-                        "type": "text",
-                        "label": "(BW)"
+                        "label": "(BW)",
+                        "type": "text"
                     },
                     {
                         "name": "75",
-                        "type": "text",
-                        "label": "(BX)"
+                        "label": "(BX)",
+                        "type": "text"
                     },
                     {
                         "name": "76",
-                        "type": "text",
-                        "label": "(BY)"
+                        "label": "(BY)",
+                        "type": "text"
                     },
                     {
                         "name": "77",
-                        "type": "text",
-                        "label": "(BZ)"
+                        "label": "(BZ)",
+                        "type": "text"
                     }
                 ]
             }
@@ -677,10 +1118,16 @@
                 "__IMTCONN__": 6600568
             },
             "mapper": {
-                "from": "drive",
                 "mode": "select",
+                "valueInputOption": "USER_ENTERED",
+                "from": "drive",
+                "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "sheetId": "Plans_Sessions",
+                "rowNumber": "{{2.`__ROW_NUMBER__`}}",
+                "includesHeaders": true,
+                "useColumnHeaders": false,
                 "values": {
-                    "7": "/",
+                    "7": "{{ifempty(1.session_updates.phase; 2.`7`)}}",
                     "8": "{{ifempty(1.session_updates.location; 2.`8`)}}",
                     "9": "{{ifempty(1.session_updates.focus; 2.`9`)}}",
                     "10": "{{ifempty(1.session_updates.exercises; 2.`10`)}}",
@@ -693,13 +1140,9 @@
                     "18": "{{ifempty(1.session_updates.intended_hr_zone; 2.`18`)}}",
                     "19": "{{ifempty(1.session_updates.estimated_duration_minutes; 2.`19`)}}",
                     "20": "{{ifempty(1.session_updates.linked_sport; 2.`20`)}}",
-                    "21": "{{ifempty(1.session_updates.session_status; 2.`21`)}}"
-                },
-                "sheetId": "Plans_Sessions",
-                "rowNumber": "{{2.`__ROW_NUMBER__`}}",
-                "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
-                "includesHeaders": true,
-                "valueInputOption": "USER_ENTERED"
+                    "21": "{{ifempty(1.session_updates.session_status; 2.`21`)}}",
+                    "23": "{{ifempty(1.session_updates.session_summary; 2.`23`)}}"
+                }
             },
             "metadata": {
                 "designer": {
@@ -708,15 +1151,25 @@
                     "name": "B-SessUp | Update Session"
                 },
                 "restore": {
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "66Fish (66fishmarket@gmail.com)",
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            }
+                        }
+                    },
                     "expect": {
-                        "from": {
-                            "label": "My Drive"
-                        },
                         "mode": {
                             "label": "Search by path"
                         },
-                        "sheetId": {
-                            "label": "Plans_Sessions"
+                        "valueInputOption": {
+                            "mode": "chose",
+                            "label": "User entered"
+                        },
+                        "from": {
+                            "label": "My Drive"
                         },
                         "spreadsheetId": {
                             "path": [
@@ -724,165 +1177,194 @@
                                 "Bill D'Bettabody System Core"
                             ]
                         },
+                        "sheetId": {
+                            "label": "Plans_Sessions"
+                        },
                         "includesHeaders": {
-                            "label": "Yes",
+                            "label": "Yes"
+                        },
+                        "useColumnHeaders": {
                             "nested": [
                                 {
                                     "name": "values",
+                                    "label": "Values in columns",
+                                    "type": "collection",
                                     "spec": [
                                         {
                                             "name": "0",
-                                            "type": "text",
-                                            "label": "plan_id (A)"
+                                            "label": "plan_id (A)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "1",
-                                            "type": "text",
-                                            "label": "block_id (B)"
+                                            "label": "block_id (B)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "2",
-                                            "type": "text",
-                                            "label": "client_id (C)"
+                                            "label": "client_id (C)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "3",
-                                            "type": "text",
-                                            "label": "week (D)"
+                                            "label": "week (D)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "4",
-                                            "type": "text",
-                                            "label": "week_id (E)"
+                                            "label": "week_id (E)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "5",
-                                            "type": "text",
-                                            "label": "day (F)"
+                                            "label": "day (F)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "6",
-                                            "type": "text",
-                                            "label": "session_id (G)"
+                                            "label": "session_id (G)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "7",
-                                            "type": "text",
-                                            "label": "phase (H)"
+                                            "label": "phase (H)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "8",
-                                            "type": "text",
-                                            "label": "location (I)"
+                                            "label": "location (I)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "9",
-                                            "type": "text",
-                                            "label": "focus (J)"
+                                            "label": "focus (J)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "10",
-                                            "type": "text",
-                                            "label": "exercises (K)"
+                                            "label": "exercises (K)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "11",
-                                            "type": "text",
-                                            "label": "macros (L)"
+                                            "label": "macros (L)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "12",
-                                            "type": "text",
-                                            "label": "supplements (M)"
+                                            "label": "supplements (M)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "13",
-                                            "type": "text",
-                                            "label": "notes (N)"
+                                            "label": "notes (N)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "14",
-                                            "type": "text",
-                                            "label": "session_date (O)"
+                                            "label": "session_date (O)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "15",
-                                            "type": "text",
-                                            "label": "session_day_of_week (P)"
+                                            "label": "session_day_of_week (P)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "16",
-                                            "type": "text",
-                                            "label": "session_global_number (Q)"
+                                            "label": "session_global_number (Q)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "17",
-                                            "type": "text",
-                                            "label": "intended_intensity_rpe (R)"
+                                            "label": "intended_intensity_rpe (R)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "18",
-                                            "type": "text",
-                                            "label": "intended_hr_zone (S)"
+                                            "label": "intended_hr_zone (S)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "19",
-                                            "type": "text",
-                                            "label": "estimated_duration_minutes (T)"
+                                            "label": "estimated_duration_minutes (T)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "20",
-                                            "type": "text",
-                                            "label": "linked_sport (U)"
+                                            "label": "linked_sport (U)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "21",
-                                            "type": "text",
-                                            "label": "session_status (V)"
+                                            "label": "session_status (V)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "22",
-                                            "type": "text",
-                                            "label": "(W)"
+                                            "label": "google_form_url (W)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "23",
-                                            "type": "text",
-                                            "label": "(X)"
+                                            "label": "session_summary (X)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "24",
-                                            "type": "text",
-                                            "label": "(Y)"
+                                            "label": "session_notes (Y)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "25",
-                                            "type": "text",
-                                            "label": "(Z)"
+                                            "label": "(Z)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "26",
-                                            "type": "text",
-                                            "label": "(AA)"
+                                            "label": "(AA)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "27",
+                                            "label": "(AB)",
+                                            "type": "text"
                                         }
                                     ],
-                                    "type": "collection",
-                                    "label": "Values"
+                                    "metadata": [
+                                        [
+                                            [
+                                                "plan_id",
+                                                "block_id",
+                                                "client_id",
+                                                "week",
+                                                "week_id",
+                                                "day",
+                                                "session_id",
+                                                "phase",
+                                                "location",
+                                                "focus",
+                                                "exercises",
+                                                "macros",
+                                                "supplements",
+                                                "notes",
+                                                "session_date",
+                                                "session_day_of_week",
+                                                "session_global_number",
+                                                "intended_intensity_rpe",
+                                                "intended_hr_zone",
+                                                "estimated_duration_minutes",
+                                                "linked_sport",
+                                                "session_status",
+                                                "google_form_url",
+                                                "session_summary",
+                                                "session_notes"
+                                            ]
+                                        ]
+                                    ]
                                 }
-                            ]
-                        },
-                        "valueInputOption": {
-                            "mode": "chose",
-                            "label": "User entered"
-                        }
-                    },
-                    "parameters": {
-                        "__IMTCONN__": {
-                            "data": {
-                                "scoped": "true",
-                                "connection": "google"
-                            },
-                            "label": "66Fish (66fishmarket@gmail.com)"
+                            ],
+                            "label": "No"
                         }
                     }
                 },
@@ -935,7 +1417,7 @@
                     {
                         "name": "spreadsheetId",
                         "type": "file",
-                        "label": "Spreadsheet ID",
+                        "label": "Spreadsheet Name",
                         "required": true
                     },
                     {
@@ -963,7 +1445,52 @@
                         }
                     },
                     {
+                        "name": "useColumnHeaders",
+                        "type": "select",
+                        "label": "Use column headers as IDs of the columns",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
                         "name": "values",
+                        "type": "collection",
+                        "label": "Values in columns",
+                        "metadata": [
+                            [
+                                [
+                                    "plan_id",
+                                    "block_id",
+                                    "client_id",
+                                    "week",
+                                    "week_id",
+                                    "day",
+                                    "session_id",
+                                    "phase",
+                                    "location",
+                                    "focus",
+                                    "exercises",
+                                    "macros",
+                                    "supplements",
+                                    "notes",
+                                    "session_date",
+                                    "session_day_of_week",
+                                    "session_global_number",
+                                    "intended_intensity_rpe",
+                                    "intended_hr_zone",
+                                    "estimated_duration_minutes",
+                                    "linked_sport",
+                                    "session_status",
+                                    "google_form_url",
+                                    "session_summary",
+                                    "session_notes"
+                                ]
+                            ]
+                        ],
                         "spec": [
                             {
                                 "name": "0",
@@ -1078,17 +1605,17 @@
                             {
                                 "name": "22",
                                 "type": "text",
-                                "label": "(W)"
+                                "label": "google_form_url (W)"
                             },
                             {
                                 "name": "23",
                                 "type": "text",
-                                "label": "(X)"
+                                "label": "session_summary (X)"
                             },
                             {
                                 "name": "24",
                                 "type": "text",
-                                "label": "(Y)"
+                                "label": "session_notes (Y)"
                             },
                             {
                                 "name": "25",
@@ -1099,10 +1626,13 @@
                                 "name": "26",
                                 "type": "text",
                                 "label": "(AA)"
+                            },
+                            {
+                                "name": "27",
+                                "type": "text",
+                                "label": "(AB)"
                             }
-                        ],
-                        "type": "collection",
-                        "label": "Values"
+                        ]
                     }
                 ]
             }
@@ -2024,8 +2554,14 @@
                 "__IMTCONN__": 6600568
             },
             "mapper": {
-                "from": "drive",
                 "mode": "select",
+                "valueInputOption": "USER_ENTERED",
+                "from": "drive",
+                "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
+                "sheetId": "Plans_Steps",
+                "rowNumber": "{{7.`__ROW_NUMBER__`}}",
+                "includesHeaders": true,
+                "useColumnHeaders": false,
                 "values": {
                     "5": "{{ifempty(6.step_order; 7.`5`)}}",
                     "6": "{{ifempty(6.segment_type; 7.`6`)}}",
@@ -2056,12 +2592,7 @@
                     "31": "{{ifempty(6.interval_rest_sec; 7.`31`)}}",
                     "32": "{{ifempty(6.intensity_start; 7.`32`)}}",
                     "33": "{{ifempty(6.intensity_end; 7.`33`)}}"
-                },
-                "sheetId": "Plans_Steps",
-                "rowNumber": "{{7.`__ROW_NUMBER__`}}",
-                "spreadsheetId": "/1cHXeFs6OoVJHQpImpybaFa1iet4AHlz6/1M7BWE8NaMdkS2b02QABBKwJcVDfFOft_oqwZI2zGN7I",
-                "includesHeaders": true,
-                "valueInputOption": "USER_ENTERED"
+                }
             },
             "metadata": {
                 "designer": {
@@ -2070,15 +2601,25 @@
                     "name": "B-SessUp | Update Steps"
                 },
                 "restore": {
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "label": "66Fish (66fishmarket@gmail.com)",
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            }
+                        }
+                    },
                     "expect": {
-                        "from": {
-                            "label": "My Drive"
-                        },
                         "mode": {
                             "label": "Search by path"
                         },
-                        "sheetId": {
-                            "label": "Plans_Steps"
+                        "valueInputOption": {
+                            "mode": "chose",
+                            "label": "User entered"
+                        },
+                        "from": {
+                            "label": "My Drive"
                         },
                         "spreadsheetId": {
                             "path": [
@@ -2086,200 +2627,407 @@
                                 "Bill D'Bettabody System Core"
                             ]
                         },
+                        "sheetId": {
+                            "label": "Plans_Steps"
+                        },
                         "includesHeaders": {
-                            "label": "Yes",
+                            "label": "Yes"
+                        },
+                        "useColumnHeaders": {
                             "nested": [
                                 {
                                     "name": "values",
+                                    "label": "Values in columns",
+                                    "type": "collection",
                                     "spec": [
                                         {
                                             "name": "0",
-                                            "type": "text",
-                                            "label": "step_id (A)"
+                                            "label": "step_id (A)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "1",
-                                            "type": "text",
-                                            "label": "session_id (B)"
+                                            "label": "session_id (B)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "2",
-                                            "type": "text",
-                                            "label": "week_id (C)"
+                                            "label": "week_id (C)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "3",
-                                            "type": "text",
-                                            "label": "block_id (D)"
+                                            "label": "block_id (D)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "4",
-                                            "type": "text",
-                                            "label": "client_id (E)"
+                                            "label": "client_id (E)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "5",
-                                            "type": "text",
-                                            "label": "step_order (F)"
+                                            "label": "step_order (F)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "6",
-                                            "type": "text",
-                                            "label": "segment_type (G)"
+                                            "label": "segment_type (G)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "7",
-                                            "type": "text",
-                                            "label": "step_type (H)"
+                                            "label": "step_type (H)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "8",
-                                            "type": "text",
-                                            "label": "duration_type (I)"
+                                            "label": "duration_type (I)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "9",
-                                            "type": "text",
-                                            "label": "duration_value (J)"
+                                            "label": "duration_value (J)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "10",
-                                            "type": "text",
-                                            "label": "target_type (K)"
+                                            "label": "target_type (K)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "11",
-                                            "type": "text",
-                                            "label": "target_value (L)"
+                                            "label": "target_value (L)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "12",
-                                            "type": "text",
-                                            "label": "exercise_name (M)"
+                                            "label": "exercise_name (M)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "13",
-                                            "type": "text",
-                                            "label": "sets (N)"
+                                            "label": "sets (N)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "14",
-                                            "type": "text",
-                                            "label": "reps (O)"
+                                            "label": "reps (O)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "15",
-                                            "type": "text",
-                                            "label": "load_kg (P)"
+                                            "label": "load_kg (P)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "16",
-                                            "type": "text",
-                                            "label": "rest_seconds (Q)"
+                                            "label": "rest_seconds (Q)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "17",
-                                            "type": "text",
-                                            "label": "notes_coach (R)"
+                                            "label": "notes_coach (R)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "18",
-                                            "type": "text",
-                                            "label": "notes_athlete (S)"
+                                            "label": "notes_athlete (S)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "19",
-                                            "type": "text",
-                                            "label": "status (T)"
+                                            "label": "status (T)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "20",
-                                            "type": "text",
-                                            "label": "pattern_type (U)"
+                                            "label": "pattern_type (U)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "21",
-                                            "type": "text",
-                                            "label": "load_start_kg (V)"
+                                            "label": "load_start_kg (V)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "22",
-                                            "type": "text",
-                                            "label": "load_increment_kg (W)"
+                                            "label": "load_increment_kg (W)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "23",
-                                            "type": "text",
-                                            "label": "load_peak_kg (X)"
+                                            "label": "load_peak_kg (X)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "24",
-                                            "type": "text",
-                                            "label": "reps_pattern (Y)"
+                                            "label": "reps_pattern (Y)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "25",
-                                            "type": "text",
-                                            "label": "rpe_pattern (Z)"
+                                            "label": "rpe_pattern (Z)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "26",
-                                            "type": "text",
-                                            "label": "tempo_pattern (AA)"
+                                            "label": "tempo_pattern (AA)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "27",
-                                            "type": "text",
-                                            "label": "tempo_per_set_pattern (AB)"
+                                            "label": "tempo_per_set_pattern (AB)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "28",
-                                            "type": "text",
-                                            "label": "pattern_notes (AC)"
+                                            "label": "pattern_notes (AC)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "29",
-                                            "type": "text",
-                                            "label": "interval_count (AD)"
+                                            "label": "interval_count (AD)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "30",
-                                            "type": "text",
-                                            "label": "interval_work_sec (AE)"
+                                            "label": "interval_work_sec (AE)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "31",
-                                            "type": "text",
-                                            "label": "interval_rest_sec (AF)"
+                                            "label": "interval_rest_sec (AF)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "32",
-                                            "type": "text",
-                                            "label": "intensity_start (AG)"
+                                            "label": "intensity_start (AG)",
+                                            "type": "text"
                                         },
                                         {
                                             "name": "33",
-                                            "type": "text",
-                                            "label": "intensity_end (AH)"
+                                            "label": "intensity_end (AH)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "34",
+                                            "label": "actual_set1_reps (AI)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "35",
+                                            "label": "actual_set2_reps (AJ)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "36",
+                                            "label": "actual_set3_reps (AK)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "37",
+                                            "label": "actual_set4_reps (AL)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "38",
+                                            "label": "actual_set5_reps (AM)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "39",
+                                            "label": "actual_set1_value (AN)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "40",
+                                            "label": "actual_set2_value (AO)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "41",
+                                            "label": "actual_set3_value (AP)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "42",
+                                            "label": "actual_set4_value (AQ)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "43",
+                                            "label": "actual_set5_value (AR)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "44",
+                                            "label": "actual_set1_metric (AS)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "45",
+                                            "label": "actual_set2_metric (AT)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "46",
+                                            "label": "actual_set3_metric (AU)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "47",
+                                            "label": "actual_set4_metric (AV)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "48",
+                                            "label": "actual_set5_metric (AW)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "49",
+                                            "label": "actual_set1_rpe (AX)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "50",
+                                            "label": "actual_set2_rpe (AY)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "51",
+                                            "label": "actual_set3_rpe (AZ)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "52",
+                                            "label": "actual_set4_rpe (BA)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "53",
+                                            "label": "actual_set5_rpe (BB)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "54",
+                                            "label": "actual_top_set_value (BC)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "55",
+                                            "label": "actual_top_set_metric (BD)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "56",
+                                            "label": "actual_top_set_reps (BE)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "57",
+                                            "label": "actual_top_set_rpe (BF)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "58",
+                                            "label": "metric_key (BG)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "59",
+                                            "label": "metric_context_key (BH)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "60",
+                                            "label": "better_value (BI)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "61",
+                                            "label": "completed_timestamp (BJ)",
+                                            "type": "text"
+                                        },
+                                        {
+                                            "name": "62",
+                                            "label": "bests_processed_at (BK)",
+                                            "type": "text"
                                         }
                                     ],
-                                    "type": "collection",
-                                    "label": "Values"
+                                    "metadata": [
+                                        [
+                                            [
+                                                "step_id",
+                                                "session_id",
+                                                "week_id",
+                                                "block_id",
+                                                "client_id",
+                                                "step_order",
+                                                "segment_type",
+                                                "step_type",
+                                                "duration_type",
+                                                "duration_value",
+                                                "target_type",
+                                                "target_value",
+                                                "exercise_name",
+                                                "sets",
+                                                "reps",
+                                                "load_kg",
+                                                "rest_seconds",
+                                                "notes_coach",
+                                                "notes_athlete",
+                                                "status",
+                                                "pattern_type",
+                                                "load_start_kg",
+                                                "load_increment_kg",
+                                                "load_peak_kg",
+                                                "reps_pattern",
+                                                "rpe_pattern",
+                                                "tempo_pattern",
+                                                "tempo_per_set_pattern",
+                                                "pattern_notes",
+                                                "interval_count",
+                                                "interval_work_sec",
+                                                "interval_rest_sec",
+                                                "intensity_start",
+                                                "intensity_end",
+                                                "actual_set1_reps",
+                                                "actual_set2_reps",
+                                                "actual_set3_reps",
+                                                "actual_set4_reps",
+                                                "actual_set5_reps",
+                                                "actual_set1_value",
+                                                "actual_set2_value",
+                                                "actual_set3_value",
+                                                "actual_set4_value",
+                                                "actual_set5_value",
+                                                "actual_set1_metric",
+                                                "actual_set2_metric",
+                                                "actual_set3_metric",
+                                                "actual_set4_metric",
+                                                "actual_set5_metric",
+                                                "actual_set1_rpe",
+                                                "actual_set2_rpe",
+                                                "actual_set3_rpe",
+                                                "actual_set4_rpe",
+                                                "actual_set5_rpe",
+                                                "actual_top_set_value",
+                                                "actual_top_set_metric",
+                                                "actual_top_set_reps",
+                                                "actual_top_set_rpe",
+                                                "metric_key",
+                                                "metric_context_key",
+                                                "better_value",
+                                                "completed_timestamp",
+                                                "bests_processed_at"
+                                            ]
+                                        ]
+                                    ]
                                 }
-                            ]
-                        },
-                        "valueInputOption": {
-                            "mode": "chose",
-                            "label": "User entered"
-                        }
-                    },
-                    "parameters": {
-                        "__IMTCONN__": {
-                            "data": {
-                                "scoped": "true",
-                                "connection": "google"
-                            },
-                            "label": "66Fish (66fishmarket@gmail.com)"
+                            ],
+                            "label": "No"
                         }
                     }
                 },
@@ -2332,7 +3080,7 @@
                     {
                         "name": "spreadsheetId",
                         "type": "file",
-                        "label": "Spreadsheet ID",
+                        "label": "Spreadsheet Name",
                         "required": true
                     },
                     {
@@ -2360,7 +3108,90 @@
                         }
                     },
                     {
+                        "name": "useColumnHeaders",
+                        "type": "select",
+                        "label": "Use column headers as IDs of the columns",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
                         "name": "values",
+                        "type": "collection",
+                        "label": "Values in columns",
+                        "metadata": [
+                            [
+                                [
+                                    "step_id",
+                                    "session_id",
+                                    "week_id",
+                                    "block_id",
+                                    "client_id",
+                                    "step_order",
+                                    "segment_type",
+                                    "step_type",
+                                    "duration_type",
+                                    "duration_value",
+                                    "target_type",
+                                    "target_value",
+                                    "exercise_name",
+                                    "sets",
+                                    "reps",
+                                    "load_kg",
+                                    "rest_seconds",
+                                    "notes_coach",
+                                    "notes_athlete",
+                                    "status",
+                                    "pattern_type",
+                                    "load_start_kg",
+                                    "load_increment_kg",
+                                    "load_peak_kg",
+                                    "reps_pattern",
+                                    "rpe_pattern",
+                                    "tempo_pattern",
+                                    "tempo_per_set_pattern",
+                                    "pattern_notes",
+                                    "interval_count",
+                                    "interval_work_sec",
+                                    "interval_rest_sec",
+                                    "intensity_start",
+                                    "intensity_end",
+                                    "actual_set1_reps",
+                                    "actual_set2_reps",
+                                    "actual_set3_reps",
+                                    "actual_set4_reps",
+                                    "actual_set5_reps",
+                                    "actual_set1_value",
+                                    "actual_set2_value",
+                                    "actual_set3_value",
+                                    "actual_set4_value",
+                                    "actual_set5_value",
+                                    "actual_set1_metric",
+                                    "actual_set2_metric",
+                                    "actual_set3_metric",
+                                    "actual_set4_metric",
+                                    "actual_set5_metric",
+                                    "actual_set1_rpe",
+                                    "actual_set2_rpe",
+                                    "actual_set3_rpe",
+                                    "actual_set4_rpe",
+                                    "actual_set5_rpe",
+                                    "actual_top_set_value",
+                                    "actual_top_set_metric",
+                                    "actual_top_set_reps",
+                                    "actual_top_set_rpe",
+                                    "metric_key",
+                                    "metric_context_key",
+                                    "better_value",
+                                    "completed_timestamp",
+                                    "bests_processed_at"
+                                ]
+                            ]
+                        ],
                         "spec": [
                             {
                                 "name": "0",
@@ -2531,10 +3362,153 @@
                                 "name": "33",
                                 "type": "text",
                                 "label": "intensity_end (AH)"
+                            },
+                            {
+                                "name": "34",
+                                "type": "text",
+                                "label": "actual_set1_reps (AI)"
+                            },
+                            {
+                                "name": "35",
+                                "type": "text",
+                                "label": "actual_set2_reps (AJ)"
+                            },
+                            {
+                                "name": "36",
+                                "type": "text",
+                                "label": "actual_set3_reps (AK)"
+                            },
+                            {
+                                "name": "37",
+                                "type": "text",
+                                "label": "actual_set4_reps (AL)"
+                            },
+                            {
+                                "name": "38",
+                                "type": "text",
+                                "label": "actual_set5_reps (AM)"
+                            },
+                            {
+                                "name": "39",
+                                "type": "text",
+                                "label": "actual_set1_value (AN)"
+                            },
+                            {
+                                "name": "40",
+                                "type": "text",
+                                "label": "actual_set2_value (AO)"
+                            },
+                            {
+                                "name": "41",
+                                "type": "text",
+                                "label": "actual_set3_value (AP)"
+                            },
+                            {
+                                "name": "42",
+                                "type": "text",
+                                "label": "actual_set4_value (AQ)"
+                            },
+                            {
+                                "name": "43",
+                                "type": "text",
+                                "label": "actual_set5_value (AR)"
+                            },
+                            {
+                                "name": "44",
+                                "type": "text",
+                                "label": "actual_set1_metric (AS)"
+                            },
+                            {
+                                "name": "45",
+                                "type": "text",
+                                "label": "actual_set2_metric (AT)"
+                            },
+                            {
+                                "name": "46",
+                                "type": "text",
+                                "label": "actual_set3_metric (AU)"
+                            },
+                            {
+                                "name": "47",
+                                "type": "text",
+                                "label": "actual_set4_metric (AV)"
+                            },
+                            {
+                                "name": "48",
+                                "type": "text",
+                                "label": "actual_set5_metric (AW)"
+                            },
+                            {
+                                "name": "49",
+                                "type": "text",
+                                "label": "actual_set1_rpe (AX)"
+                            },
+                            {
+                                "name": "50",
+                                "type": "text",
+                                "label": "actual_set2_rpe (AY)"
+                            },
+                            {
+                                "name": "51",
+                                "type": "text",
+                                "label": "actual_set3_rpe (AZ)"
+                            },
+                            {
+                                "name": "52",
+                                "type": "text",
+                                "label": "actual_set4_rpe (BA)"
+                            },
+                            {
+                                "name": "53",
+                                "type": "text",
+                                "label": "actual_set5_rpe (BB)"
+                            },
+                            {
+                                "name": "54",
+                                "type": "text",
+                                "label": "actual_top_set_value (BC)"
+                            },
+                            {
+                                "name": "55",
+                                "type": "text",
+                                "label": "actual_top_set_metric (BD)"
+                            },
+                            {
+                                "name": "56",
+                                "type": "text",
+                                "label": "actual_top_set_reps (BE)"
+                            },
+                            {
+                                "name": "57",
+                                "type": "text",
+                                "label": "actual_top_set_rpe (BF)"
+                            },
+                            {
+                                "name": "58",
+                                "type": "text",
+                                "label": "metric_key (BG)"
+                            },
+                            {
+                                "name": "59",
+                                "type": "text",
+                                "label": "metric_context_key (BH)"
+                            },
+                            {
+                                "name": "60",
+                                "type": "text",
+                                "label": "better_value (BI)"
+                            },
+                            {
+                                "name": "61",
+                                "type": "text",
+                                "label": "completed_timestamp (BJ)"
+                            },
+                            {
+                                "name": "62",
+                                "type": "text",
+                                "label": "bests_processed_at (BK)"
                             }
-                        ],
-                        "type": "collection",
-                        "label": "Values"
+                        ]
                     }
                 ]
             }

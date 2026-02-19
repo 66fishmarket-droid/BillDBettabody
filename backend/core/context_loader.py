@@ -10,7 +10,7 @@ PROMPT CACHING STRATEGY:
 - Expected savings: 90% reduction on cached portions after first request
 
 Cache invalidation: Different instruction combinations create separate caches
-(e.g., with_exercise_canonical vs without). This is GOOD - each mode gets its own cache.
+(e.g., coach vs developer mode). This is GOOD - each mode gets its own cache.
 """
 
 import os
@@ -61,59 +61,6 @@ def load_scenario_helper():
     return load_section_from_file(filepath)
 
 
-def load_exercise_library_quick_ref():
-    """
-    Load Exercise Library Quick Reference
-    
-    PURPOSE: Exercise name lookup for prescription/selection
-    Contains: Exercise names, basic classification, equipment
-    
-    WHEN TO USE: Always when prescribing training
-    
-    Returns:
-        str: Exercise library quick reference content
-    """
-    quick_ref_path = os.path.join(
-        Config.DOCS_DIR,
-        'Exercise_Instructions',
-        'Exercise_Library_QuickRef_v2.txt'
-    )
-    
-    if os.path.exists(quick_ref_path):
-        print("[Context Loader] Loading Exercise Library Quick Reference")
-        return load_section_from_file(quick_ref_path)
-    
-    print("[Context Loader] WARNING: Exercise Library QuickRef not found!")
-    return ""
-
-
-def load_exercise_library_canonical():
-    """
-    Load Exercise Library Canonical (Full Details)
-    
-    PURPOSE: Detailed exercise information for user education
-    Contains: Full descriptions, coaching cues, safety notes, 
-              common mistakes, progressions/regressions, YouTube links
-    
-    WHEN TO USE: When user asks about specific exercises
-    
-    Returns:
-        str: Exercise library canonical content
-    """
-    canonical_path = os.path.join(
-        Config.DOCS_DIR,
-        'Exercise_Instructions',
-        'Exercise_Library_Canonical_v2_full.txt'
-    )
-    
-    if os.path.exists(canonical_path):
-        print("[Context Loader] Loading Exercise Library Canonical (Full Details)")
-        return load_section_from_file(canonical_path)
-    
-    print("[Context Loader] WARNING: Exercise Library Canonical not found!")
-    return ""
-
-
 def load_bill_core_instructions():
     """
     Load core Bill instructions (always loaded)
@@ -131,27 +78,20 @@ def load_bill_core_instructions():
     return load_section_from_file(filepath)
 
 
-def load_bill_instructions(mode, client_state, operation_type='chat', 
-                          include_exercise_quickref=False, 
-                          include_exercise_canonical=False):
+def load_bill_instructions(mode, client_state, operation_type='chat'):
     """
-    Load Bill instructions selectively based on context
-    
-    OPTIMIZATION STRATEGY:
-    - Always load: Sections 0 (priorities) and 1 (identity/safety)
-    - Mode-specific: Coach vs Developer vs Tech
-    - State-specific: Stranger vs Onboarding vs Ready
-    - Operation-specific: Chat vs Webhook vs Planning
-    - Exercise QuickRef: When prescribing training
-    - Exercise Canonical: When explaining exercises in detail
-    
+    Load Bill instructions selectively based on context.
+
+    Exercise library is NOT loaded here — it lives in Google Sheets
+    (Exercise_Library tab) and is delivered to Bill at plan-generation
+    time via the exercise_filter Make.com webhook, and for session
+    enrichment via sheets_client.py.
+
     Args:
         mode: OperatingMode value ('coach', 'tech', 'developer')
         client_state: ClientState value ('stranger', 'onboarding', 'ready')
         operation_type: Type of operation ('chat', 'webhook', 'planning')
-        include_exercise_quickref: Load exercise names for prescription
-        include_exercise_canonical: Load full exercise details for education
-        
+
     Returns:
         str: Assembled instruction text
     """
@@ -178,41 +118,6 @@ def load_bill_instructions(mode, client_state, operation_type='chat',
     instructions_parts.append(f"OPERATION TYPE: {operation_type.upper()}")
     instructions_parts.append("=" * 60)
     instructions_parts.append("")
-    
-    # EXERCISE LIBRARY QUICK REFERENCE (for prescription)
-    # Section 4.1a: Bill MUST ONLY use exercises from this library
-    if include_exercise_quickref or operation_type in ['planning', 'training', 'session']:
-        instructions_parts.append("=" * 60)
-        instructions_parts.append("EXERCISE LIBRARY - QUICK REFERENCE")
-        instructions_parts.append("(Exercise names for prescription - VERBATIM MATCH REQUIRED)")
-        instructions_parts.append("=" * 60)
-        instructions_parts.append("")
-        
-        exercise_quickref = load_exercise_library_quick_ref()
-        if exercise_quickref:
-            instructions_parts.append(exercise_quickref)
-        else:
-            instructions_parts.append("ERROR: Exercise QuickRef not loaded!")
-            instructions_parts.append("Bill CANNOT prescribe training without canonical exercise names.")
-        
-        instructions_parts.append("")
-    
-    # EXERCISE LIBRARY CANONICAL (for detailed explanations)
-    # Load when user asks about exercises
-    if include_exercise_canonical:
-        instructions_parts.append("=" * 60)
-        instructions_parts.append("EXERCISE LIBRARY - CANONICAL (FULL DETAILS)")
-        instructions_parts.append("(Detailed descriptions, cues, safety notes, videos)")
-        instructions_parts.append("=" * 60)
-        instructions_parts.append("")
-        
-        exercise_canonical = load_exercise_library_canonical()
-        if exercise_canonical:
-            instructions_parts.append(exercise_canonical)
-        else:
-            instructions_parts.append("WARNING: Exercise Canonical not loaded!")
-        
-        instructions_parts.append("")
     
     # Load Scenario Helper if webhook operation
     if operation_type == 'webhook' or mode == OperatingMode.DEVELOPER:
@@ -567,41 +472,6 @@ def _row_summary(row):
     return ' | '.join(values[:5]) if values else '(empty)'
 
 
-def detect_exercise_question(message):
-    """
-    Detect if user is asking about specific exercises
-    
-    Triggers canonical library loading for:
-    - "How do I do X?"
-    - "What's a good form for Y?"
-    - "Show me how to Z"
-    - "Tell me about [exercise]"
-    
-    Args:
-        message: User's message
-        
-    Returns:
-        bool: True if asking about exercise details
-    """
-    exercise_keywords = [
-        'how do i do',
-        'how to do',
-        'show me how',
-        'tell me about',
-        'what is a',
-        'explain',
-        'demonstrate',
-        'form check',
-        'technique',
-        'video for',
-        'link to',
-        'youtube'
-    ]
-    
-    message_lower = message.lower()
-    return any(keyword in message_lower for keyword in exercise_keywords)
-
-
 def build_system_prompt(session, include_context=True, user_message=None):
     """
     Build complete system prompt for Claude WITH PROMPT CACHING
@@ -628,44 +498,21 @@ def build_system_prompt(session, include_context=True, user_message=None):
     4. Exercise science
     5. Communication style
     
-    SMART LOADING:
-    - QuickRef: Auto-loaded for READY clients (might prescribe)
-    - Canonical: Loaded only when user asks about exercises
-    
     Args:
         session: Session dict with mode, state, context
         include_context: Whether to include client context in prompt
-        user_message: Current user message (for exercise question detection)
-        
+        user_message: Unused — kept for API compatibility
+
     Returns:
         list: Structured system messages for Claude API (with cache_control)
     """
-    
+
     mode = session.get('mode', OperatingMode.COACH)
     state = session.get('state', ClientState.STRANGER)
     operation_type = 'chat'  # Default, can be overridden
-    
-    # Auto-detect exercise library needs
-    include_exercise_quickref = False
-    include_exercise_canonical = False
-    
-    # Load QuickRef if client is READY (might discuss/prescribe training)
-    if state == ClientState.READY:
-        include_exercise_quickref = True
-    
-    # Load Canonical if user is asking about specific exercises
-    if user_message and detect_exercise_question(user_message):
-        include_exercise_canonical = True
-        print("[Context Loader] Exercise question detected - loading canonical library")
-    
+
     # Load Bill instructions (STABLE - WILL BE CACHED)
-    instructions = load_bill_instructions(
-        mode, 
-        state, 
-        operation_type,
-        include_exercise_quickref=include_exercise_quickref,
-        include_exercise_canonical=include_exercise_canonical
-    )
+    instructions = load_bill_instructions(mode, state, operation_type)
     
     # Build structured system messages array
     system_messages = []

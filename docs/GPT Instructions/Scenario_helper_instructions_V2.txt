@@ -1,0 +1,2163 @@
+============================================================
+SCENARIO: Bill - User Upsert
+CANONICAL SOURCE: Make Blueprint JSON (Bill - User Upsert blueprint (1).json)
+WEBHOOK LABEL: POST/user/upsert
+WEBHOOK URL: https://hook.eu2.make.com/cwxh4f7a7akrfnr9ljilctodqm8355af
+PURPOSE: Create or update a client profile row in Google Sheets (Clients sheet).
+         If client_id exists -> update row. If not -> add new row.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger (POST/user/upsert)
+Module 10: filterRows - Search Clients sheet column A for client_id (case-insensitive)
+Module 8:  SetVariables - Capture existing chronic_contraindications value (chronic_old)
+Module 9:  SetVariable2 - Compute merged chronic_contraindications (chronic_new)
+Router:
+  Branch A (client_found): __ROW_NUMBER__ > 0
+    Module 4: updateRow - Update existing Clients row
+    Module 6: WebhookRespond - Return action: "updated"
+  Branch B (client_not_found): __IMTLENGTH__ < 1
+    Module 5: addRow - Insert new Clients row
+    Module 7: WebhookRespond - Return action: "created"
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED — used to look up existing row; also written to column A
+- data (object) REQUIRED — all profile fields nested inside this object
+
+CRITICAL PARTIAL UPDATE RULE:
+Bill MUST treat this as a partial update. Only send fields that are being
+explicitly set or confirmed by the user. Do NOT send empty strings to overwrite
+existing data unless the user has explicitly cleared a field.
+
+EXCEPTION: chronic_contraindications MUST always be sent (see merge logic below).
+Send "" if no new chronic condition is being added.
+
+-----------------------------
+data FIELDS (all inside data object)
+-----------------------------
+Columns confirmed from Make blueprint (column letter in parentheses):
+
+IDENTITY
+- client_id (string) [A] — echo of top-level client_id; written into sheet
+- first_name (string) [B]
+- last_name (string) [C]
+- email (string) [D]
+- timezone (string) [E] — e.g. "Europe/London"
+
+DEMOGRAPHICS
+- sex (string) [F]
+- age_years (number or string) [G]
+- height_cm (number or string) [H]
+- weight_kg (number or string) [I]
+- waist_circumference_cm (number or string) [J]
+
+TRAINING BACKGROUND
+- training_experience (string) [K] — e.g. "beginner", "intermediate", "advanced"
+- primary_background (string) [L] — e.g. "gym", "running", "sport", "none"
+- last_trained_date (string) [M] — recommended format YYYY-MM-DD
+- typical_sessions_per_week_last_3_months (number or string) [N]
+- cardio_fitness_level (string) [O]
+- strength_level (string) [P]
+- movement_quality (string) [Q] — e.g. "good", "fair", "poor"
+
+GOALS
+- goals (string) [R] — free-text summary of goals
+- goal_primary (string) [S]
+- goal_secondary (string) [T]
+- goal_tertiary (string) [U]
+- goal_timeframe_months (number or string) [V]
+
+SCHEDULE & EQUIPMENT
+- schedule (string) [W] — e.g. "Mon/Wed/Fri"
+- equipment (string) [X] — free-text summary of all available equipment
+- equipment_home (string) [Y]
+- equipment_gym (string) [Z]
+- equipment_preference (string) [AA] — e.g. "home", "gym", "both"
+- has_pool (string) [AB] — e.g. "yes", "no"
+- has_track_or_safe_run (string) [AC] — e.g. "yes", "no"
+- gym_travel_time_minutes (number or string) [AD]
+
+CONTRAINDICATIONS & RISK
+- chronic_contraindications (string) [AE] READ-ONLY — do NOT send via upsert; see contraindications rules below
+- injuries (string) [AF] READ-ONLY — do NOT send via upsert; see contraindications rules below
+- risk_summary (string) [AG]
+
+NUTRITION
+- diet_style (string) [AH]
+- calorie_target (number or string) [AI]
+- protein_min (number or string) [AJ]
+- supplements (string) [AK]
+
+LIFESTYLE
+- sleep_quality (string) [AL]
+- stress_level (string) [AM]
+- work_pattern (string) [AN]
+- family_responsibilities (string) [AO]
+
+WEARABLES
+- watch_platform (string) [AP]
+- watch_user_id (string) [AQ]
+
+COACHING METADATA
+- preferences (string) [AR] — see preferences field rules below
+- notes (string) [AS] — see notes field rules below
+- last_profile_update (string) [AT] — ISO datetime e.g. "2026-01-05T12:00:00Z"
+
+LOCATION & TRAVEL
+- home_location (string) [AU] — free-text: home base / city / region
+- upcoming_travel (string) [AV] — free-text: travel notes/dates/locations
+
+COACHING LITERACY (dropdown-validated in Google Sheets)
+- understands_tempo (string) [AW] — MUST be one of: "yes" | "somewhat" | "no"
+- understands_loading_patterns (string) [AX] — MUST be one of: "yes" | "somewhat" | "no"
+- detail_level_preference (string) [AY] — MUST be one of: "minimal" | "standard" | "detailed"
+
+KNOWN MAKE QUIRK:
+Column AW (understands_tempo) has a typo in Make's internal label: "undertands_tempo".
+This does NOT affect functionality as Make maps by column number, not label.
+The correct payload key is data.understands_tempo (no typo).
+
+-----------------------------
+CONTRAINDICATIONS ARCHITECTURE (CRITICAL)
+-----------------------------
+injuries (AF) and chronic_contraindications (AE) are READ-ONLY fields on the
+Clients sheet. Bill MUST NOT write to them via this webhook.
+
+SOURCE OF TRUTH:
+- Active injuries        → Contraindications_Temp sheet (written via Bill - Add Injury)
+- Chronic conditions     → Contraindications_Chronic sheet (written via Bill - Add Chronic Condition)
+
+DAILY SYNC:
+A scheduled Make scenario reads active records from both contraindication tables,
+builds a plain-text summary for each, and writes them back to columns AE and AF.
+This keeps the Clients sheet current without Bill making extra API calls.
+
+NEVER send injuries or chronic_contraindications in the upsert payload.
+Always send them as omitted or "" — Make will not overwrite them if blank.
+
+-----------------------------
+ONBOARDING SEQUENCE (CONTRAINDICATIONS)
+-----------------------------
+During onboarding Bill handles contraindications in two passes:
+
+PASS 1 — User Upsert:
+  Write all profile fields. Always omit or send "" for injuries and
+  chronic_contraindications. Never populate these via upsert.
+
+PASS 2 — Contraindication webhooks (run AFTER upsert completes):
+  If the user mentions a chronic condition → call Bill - Add Chronic Condition
+  If the user mentions an active injury    → call Bill - Add Injury
+  Bill may need to make multiple calls if there are multiple conditions.
+  Write ALL contraindications before moving to Pass 3.
+
+PASS 3 — Sync webhook (run ONCE after all contraindication writes are complete):
+  Call Bill - Sync Contraindications to Client with client_id.
+  This immediately updates columns AE and AF on the Clients sheet.
+  Bill does NOT need to hold contraindications in working memory after this call —
+  the next Load Client Context call will return the updated data.
+
+This same three-pass rule applies mid-coaching, not just onboarding.
+Bill MUST always use the dedicated contraindication webhooks — never upsert.
+Bill MUST always call the sync webhook once after all contraindication writes.
+
+-----------------------------
+PREFERENCES FIELD RULES
+-----------------------------
+- preferences (column AR) is a STRUCTURED FREE-TEXT field
+- It contains named blocks that Bill reads and updates surgically
+- The primary block is MOTIVATION_PROFILE (see Bill Instructions Section 2.2)
+
+MOTIVATION_PROFILE block format (stored inside preferences):
+  MOTIVATION_PROFILE:
+  primary=<feedback_driven|plan_driven|social_identity_driven|outcome_driven>
+  secondary=<optional profile or "">
+  reinforcers=<semicolon-separated list>
+  friction_points=<semicolon-separated list>
+  preferred_prompts=<semicolon-separated list>
+  exercise_variety_preference=<high|standard|low>
+  END_MOTIVATION_PROFILE
+
+CRITICAL SURGICAL UPDATE RULE:
+- When updating preferences, Bill MUST only replace the block being changed
+- Bill MUST preserve all other content in preferences outside the block markers
+- Bill MUST read the current preferences value from client context BEFORE writing
+- Bill MUST NOT overwrite the entire preferences field unless performing a full reset
+  with explicit user consent
+
+-----------------------------
+NOTES FIELD RULES
+-----------------------------
+- notes (column AS) is a free-text field for coaching-relevant observations
+- Appropriate content: session observations, adherence patterns, context flags,
+  medication notes where training-relevant (e.g. "On beta blockers — HR response suppressed")
+- Medications are NOT a standalone field; include only if training-relevant, in notes
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Both branches return HTTP 200 with:
+- status (string) "ok"
+- action (string) "updated" OR "created"
+- client_id (string) — echoed from webhook input top-level client_id
+- timestamp (string) — ISO datetime
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+NOTE: chronic_contraindications and injuries are always "" or omitted in upsert.
+      They are owned by the daily sync scenario. See CONTRAINDICATIONS ARCHITECTURE above.
+
+{
+  "client_id": "cli_001",
+  "data": {
+    "client_id": "cli_001",
+    "first_name": "Test",
+    "last_name": "User",
+    "email": "test@example.com",
+    "timezone": "Europe/London",
+
+    "sex": "male",
+    "age_years": 35,
+    "height_cm": 178,
+    "weight_kg": 80,
+    "waist_circumference_cm": "",
+
+    "training_experience": "intermediate",
+    "primary_background": "gym",
+    "last_trained_date": "2026-01-01",
+    "typical_sessions_per_week_last_3_months": 3,
+    "cardio_fitness_level": "moderate",
+    "strength_level": "intermediate",
+    "movement_quality": "good",
+
+    "goals": "Build strength and lose some fat",
+    "goal_primary": "strength",
+    "goal_secondary": "fat_loss",
+    "goal_tertiary": "",
+    "goal_timeframe_months": 12,
+
+    "schedule": "Mon/Wed/Fri",
+    "equipment": "Full gym access + dumbbells at home",
+    "equipment_home": "dumbbells, resistance bands",
+    "equipment_gym": "full gym",
+    "equipment_preference": "gym",
+    "has_pool": "no",
+    "has_track_or_safe_run": "yes",
+    "gym_travel_time_minutes": 15,
+
+    "chronic_contraindications": "",
+    "injuries": "",
+    "risk_summary": "",
+    
+
+    "diet_style": "moderate carb",
+    "calorie_target": "",
+    "protein_min": "",
+    "supplements": "creatine, protein powder",
+
+    "sleep_quality": "good",
+    "stress_level": "medium",
+    "work_pattern": "9-5",
+    "family_responsibilities": "",
+
+    "watch_platform": "",
+    "watch_user_id": "",
+
+    "preferences": "MOTIVATION_PROFILE:\nprimary=plan_driven\nsecondary=feedback_driven\nreinforcers=progress tracking; hitting targets\nfriction_points=decision fatigue; inconsistent schedule\npreferred_prompts=whats next; weekly check-in\nexercise_variety_preference=standard\nEND_MOTIVATION_PROFILE",
+    "notes": "",
+    "last_profile_update": "2026-02-19T12:00:00Z",
+
+    "home_location": "London",
+    "upcoming_travel": "",
+
+    "understands_tempo": "somewhat",
+    "understands_loading_patterns": "no",
+    "detail_level_preference": "standard"
+  }
+}
+============================================================
+
+============================================================
+SCENARIO: Bill - Injury to Client Load (Webhook)
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Injury to Client Load webhook blueprint.json)
+WEBHOOK URL: https://hook.eu2.make.com/8z02z38fdsrmqk06x3v5k56sdu2wroty
+WEBHOOK PURPOSE:
+On-demand sync of active contraindications from Contraindications_Temp and
+Contraindications_Chronic into the Clients sheet for a specific client.
+Call this immediately after any Add Injury or Add Chronic Condition webhook
+to ensure the Clients sheet reflects current contraindication state without
+waiting for the overnight scheduled run.
+
+-----------------------------
+WHEN BILL MUST CALL THIS
+-----------------------------
+Bill MUST call this webhook once after completing ALL contraindication writes
+in a session. Specifically:
+- After Add Injury (one or more calls)
+- After Add Chronic Condition (one or more calls)
+- After Update Injury Status (if resolving an injury)
+
+Write ALL contraindications first, THEN call this once at the end.
+Do NOT call once per contraindication write — one call at the end is enough.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 16: Webhook trigger — expects client_id
+Module 2:  filterRows — Search Clients sheet column A for client_id (limit 1)
+Module 6:  filterRows — Search Contraindications_Temp where:
+             column A (client_id) = client_id from module 2
+             column F (status) = "active" (case-insensitive)
+Module 8:  TextAggregator — Aggregate active injuries
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → date_reported | type | description | expected_duration | notes
+             Row separator: ; (semicolon)
+Module 10: filterRows — Search Contraindications_Chronic where:
+             column B (client_id) = client_id from module 2
+             column J (status) = "active"
+             FILTER gate: injuries aggregator output must not equal blank template
+Module 12: TextAggregator — Aggregate active chronic conditions
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → condition | severity | affected_system | contraindicated_movements | notes
+             Row separator: ; (semicolon)
+Module 14: updateRow — Update Clients sheet
+             column 30 (AE): chronic_contraindications = {{12.text}}
+             column 31 (AF): injuries = {{8.text}}
+             row: {{2.__ROW_NUMBER__}}
+             FILTER gate: chronic aggregator output must not equal blank template
+Module 19: WebhookRespond — Return sync result
+
+-----------------------------
+SHEETS USED
+-----------------------------
+- Clients (read row number, write columns AE + AF)
+- Contraindications_Temp (read active injury rows)
+- Contraindications_Chronic (read active chronic rows)
+
+-----------------------------
+COLUMN MAPPING (CONTRAINDICATIONS_TEMP)
+-----------------------------
+A: client_id
+B: date_reported
+C: type
+D: description
+E: expected_duration
+F: status
+G: notes (note: column F is status filter, G is notes — aggregator uses col 6 = G)
+H: date_resolved
+
+Aggregator output format per injury:
+date_reported | type | description | expected_duration | notes
+
+-----------------------------
+COLUMN MAPPING (CONTRAINDICATIONS_CHRONIC)
+-----------------------------
+A: record_id
+B: client_id
+C: condition
+D: severity
+E: affected_system
+F: contraindicated_movements
+G: notes
+H: date_added
+I: last_reviewed
+J: status
+
+Aggregator output format per condition:
+condition | severity | affected_system | contraindicated_movements | notes
+
+-----------------------------
+EMPTY HANDLING
+-----------------------------
+Both aggregators use an if(__IMTLENGTH__ = 0) conditional:
+- Zero active records → emptystring written to cell (clears it correctly)
+- One or more records → pipe-separated summary written to cell
+- Additional filter gates on modules 10 and 14 prevent blank template strings
+  from being written if the if() conditional doesn't fire correctly
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. One key only:
+- client_id (string) REQUIRED
+
+Data structure defined on webhook (Make): client_id (Text, not required)
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "status": "ok",
+  "action": "contraindications_synced",
+  "client_id": "<echoed from input>",
+  "injuries_updated": "<aggregated injury text or empty string>",
+  "chronic_updated": "<aggregated chronic text or empty string>",
+  "timestamp": "<ISO datetime>"
+}
+
+Bill should read injuries_updated and chronic_updated from the response
+and use them as working context for the remainder of the session — no need
+to reload full client context just to see the updated contraindications.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001"
+}
+
+Expected response (with one active injury, no chronic conditions):
+{
+  "status": "ok",
+  "action": "contraindications_synced",
+  "client_id": "cli_001",
+  "injuries_updated": "2026-02-19 | injury | Right knee strain (mild), sore on stairs and under load | 7-14 days | Avoid deep knee flexion, monitor for swelling",
+  "chronic_updated": "",
+  "timestamp": "2026-02-19T11:51:25+00:00"
+}
+============================================================
+
+
+============================================================
+SCENARIO: Bill - Injury to Client Load (Scheduled)
+CANONICAL SOURCE: Make Scenario (cloned from webhook version, timed trigger)
+WEBHOOK PURPOSE:
+Overnight scheduled sync of active contraindications from Contraindications_Temp
+and Contraindications_Chronic into the Clients sheet for ALL clients.
+Runs automatically — Bill does not call this. It is a safety net to ensure
+the Clients sheet stays current even if the webhook version was not called.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+No webhook trigger — timed execution only.
+Module 1:  filterRows — Search Clients sheet, no filter (returns ALL client rows)
+           Acts as iterator — processes one client bundle at a time
+Module 2:  filterRows — Search Contraindications_Temp where:
+             client_id = current client row client_id
+             status = "active" (case-insensitive)
+Module 3:  TextAggregator — Aggregate active injuries (same logic as webhook version)
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → date_reported | type | description | expected_duration | notes
+Module 4:  filterRows — Search Contraindications_Chronic where:
+             client_id = current client row client_id
+             status = "active"
+Module 5:  TextAggregator — Aggregate active chronic conditions (same logic as webhook version)
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → condition | severity | affected_system | contraindicated_movements | notes
+Module 6:  updateRow — Update Clients sheet columns AE + AF for current client row
+
+NOTE: Module numbers will differ from the webhook version due to absence of
+webhook trigger module. Always verify module references match actual scenario
+when making changes.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Bill does NOT call this scenario — it is timer-triggered only
+- Bill calls the webhook version for immediate same-session updates
+- This scenario is a safety net, not the primary sync mechanism
+- No webhook URL exists for this scenario — it cannot be called via API
+============================================================
+
+============================================================
+SCENARIO: Bill - UserID Check
+CANONICAL SOURCE: Make Blueprint JSON (Bill - UserID Check.blueprint.json)
+WEBHOOK PURPOSE:
+WEBHOOK URL: https://hook.eu2.make.com/hvsvswhrdfacm7ag4flv1uhpb1nxbigh
+Check whether a client_id already exists in the Clients sheet.
+Returns exists: true/false. Used as a gate before upsert and
+plan generation flows to determine whether to create or update.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — expects client_id
+Module 2: filterRows — Search Clients sheet column A for client_id
+          (case-insensitive, limit 1)
+Router:
+  Branch A (found): __ROW_NUMBER__ > 0
+    WebhookRespond — exists: true, client_id from sheet row, row_index
+  Branch B (not found): __IMTLENGTH__ < 1
+    WebhookRespond — exists: false, client_id echoed from input
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. One key only:
+- client_id (string) REQUIRED
+
+No nesting. No other keys referenced.
+
+Fragile bits / must-follow rules:
+- filterRows searches Clients column A using case-insensitive text equal
+- limit is 1 — only first match returned
+- If client_id is missing the filter expression will fail and scenario errors
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Two possible response shapes:
+
+1) Found (exists: true):
+{
+  "exists": true,
+  "client_id": "<string>",
+  "row_index": <number>
+}
+client_id is returned from the sheet row (not echoed from input).
+row_index is the Google Sheets row number from the search module.
+
+2) Not found (exists: false):
+{
+  "exists": false,
+  "client_id": "<string>"
+}
+client_id is echoed from webhook input.
+row_index is NOT included in this branch.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Call this before post_user_upsert when it is unclear whether a client
+  profile already exists
+- If exists: true → proceed with update flow
+- If exists: false → proceed with create/onboarding flow
+- Never invent or assume a client_id exists without checking first
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A (expect exists: true if cli_001 is in Clients sheet):
+{
+  "client_id": "cli_001"
+}
+
+Test B (expect exists: false):
+{
+  "client_id": "cli_999999"
+}
+============================================================
+
+============================================================
+SCENARIO: Bill - Load Client Context
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Load Client Context V2 blueprint (4).json)
+WEBHOOK LABEL: Bill - Client ID Receiver V2
+WEBHOOK URL: https://hook.eu2.make.com/4uq52ajluecic9p29n4dg3ypck6cgnxn
+PURPOSE:
+Load the full client context bundle for a given client_id.
+Returns profile, plan, weeks, sessions, steps, nutrition,
+history counts, engagement state, and contraindication placeholders.
+Called at session start and whenever Bill needs a full context refresh.
+Exercise Bests are NOT included — these are loaded directly by the
+Flask backend from Google Sheets and cached separately.
+Contraindications fields are returned as empty placeholders — they are
+populated into the Clients sheet by the daily scheduled sync scenario,
+not by this webhook.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger — expects client_id
+Module 2:  filterRows — Search Clients sheet column A for client_id
+           (case-insensitive, limit 1)
+Module 25: BasicRouter
+  Branch A (client found): __ROW_NUMBER__ > 0
+    Module 30: SetVariables — Set date vars
+    Module 32: filterRows — Search Injuries (not used in response — retired)
+    Module 3:  filterRows — Get Active Block (Plans sheet)
+    Module 4:  filterRows — Get Completed Blocks
+    Module 5:  BasicAggregator — Completed Blocks Array
+    Module 6:  filterRows — Get Active Week
+    Module 7:  filterRows — Get Upcoming Weeks
+    Module 8:  BasicAggregator — Upcoming Week Aggregator
+    Module 9:  filterRows — Get Completed Weeks
+    Module 10: BasicAggregator — Completed Week Aggregator
+    Module 11: filterRows — Get Active Sessions
+    Module 12: BasicAggregator — Active Sessions Array
+    Module 13: filterRows — Get Completed Sessions
+    Module 14: BasicAggregator — Completed Sessions Array
+    Module 40: SetVariable2 — Most Recent Session
+    Module 15: SetVariables — Nutrition + Supplement Vars
+    Module 16: filterRows — Get Active Steps
+    Module 17: BasicAggregator — Aggregate Active Steps
+    Module 18: filterRows — Get Completed Steps
+    Module 19: BasicAggregator — Aggregate Completed Steps
+    Module 21: SetVariables — Session Counts
+    Module 22: SetVariable2 — Total Blocks
+    Module 23: SetVariable2 — Engagement State
+    Module 20: json:CreateJSON — Build response payload
+    Module 27: WebhookRespond — Return full context JSON
+  Branch B (not found): __IMTLENGTH__ < 1
+    Module 26: WebhookRespond — Return not found response
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. One key only:
+- client_id (string) REQUIRED
+
+No nesting. No other keys referenced.
+
+Fragile bits / must-follow rules:
+- filterRows searches Clients column A using case-insensitive text equal
+- If client_id is missing the filter expression will fail and scenario errors
+- client_id must exactly match the ID stored in the Clients sheet (case-insensitive)
+
+-----------------------------
+OUTPUT CONTRACT — FOUND (HTTP 200)
+-----------------------------
+{
+  "status": "OK",
+  "client_id": "<string>",
+  "timestamp": "<string>",            // UTC, format: "YYYY-MM-DD HHmmss"
+  "client_engagement_state": "<string>",
+  "client_profile": {
+    "client_id": "<string>",
+    "first_name": "<string>",
+    "last_name": "<string>",
+    "email": "<string>",
+    "timezone": "<string>",
+    "sex": "<string>",
+    "age_years": "<string>",
+    "height_cm": "<string>",
+    "weight_kg": "<string>",
+    "waist_circumference_cm": "<string>",
+    "training_experience": "<string>",
+    "primary_background": "<string>",
+    "last_trained_date": "<string>",
+    "typical_sessions_per_week_last_3_months": "<string>",
+    "cardio_fitness_level": "<string>",
+    "strength_level": "<string>",
+    "movement_quality": "<string>",
+    "goals": "<string>",
+    "goal_primary": "<string>",
+    "goal_secondary": "<string>",
+    "goal_tertiary": "<string>",
+    "goal_timeframe_months": "<string>",
+    "schedule": "<string>",
+    "equipment": "<string>",
+    "equipment_home": "<string>",
+    "equipment_gym": "<string>",
+    "equipment_preference": "<string>",
+    "gym_travel_time_minutes": "<string>",
+    "chronic_contraindications": "<string>",  // populated by daily sync
+    "injuries": "<string>",                    // populated by daily sync
+    "risk_summary": "<string>",
+    "diet_style": "<string>",
+    "calorie_target": "<string>",
+    "protein_min": "<string>",
+    "supplements": "<string>",
+    "sleep_quality": "<string>",
+    "stress_level": "<string>",
+    "work_pattern": "<string>",
+    "family_responsibilities": "<string>",
+    "watch_platform": "<string>",
+    "watch_user_id": "<string>",
+    "preferences": "<string>",
+    "notes": "<string>",
+    "last_profile_update": "<string>"
+  },
+  "plan_context": {
+    "active_block": {
+      "plan_id": "<string>",
+      "block_id": "<string>",
+      "client_id": "<string>",
+      "phase_name": "<string>",
+      "phase_goal": "<string>",
+      "week_start": "<string>",
+      "duration_weeks": "<string>",
+      "days_per_week": "<string>",
+      "constraints": "<string>",
+      "primary_locations": "<string>",
+      "nutrition_targets": "<string>",
+      "supplement_protocol": "<string>",
+      "notes": "<string>",
+      "plan_status": "<string>",
+      "created_at": "<string>",
+      "updated_at": "<string>"
+    },
+    "completed_blocks": [ <array of block objects> ]
+  },
+  "weeks": {
+    "active": {
+      "week_id": "<string>",
+      "plan_id": "<string>",
+      "block_id": "<string>",
+      "client_id": "<string>",
+      "week_number": "<string>",
+      "week_type": "<string>",
+      "primary_focus": "<string>",
+      "secondary_focus": "<string>",
+      "intensity_pattern": "<string>",
+      "notes": "<string>",
+      "week_start_date": "<string>",
+      "week_end_date": "<string>",
+      "week_status": "<string>"
+    },
+    "upcoming": [ <array of week objects> ],
+    "completed": [ <array of week objects> ]
+  },
+  "sessions": {
+    "active": [ <array of session objects> ],
+    "completed": [ <array of session objects> ]
+  },
+  "steps": {
+    "active": [ <array of step objects> ],
+    "completed": [ <array of step objects> ]
+  },
+  "nutrition": {
+    "nutrition_targets": "<string>",
+    "supplement_protocol": "<string>"
+  },
+  "history_summary": {
+    "completed_blocks": "<string>",
+    "total_blocks": "<string>",
+    "completed_weeks": "<string>",
+    "completed_sessions": "<string>",
+    "completed_steps": "<string>"
+  },
+  "context_validity": {
+    "total_blocks": "<string>",
+    "completed_blocks_count": "<string>",
+    "active_sessions_count": "<string>",
+    "completed_sessions_count": "<string>",
+    "total_sessions": "<string>",
+    "upcoming_weeks_count": "<string>",
+    "completed_weeks_count": "<string>",
+    "active_steps_count": "<string>",
+    "completed_steps_count": "<string>"
+  },
+  "contraindications_temp": "",       // always empty — populated by daily sync
+  "contraindications_chronic": []     // always empty — populated by daily sync
+}
+
+-----------------------------
+OUTPUT CONTRACT — NOT FOUND
+-----------------------------
+Response shape when client_id not found in Clients sheet:
+{
+  "status": "not_found",
+  "client_id": "<echoed from input>"
+}
+
+Bill behavioural rule: if status is not_found, do not proceed with
+any training or coaching actions. Inform the user their profile
+does not exist and offer to start onboarding.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always call this at the start of a new coaching session before
+  any training, planning, or advice actions
+- Never use cached context older than the current session without
+  offering to refresh
+- Exercise Bests are NOT in this payload — they are loaded and
+  cached by the Flask backend directly from Google Sheets
+- contraindications_temp and contraindications_chronic will always
+  be empty in this response — read injuries and chronic_contraindications
+  from client_profile instead (populated by daily sync)
+- If plan_context.active_block is empty, no active training block exists —
+  do not attempt to load weeks/sessions/steps; offer to create a new plan
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001"
+}
+
+Expected: HTTP 200 with full context bundle, status: "OK"
+
+Test (not found):
+{
+  "client_id": "cli_999999"
+}
+
+Expected: HTTP 200 with status: "not_found"
+============================================================
+
+============================================================
+SCENARIO: Bill - Populate Training Week
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Populate Training Week blueprint (2).json)
+WEBHOOK LABEL: Bill - Training Week Actions
+WEBHOOK URL: https://hook.eu2.make.com/2vs9htbixx68m2hdbxinro9tdp55arao
+PURPOSE:
+Write session details and steps to Google Sheets for a full training week.
+For each session: updates the existing Plans_Sessions row with session metadata
+and session_summary. For each step in each session: inserts a new row into
+Plans_Steps with full exercise prescription and pattern fields.
+Called once per week after the Full Training Block Generator has created the
+skeleton session rows.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger — receives full week payload
+Module 6:  BasicFeeder — Session Iterator (loops over sessions array)
+Module 10: filterRows — Find Session Row in Plans_Sessions by session_id
+Module 11: updateRow — Update Plans_Sessions row with session metadata
+Module 7:  BasicFeeder — Step Iterator (loops over steps array per session)
+Module 8:  addRow — Write step to Plans_Steps
+Module 12: BasicAggregator — Aggregate step count across all sessions
+Module 13: WebhookRespond — Return success response
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED
+- context (object) REQUIRED
+- sessions (array) REQUIRED
+
+context object — required keys:
+- plan_id (string) REQUIRED
+- block_id (string) REQUIRED
+- week_id (string) REQUIRED
+- week_number (number) REQUIRED
+
+IMPORTANT: week_id and block_id are generated by the Full Training Block
+Generator scenario upstream. Bill MUST NOT invent these — they must come
+from the active context loaded at session start.
+
+-----------------------------
+SESSIONS ARRAY
+-----------------------------
+Each item in sessions is a session object.
+
+REQUIRED per session:
+- session_id (string) REQUIRED
+  CRITICAL: used to find the existing Plans_Sessions row. If no matching
+  row is found, the updateRow will fail silently for that session.
+- session_summary (string) UI-CRITICAL
+  Displayed on the PWA home screen as the client's preview of the upcoming
+  session. Must be 2-4 sentences in Bill's voice: plain-spoken, honest about
+  effort, warm but direct. Never generic. Never empty.
+  If missing or empty: Make will write a blank cell and flag it in the
+  response. Bill must treat a missing session_summary as a coaching error
+  and regenerate before the client sees their plan.
+- steps (array) REQUIRED
+  Must be an array. Can be empty but then nothing is written to Plans_Steps.
+
+OPTIONAL per session (missing fields write blank cells — do not omit if known):
+- week (number)
+- day (number)
+- phase (string)
+- location (string)
+- focus (string)
+- exercises (string) — comma-separated exercise name summary
+- macros (string)
+- supplements (string)
+- notes (string)
+- session_date (string) — format YYYY-MM-DD
+- session_day_of_week (string)
+- session_global_number (number)
+- intended_intensity_rpe (string or number)
+- intended_hr_zone (string)
+- estimated_duration_minutes (number)
+- linked_sport (string)
+
+FIELDS MAKE WRITES AUTOMATICALLY — DO NOT SEND:
+- session_status — hardcoded "Populated" by Make
+- week_id, block_id, client_id — Make reads these from the matched
+  Plans_Sessions row (module 10), not from input
+
+-----------------------------
+STEPS ARRAY
+-----------------------------
+Each item in steps is a step object.
+
+REQUIRED per step:
+- step_order (number) REQUIRED
+- segment_type (string) REQUIRED — ONLY valid values: warmup / main / cooldown
+- exercise_name (string) REQUIRED — must be canonical name from Exercise Library
+
+CORE FIELDS (send all that apply — missing fields write blank cells):
+- step_type (string) — e.g. strength, cardio, mobility, skill
+- duration_type (string) — time / distance / reps
+- duration_value (number) — seconds or metres depending on duration_type
+- target_type (string) — e.g. hr_zone, rpe, pace
+- target_value (string)
+- sets (number)
+- reps (number)
+- load_kg (number)
+- rest_seconds (number)
+- notes_coach (string) — Bill's instructional voice. Cues, intent, safety.
+                         Draw from Exercise Library. Depth matched to
+                         client detail_level_preference.
+- notes_athlete (string) — NEVER written by Bill. Leave empty always.
+
+FIELDS MAKE WRITES AUTOMATICALLY — DO NOT SEND IN STEPS:
+- step_id — generated by Make as st_<session_id>_<timestamp>_<step_order>
+- session_id — pulled from matched Plans_Sessions row (module 10, col 6)
+- week_id — pulled from matched Plans_Sessions row (module 10, col 4)
+- block_id — pulled from matched Plans_Sessions row (module 10, col 1)
+- client_id — pulled from matched Plans_Sessions row (module 10, col 2)
+- status — hardcoded "planned" by Make
+- metric_key — auto-populated by Google Sheets formula from exercise_name
+- metric_context_key — see metric_context_key rules below
+
+-----------------------------
+PATTERN FIELD RULES BY EXERCISE TYPE
+-----------------------------
+If a pattern_type is assigned, ALL required fields for that pattern MUST
+be populated. If required fields cannot be meaningfully populated, do NOT
+assign a pattern_type — use a flat prescription instead.
+
+STRENGTH (pattern_type: straight_sets / progressive_load / wave_load / etc.)
+Required when pattern_type assigned:
+- pattern_type (string)
+- sets (number)
+- reps OR reps_pattern (reps_pattern overrides reps when sets differ)
+- load_start_kg (number) — starting load; use load_kg if flat
+- load_increment_kg (number) — explicitly 0 if flat load across sets
+- load_peak_kg (number) — highest load reached; same as load_start_kg if flat
+- rest_seconds (number)
+- tempo_pattern (string) — 4-digit format e.g. "3010"
+  Default: "3010" for beginners, "2020" for general population
+  Omit ONLY if medically contraindicated or explicitly not appropriate
+- rpe_pattern (string) — comma-separated RPE per set e.g. "7,7,8"
+Optional:
+- tempo_per_set_pattern (string) — if tempo varies per set
+- pattern_notes (string) — progression instructions, autoregulation rules
+
+CARDIO — STEADY STATE (pattern_type: steady_state)
+Required:
+- pattern_type: "steady_state"
+- duration_type (string) — "time" or "distance"
+- duration_value (number) — seconds or metres
+- intensity_start (string) — zone, RPE cue, or pace
+- intensity_end (string) — same as intensity_start if not progressive;
+  include if effort changes across the duration
+
+CARDIO — INTERVALS (pattern_type: intervals)
+Required:
+- pattern_type: "intervals"
+- interval_count (number) — total number of work intervals
+- interval_work_sec (number) — duration of each work interval in seconds
+- interval_rest_sec (number) — duration of each rest interval in seconds
+- intensity_start (string) — effort target for work intervals
+- intensity_end (string) — effort target for final intervals if progressive;
+  same as intensity_start if flat effort
+
+CALISTHENICS / BODYWEIGHT (pattern_type: straight_sets / amrap)
+Required:
+- pattern_type (string)
+- sets (number)
+- reps OR reps_pattern (string)
+- rest_seconds (number)
+- rpe_pattern (string) — bodyweight work still needs RPE targets
+- tempo_pattern (string) — especially important for bodyweight to
+  control time under tension
+Optional:
+- load_start_kg (number) — include if weighted (e.g. weighted pull-up)
+- load_increment_kg / load_peak_kg — if progressive
+
+MOBILITY / WARMUP STEPS
+Pattern fields generally not required. Use:
+- duration_type + duration_value for timed holds
+- sets + reps for movement-based drills
+- notes_coach for execution cues — this is the primary field for mobility
+No pattern_type needed unless structurally repeating intervals.
+
+-----------------------------
+METRIC_CONTEXT_KEY RULES
+-----------------------------
+metric_context_key is auto-populated by Google Sheets formula for most
+exercises. Bill only needs to send it in one specific case:
+
+SEND metric_context_key when:
+- The step is a specific distance or time trial where performance will
+  be compared against a personal best
+- Examples:
+  - Running 5K time trial → metric_context_key: "5k"
+  - Rowing Erg 2000m for time → metric_context_key: "2000m"
+  - Freestyle Swim 100m → metric_context_key: "100m"
+
+DO NOT send metric_context_key when:
+- Step is general cardio training (duration-based, steady state)
+- Step is a strength exercise (metric_key handles this via sheet formula)
+- Example: "Run 25 minutes easy" → no metric_context_key
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Success response (HTTP 200):
+{
+  "status": "success",
+  "client_id": "<string>",
+  "plan_id": "<string>",
+  "week_id": "<string>",
+  "week_number": <number>,
+  "sessions_updated": <number>,
+  "steps_created": <number>,
+  "timestamp": "<ISO datetime>",
+  "details": "Week populated successfully."
+}
+
+Note on session_summary_missing: the current blueprint does not return a
+per-session flag for missing session_summary. Bill must self-audit before
+calling this webhook — check that every session object has a non-empty
+session_summary before sending. If the PWA shows a blank session card,
+a missing session_summary is the first thing to check.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always verify session_ids exist in context before calling — these must
+  come from the active week loaded via Load Client Context, never invented
+- Never invent plan_id, block_id, week_id — always from loaded context
+- session_summary is UI-CRITICAL — treat a missing one as a blocker,
+  not an optional field
+- notes_athlete MUST always be sent as empty string — never write to it
+- Do not send step_id, session_id, week_id, block_id, client_id inside
+  step objects — Make handles all of these from the session row lookup
+- If pattern_type is assigned, all required pattern fields for that type
+  MUST be populated — do not assign pattern_type and leave required fields
+  blank
+- metric_context_key should only be sent for specific distance/time trial
+  steps — not for general training steps
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+See dummy payload provided during blueprint development (February 2026).
+Contains one session with four steps covering: mobility warmup, strength
+(straight_sets), strength (progressive_load), and cardio cooldown.
+
+Full payload available in project chat history.
+============================================================
+
+============================================================
+SCENARIO: Bill - Session Update
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Session Update blueprint (2).json)
+WEBHOOK LABEL: Bill Session Updater
+WEBHOOK URL: https://hook.eu2.make.com/hv7koluwt0mxtbj6m8exs4774oyk4e7g
+PURPOSE:
+Update an existing session row in Plans_Sessions and optionally update
+one or more step rows in Plans_Steps for that session.
+Uses ifempty() throughout — only fields explicitly sent by Bill are
+overwritten. Fields omitted or sent as empty preserve their existing
+sheet values.
+Called after Populate Training Week to correct prescription errors,
+after a session completes to record status, or mid-block to adjust
+upcoming sessions.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger — receives session_id, client_id,
+           session_updates object, steps_upsert array
+Module 2:  filterRows — Find session row in Plans_Sessions by session_id
+           (case-insensitive, col G, limit 1)
+Module 3:  updateRow — Update Plans_Sessions row with session_updates fields
+Module 6:  BasicFeeder — Steps Iterator (loops over steps_upsert array)
+Module 7:  filterRows — Find step row in Plans_Steps by step_id AND client_id
+           (double filter — defensive match)
+Module 10: SetVariable2 — Capture existing notes_athlete value from sheet
+Module 11: SetVariable2 — Build combined notes_athlete (append with timestamp)
+Module 8:  updateRow — Update Plans_Steps row
+Module 9:  BasicAggregator — Finish iterating, count steps updated
+Module 4:  WebhookRespond — Return response
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- client_id (string) REQUIRED
+- session_id (string) REQUIRED — used to locate the Plans_Sessions row;
+  must exist in the sheet or session update is silently skipped
+- session_updates (object) OPTIONAL — omit entirely if no session-level
+  changes needed, only steps need updating
+- steps_upsert (array) OPTIONAL — omit entirely if no step changes needed
+
+-----------------------------
+SESSION_UPDATES OBJECT
+-----------------------------
+All fields optional. Only send fields being explicitly changed.
+ifempty() in Make means omitted or empty fields preserve existing values.
+
+- phase (string)
+- location (string)
+- focus (string)
+- exercises (string) — comma-separated exercise name summary
+- macros (string)
+- supplements (string)
+- notes (string)
+- session_date (string) — format YYYY-MM-DD
+- session_day_of_week (string)
+- intended_intensity_rpe (string or number)
+- intended_hr_zone (string)
+- estimated_duration_minutes (number)
+- linked_sport (string)
+- session_status (string) — e.g. "Completed", "Populated", "Skipped"
+- session_summary (string) — PWA home screen preview text; Bill's voice;
+  2-4 sentences; send when correcting or updating the session preview
+
+FIELDS NOT UPDATABLE VIA THIS WEBHOOK:
+- session_notes — owned by backend process (PWA session logger writes
+  directly to Google Sheets); never send via this webhook
+- week_id, block_id, client_id, plan_id — structural IDs set at block
+  generation time; never overwrite via session update
+- google_form_url — managed separately
+
+-----------------------------
+STEPS_UPSERT ARRAY
+-----------------------------
+Each item is a step object representing one step to update.
+Only send steps that need changing — omit unchanged steps entirely.
+
+REQUIRED per step:
+- step_id (string) REQUIRED — used to locate the Plans_Steps row;
+  must match an existing step_id exactly (case-insensitive).
+  If no matching row found, that step update is silently skipped.
+
+ALL OTHER STEP FIELDS OPTIONAL:
+ifempty() means omitted or empty fields preserve existing sheet values.
+Only send fields being explicitly changed.
+
+Core fields:
+- step_order (number)
+- segment_type (string) — warmup / main / cooldown
+- step_type (string)
+- duration_type (string)
+- duration_value (number)
+- target_type (string)
+- target_value (string)
+- exercise_name (string)
+- sets (number)
+- reps (number)
+- load_kg (number)
+- rest_seconds (number)
+- notes_coach (string) — Bill's instructional voice only
+- notes_athlete (string) — see athlete notes rules below
+- status (string)
+
+Pattern fields (same rules as Populate Training Week apply):
+- pattern_type (string)
+- load_start_kg (number)
+- load_increment_kg (number)
+- load_peak_kg (number)
+- reps_pattern (string)
+- rpe_pattern (string)
+- tempo_pattern (string)
+- tempo_per_set_pattern (string)
+- pattern_notes (string)
+- interval_count (number)
+- interval_work_sec (number)
+- interval_rest_sec (number)
+- intensity_start (string)
+- intensity_end (string)
+
+-----------------------------
+ATHLETE NOTES RULES (CRITICAL)
+-----------------------------
+notes_athlete is handled differently from all other fields.
+Make does NOT use ifempty() for this field — it uses an append logic:
+
+- Module 10 reads the existing notes_athlete value from the sheet
+- Module 11 builds a new combined value:
+  - If both existing and incoming are empty → write empty
+  - If existing is empty → write timestamp + incoming notes_athlete
+  - If existing has content → append timestamp + incoming notes_athlete
+    to existing value (preserving full history)
+
+BILL RULES FOR notes_athlete:
+- Bill MUST NOT author content in notes_athlete
+- notes_athlete content comes from the athlete via PWA session logger
+- Bill routes athlete-entered feedback through this field only when
+  explicitly relaying athlete input, never when writing coaching content
+- If Bill has no athlete notes to relay, omit notes_athlete entirely
+  or send as empty string — Make will preserve the existing value
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Success response (HTTP 200):
+{
+  "status": "ok",
+  "action": "session_updated",
+  "client_id": "<string>",
+  "session_id": "<string>",
+  "sessions_updated": <0 or 1>,   // 1 if session row found, 0 if not
+  "steps_requested": <number>,     // length of steps_upsert sent
+  "steps_updated": <number>,       // steps actually matched and updated
+  "timestamp": "<ISO datetime>"
+}
+
+Interpretation notes:
+- sessions_updated: 0 means the session_id was not found in Plans_Sessions
+  — Bill should treat this as an error and not assume data was written
+- steps_updated less than steps_requested means one or more step_ids were
+  not found — check step_ids are correct before retrying
+- There is no separate error response shape — status is always "ok" even
+  if nothing was matched; use sessions_updated and steps_updated to verify
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always send client_id and session_id — both required
+- This is a partial update webhook — only send what is changing;
+  never send a full session object to "refresh" the row
+- Never send session_notes — backend owns that field
+- Never send structural IDs (week_id, block_id, plan_id) in
+  session_updates — these are never overwritten
+- Check sessions_updated and steps_updated in the response —
+  a value of 0 means nothing was written; treat as an error
+- notes_athlete should only be sent when explicitly relaying
+  athlete-entered feedback; never author notes_athlete content
+- Pattern field rules from Populate Training Week apply equally
+  here — if pattern_type is sent, all required pattern fields
+  for that type must also be sent
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "session_id": "sess_001",
+  "session_updates": {
+    "session_status": "Completed",
+    "session_summary": "Solid lower body session. Three working sets on squats and RDLs, finishing with farmer carries. Expect to feel this in your hamstrings tomorrow."
+  },
+  "steps_upsert": [
+    {
+      "step_id": "st_sess_001_20260224120000000_2",
+      "status": "completed",
+      "notes_athlete": "Managed RPE 7 across all sets, felt good."
+    }
+  ]
+}
+============================================================
+
+============================================================
+SCENARIO: Bill - Exercise Filter
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Exercise Filter blueprint (1).json)
+WEBHOOK LABEL: B-ExFil | Webhook In
+WEBHOOK URL: https://hook.eu2.make.com/rjnd2mbbblulbk1xjlpmtejg5b9plblj
+PURPOSE:
+Filter the Exercises_Library sheet and return a shortlist of exercises
+matching Bill's criteria. Used during session planning to find appropriate
+exercises for a given segment, movement pattern, muscle group, or training
+focus. Returns exercise_code, exercise_name, and description only — not
+full exercise data.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 2:  Webhook trigger — receives filter criteria
+Module 3:  SetVariables — Capture incoming variables, auto-generate
+           query_id if not provided
+Module 4:  filterRows — Pull all active exercises from Exercises_Library
+           where segment_type contains the requested value
+Module 5:  SetVariables — Score each exercise against required_tags,
+           optional_tags, and exclude_tags (produces 0 or 1 per tag)
+Module 11: AggregateToJSON — Filter to exercises scoring >= 3 with no
+           exclusion flags; build response array
+Module 7:  WebhookRespond — Return query_id and exercises array
+
+-----------------------------
+HOW THE SCORING WORKS (CRITICAL)
+-----------------------------
+Each exercise is scored across five variables. Each returns 0 or 1.
+An exercise passes into the response ONLY if:
+  total score >= 3  AND  v_exclude_special_flags = 0
+
+Scoring variables:
+
+v_match_movement (required_tags.movement_pattern)
+  - If movement_pattern NOT sent → auto-scores 1 (pass through)
+  - If movement_pattern sent → 1 if exercise matches, 0 if not
+
+v_match_primary_muscles (required_tags.primary_muscles)
+  - If primary_muscles NOT sent → scores 0
+  - If primary_muscles sent → 1 if exercise matches, 0 if not
+
+v_match_training_focus (required_tags.training_focus)
+  - If training_focus NOT sent → scores 0
+  - If training_focus sent → 1 if exercise matches, 0 if not
+
+v_match_secondary_muscles (optional_tags.secondary_muscles)
+  - If secondary_muscles NOT sent → scores 0
+  - If secondary_muscles sent → 1 if exercise matches, 0 if not
+
+v_match_flags (optional_tags.special_flags)
+  - If special_flags NOT sent → scores 0
+  - If special_flags sent → 1 if exercise matches, 0 if not
+
+v_exclude_special_flags (exclude_tags.special_flags)
+  - If special_flags NOT sent → 0 (no exclusion)
+  - If special_flags sent and exercise matches → 1 (exercise excluded)
+
+MINIMUM TO GET RESULTS:
+If Bill only sends segment_type and nothing else, every exercise scores
+1 (movement auto-pass only) — nothing reaches the threshold of 3 and
+the response will be empty. Bill MUST send enough tags to generate
+meaningful scores. The minimum useful payload includes segment_type
+plus at least two of: movement_pattern, primary_muscles, training_focus.
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level keys:
+- query_id (string) OPTIONAL — if omitted Make auto-generates as
+  "exfil_YYYYMMDD_HHmmss"; useful for correlating requests in logs
+- segment_type (string) REQUIRED — filters the exercise library before
+  scoring; only exercises whose segment_type field contains this value
+  are evaluated. Valid values: warmup / main / cooldown
+
+- required_tags (object) OPTIONAL — tags that must match to score points
+- optional_tags (object) OPTIONAL — tags that add score but are not
+  required for inclusion
+- exclude_tags (object) OPTIONAL — exercises matching these are excluded
+  regardless of score
+
+required_tags fields (all optional, send only what is relevant):
+- movement_pattern (string) — e.g. "push", "hinge", "squat", "pull",
+  "carry", "rotation", "gait", "cyclical"
+- primary_muscles (string) — e.g. "glutes", "quads", "chest",
+  "hamstrings", "lats", "deltoids"
+- training_focus (string) — e.g. "strength", "hypertrophy", "aerobic",
+  "anaerobic", "mobility", "endurance"
+
+optional_tags fields:
+- secondary_muscles (string) — e.g. "core", "calves", "biceps"
+- special_flags (string) — e.g. "low_impact", "joint_friendly",
+  "shoulder_intensive", "unilateral"
+
+exclude_tags fields:
+- special_flags (string) — exercises with this flag are excluded
+  e.g. "shoulder_intensive" to exclude exercises that load the shoulder
+  when a client has a shoulder contraindication
+
+IMPORTANT — ONE VALUE PER TAG:
+Each tag field accepts a single string value, not an array.
+Make reads the first element only: movement_pattern[1], primary_muscles[1] etc.
+Do not send comma-separated lists or arrays — only one value per field.
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "query_id": "<string>",
+  "exercises": [
+    {
+      "exercise_code": "<string>",
+      "exercise_name": "<string>",
+      "description": "<string>"
+    },
+    ...
+  ]
+}
+
+Notes:
+- exercises is an array of matched exercises; may be empty if no
+  exercises reach the score threshold
+- Only exercise_code, exercise_name, and description are returned —
+  not full exercise data
+- Bill uses the returned exercise_names as canonical names for
+  prescription; never invent or modify names from the response
+- An empty exercises array is a valid response — it means no exercises
+  matched the criteria, not a scenario error
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always use exercise_name exactly as returned — these are canonical
+  names from the Exercise Library
+- Always send at least segment_type plus two meaningful tags — sending
+  only segment_type will return an empty result
+- Use exclude_tags.special_flags proactively when client has active
+  contraindications — e.g. exclude "shoulder_intensive" for shoulder
+  injuries, "high_impact" for knee issues
+- One value per tag field — do not attempt to send multiple values
+- If the response returns an empty exercises array, broaden the criteria
+  (remove a required_tag or change the value) rather than retrying
+  with identical parameters
+- query_id is optional but recommended when making multiple filter
+  calls in a single planning session — makes it easier to correlate
+  results if something goes wrong
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "query_id": "test_lower_strength_001",
+  "segment_type": "main",
+  "required_tags": {
+    "movement_pattern": "hinge",
+    "primary_muscles": "hamstrings",
+    "training_focus": "strength"
+  },
+  "optional_tags": {
+    "secondary_muscles": "glutes",
+    "special_flags": "joint_friendly"
+  },
+  "exclude_tags": {
+    "special_flags": "shoulder_intensive"
+  }
+}
+
+Expected: array of active hinge-pattern exercises targeting hamstrings
+with a strength focus, filtered to exclude shoulder-intensive movements.
+============================================================
+
+============================================================
+SCENARIO: Bill - Full Training Block Generator
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Full_Training_Block_Generator_blueprint.json)
+WEBHOOK LABEL: POST/plan/create_full_block
+WEBHOOK URL: https://hook.eu2.make.com/v35x7s4w3ksju9e4jgjes5rpsoxb3a22
+PURPOSE: Create a full training block skeleton in Google Sheets.
+         Writes one row to Plans_Blocks, one row per week to Plans_Weeks,
+         and one row per session to Plans_Sessions. Sessions are created
+         as empty skeletons — Populate Training Week fills them with content.
+         Includes duplicate detection and fallback error route.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger
+Module 23: filterRows — check Plans_Blocks for existing active block
+           (col C = client_id AND col N = "Active"). Runs before router.
+Module 2:  BasicRouter — two routes:
+           Route 0 (create): plan_action == "create_full_block"
+                             AND 23.__IMTLENGTH__ = 0 (no active block exists)
+           Fallback route: everything else — wrong plan_action OR duplicate block
+Module 3:  SetVariable2 — resolve plan_id (auto-generate or use supplied value)
+Module 4:  SetVariable2 — generate block_id
+Module 6:  addRow — write block to Plans_Blocks
+Module 7:  BasicRepeater — loop duration_weeks times (week iterator)
+Module 8:  SetVariable2 — generate week_id per iteration
+Module 10: SetVariable2 — calculate week_start_date per iteration (FIXED)
+Module 11: SetVariable2 — calculate week_end_date per iteration
+Module 9:  addRow — write week skeleton to Plans_Weeks
+Module 12: BasicRepeater — loop days_per_week times (session iterator)
+Module 13: SetVariable2 — generate session_id per iteration
+Module 14: addRow — write session skeleton to Plans_Sessions
+Module 18: BasicAggregator — collect values across iterations
+Module 19: WebhookRespond — success response
+Module 20: WebhookRespond — fallback error response
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Top-level required keys:
+- plan_action (string) REQUIRED
+- client (object) REQUIRED
+- plan (object) REQUIRED
+- goals (object) REQUIRED
+- availability (object) REQUIRED
+
+plan_action:
+- Must be exactly "create_full_block" (case-insensitive).
+- Any other value triggers the fallback error route.
+
+client (object):
+- client_id (string) REQUIRED
+  Used in ID generation and written to all sheet rows.
+  No other client fields are read by this scenario.
+
+plan (object):
+  Required fields:
+  - phase_name (string) REQUIRED — written to Plans_Blocks col D and Plans_Sessions col H
+  - phase_goal (string) REQUIRED — written to Plans_Blocks col E; fallback for session
+                                    focus if goals.primary is empty
+  - week_start (string, YYYY-MM-DD) REQUIRED — anchor date for all date calculations
+  - duration_weeks (number) REQUIRED — controls week repeater loop count; minimum 1
+  - days_per_week (number) REQUIRED — controls session repeater loop count; range 1-7
+
+  Optional fields (missing fields write blank cells — include if known):
+  - plan_id (string) OPTIONAL — see ID GENERATION section below
+  - constraints (string) — written to Plans_Blocks col I
+  - primary_locations (string) — written to Plans_Blocks col J and Plans_Sessions col I
+  - nutrition_targets (string) — written to Plans_Blocks col K
+  - supplement_protocol (string) — written to Plans_Blocks col L
+  - notes (string) — written to Plans_Blocks col M and Plans_Weeks col J
+
+goals (object):
+  - primary (string) REQUIRED — written to Plans_Weeks col G and Plans_Sessions col J
+                                 (falls back to plan.phase_goal if empty string)
+  - secondary (string) OPTIONAL — written to Plans_Weeks col H
+
+availability (object):
+  - default_session_minutes (number) OPTIONAL — written to Plans_Sessions col T
+                                                 Defaults to 60 if missing or empty
+
+-----------------------------
+ID GENERATION (MAKE OWNS THIS — BILL AND FLASK NEVER GENERATE THESE)
+-----------------------------
+plan_id:
+  - If plan.plan_id is supplied and non-empty: used as-is
+  - If plan.plan_id is "" or absent: Make generates "plan_YYYYMMDD_<client_id>"
+  - Formula: {{if(length(1.plan.plan_id) = 0; "plan_" + formatDate(now; "YYYYMMDD") + "_" + 1.client.client_id; 1.plan.plan_id)}}
+
+block_id:
+  - Always auto-generated. Never supplied by caller.
+  - Format: "blk_YYYYMMDDHHmmss_<client_id>"
+  - Example: "blk_20260219134426_cli_001"
+
+week_id:
+  - Format: "wk_<block_id>_<week_number>"
+  - Example: "wk_blk_20260219134426_cli_001_1"
+
+session_id:
+  - Format: "sess_<week_id>_<day_number>"
+  - Example: "sess_wk_blk_20260219134426_cli_001_1_1"
+
+IMPORTANT: Bill and Flask must never construct or guess these IDs.
+After block creation, retrieve them via Load Client Context V2.
+
+-----------------------------
+WEEK DATE CALCULATIONS (FIXED)
+-----------------------------
+week_start_date formula (module 10):
+{{if(7.i - 1 = 0; formatDate(1.plan.week_start; "YYYY-MM-DD"); formatDate(addDays(1.plan.week_start; ((7.i - 1) * 7)); "YYYY-MM-DD"))}}
+
+- Week 1 (i=1): uses plan.week_start directly
+- Week N (i=N): plan.week_start + ((N-1) * 7) days
+- Example with week_start 2026-02-23:
+  Week 1: 2026-02-23
+  Week 2: 2026-03-02
+  Week 3: 2026-03-09
+  Week 4: 2026-03-16
+
+week_end_date: always week_start_date + 6 days (correct).
+
+-----------------------------
+DUPLICATE DETECTION
+-----------------------------
+Module 23 runs before the router and searches Plans_Blocks for any row where:
+- col C (client_id) matches incoming client_id
+- col N (plan_status) = "Active"
+
+If a match is found (__IMTLENGTH__ > 0), the create route filter fails and
+the fallback route fires, returning an error response. No rows are written.
+
+Bill must never call this scenario if the client already has an active block.
+Check client context first — if plan_context.active_block is populated, do not call.
+
+-----------------------------
+PLANS_SESSIONS SKELETON — WHAT GETS WRITTEN
+-----------------------------
+- plan_id (col A), block_id (col B), client_id (col C)
+- week number (col D), week_id (col E), day number (col F), session_id (col G)
+- phase (col H) — from plan.phase_name
+- location (col I) — from plan.primary_locations
+- focus (col J) — from goals.primary (fallback: plan.phase_goal)
+- session_global_number (col Q) — ((week-1) * days_per_week) + day
+- estimated_duration_minutes (col T) — from availability.default_session_minutes
+- linked_sport (col U) — hardcoded "general"
+- session_status (col V) — hardcoded "awaiting content"
+
+All other columns left blank. Populate Training Week fills them.
+
+-----------------------------
+OUTPUT CONTRACT
+-----------------------------
+Success response:
+{
+  "status": "ok",
+  "action": "plan_created",
+  "client_id": "<client_id>",
+  "plan_id": "<resolved plan_id>",
+  "block_id": "<generated block_id>",
+  "weeks_created": <number>,
+  "sessions_created": <number>,
+  "timestamp": "<ISO 8601 UTC>"
+}
+
+Fallback/error response:
+{
+  "status": "error",
+  "message": "unknown plan_action"
+}
+
+NOTE: The fallback fires for BOTH wrong plan_action AND duplicate active block.
+The error message is generic — Bill should check client context before calling
+to distinguish between the two cases.
+Response does NOT return individual week_id or session_id arrays — counts only.
+Retrieve IDs via Load Client Context V2 after successful creation.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always check client context before calling — if active_block exists, do not call
+- Always pass plan_action: "create_full_block" exactly
+- Always pass plan.plan_id as "" for auto-generation — do not omit the key
+- Never supply block_id, week_id, or session_id — Make generates all of these
+- goals and availability are top-level objects, not nested inside plan
+- After successful call, retrieve IDs via Load Client Context V2 before
+  calling Populate Training Week
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "plan_action": "create_full_block",
+  "client": {
+    "client_id": "cli_001"
+  },
+  "plan": {
+    "plan_id": "",
+    "phase_name": "Foundation Block 1",
+    "phase_goal": "Build base strength and movement quality",
+    "week_start": "2026-02-23",
+    "duration_weeks": 4,
+    "days_per_week": 3,
+    "constraints": "Lower back niggle — avoid heavy deadlifts",
+    "primary_locations": "gym",
+    "nutrition_targets": "High protein, slight calorie surplus",
+    "supplement_protocol": "Creatine 5g daily, whey post-session",
+    "notes": "Client returning after 6-month break. Keep intensity conservative week 1."
+  },
+  "goals": {
+    "primary": "strength",
+    "secondary": "hypertrophy"
+  },
+  "availability": {
+    "default_session_minutes": 60
+  }
+}
+
+Expected success response:
+{
+  "status": "ok",
+  "action": "plan_created",
+  "client_id": "cli_001",
+  "plan_id": "plan_20260223_cli_001",
+  "block_id": "blk_<timestamp>_cli_001",
+  "weeks_created": 4,
+  "sessions_created": 12,
+  "timestamp": "<ISO 8601 UTC>"
+}
+
+Expected sheet writes:
+- 1 row in Plans_Blocks
+- 4 rows in Plans_Weeks (dates: 2026-02-23, 2026-03-02, 2026-03-09, 2026-03-16)
+- 12 rows in Plans_Sessions (4 weeks × 3 days)
+============================================================
+
+
+============================================================
+SCENARIO: Bill - Add Injury
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Add_Injury_blueprint.json)
+WEBHOOK LABEL: POST/injury/add
+WEBHOOK URL: https://hook.eu2.make.com/7n8m9rg7chlxjrtfcdrekx1qc12smsyn
+PURPOSE: Log a temporary contraindication (injury) as a new row in
+         Contraindications_Temp. No duplicate detection — each call
+         creates a new row. After all injury/condition writes are complete,
+         call Bill - Injury to Client Load (Webhook) once to sync to Clients sheet.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — receives flat JSON body
+Module 2: addRow — write new row to Contraindications_Temp
+Module 3: WebhookRespond — return logged confirmation with row number
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. No nesting.
+
+Required:
+- client_id (string) REQUIRED
+- date_reported (string) REQUIRED — format YYYY-MM-DD
+- type (string) REQUIRED — use "injury" for injuries
+- description (string) REQUIRED — plain English description of the injury
+- status (string) REQUIRED — use "active" for new injuries
+
+Optional (send as "" if unknown — do not omit keys):
+- expected_duration (string) — e.g. "7-14 days", "4-6 weeks"
+- notes (string) — coaching notes, movement restrictions, monitoring flags
+- date_resolved (string) — format YYYY-MM-DD or "" if unresolved
+
+IMPORTANT: No enum validation. Make writes whatever strings are sent.
+           Prefer "" over null for optional fields.
+
+-----------------------------
+COLUMN MAPPING (Contraindications_Temp)
+-----------------------------
+Col A (0): client_id
+Col B (1): date_reported
+Col C (2): type
+Col D (3): description
+Col E (4): expected_duration
+Col F (5): status
+Col G (6): notes
+Col H (7): date_resolved
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "logged": true,
+  "record_id": "row_<rowNumber>",
+  "client_id": "<client_id echoed from input>"
+}
+
+IMPORTANT: record_id format is "row_<number>" where number is the Google Sheets
+row number. This is the value required by Update Injury Status to find the row.
+Store this if you may need to update or resolve this injury later in the session.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Call once per distinct injury — do not batch multiple injuries in one call
+- Always call Injury to Client Load (Webhook) after ALL contraindication
+  writes are complete — not after each individual write
+- Never write injuries directly to the Clients sheet via User Upsert
+- status should always be "active" on creation
+- If client reports multiple injuries, make multiple calls then one sync
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "date_reported": "2026-02-19",
+  "type": "injury",
+  "description": "Right knee strain (mild), sore on stairs and deep squat",
+  "expected_duration": "7-14 days",
+  "status": "active",
+  "notes": "Avoid deep knee flexion. Monitor swelling. Sub leg press for squat.",
+  "date_resolved": ""
+}
+
+Expected response:
+{
+  "logged": true,
+  "record_id": "row_42",
+  "client_id": "cli_001"
+}
+============================================================
+
+
+============================================================
+SCENARIO: Bill - Update Injury Status
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Update_Injury_Status_blueprint.json)
+WEBHOOK LABEL: POST/injury/update
+WEBHOOK URL: https://hook.eu2.make.com/bkkygjml0fmc2rkguyesn4jeppg5ia9d
+PURPOSE: Update an existing Contraindications_Temp row — typically to resolve
+         an injury (set status to "resolved", add date_resolved) or update
+         notes and expected_duration as a situation evolves.
+         After calling this, call Injury to Client Load (Webhook) once to sync.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — receives flat JSON body
+Module 2: filterRows — find row in Contraindications_Temp where
+          col A (client_id) = client_id AND col D (description) = description
+          Limit 1, ascending. Returns __ROW_NUMBER__ for updateRow.
+Module 3: updateRow — update matched row using 2.__ROW_NUMBER__
+          Notes field appends incoming to existing rather than overwriting.
+Module 4: WebhookRespond — return updated confirmation
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. No nesting.
+
+Required:
+- client_id (string) REQUIRED — used as first match key in filterRows
+- description (string) REQUIRED — used as second match key in filterRows
+                                   Must match col D of the injury row EXACTLY.
+                                   Bill reads this from client context —
+                                   it is the segment between the 2nd and 3rd
+                                   pipe in the injuries string:
+                                   "date | type | DESCRIPTION | duration | notes"
+- status (string) REQUIRED — "active" or "resolved"
+
+Optional (send as "" if unchanged — do not omit keys):
+- expected_duration (string) — update if recovery timeline has changed
+- notes (string) — APPENDED to existing notes with a newline separator.
+                   Send "" to leave existing notes untouched.
+- date_resolved (string) — format YYYY-MM-DD; set when resolving injury
+
+-----------------------------
+MATCH KEY BEHAVIOUR
+-----------------------------
+filterRows searches col A (client_id) AND col D (description), case-insensitive.
+- If match found: updateRow fires on that row
+- If no match found: updateRow does not fire — no error returned, silent skip
+- If multiple rows match (same client + same description): first row updated only
+
+Bill must use the description exactly as it appears in client context.
+The injuries field in the Clients sheet is populated by Make from
+Contraindications_Temp, so the description is always an exact copy of col D.
+
+-----------------------------
+COLUMNS UPDATED (Contraindications_Temp)
+-----------------------------
+Col A (0): client_id — always overwritten
+Col E (4): expected_duration — overwritten
+Col F (5): status — overwritten
+Col G (6): notes — APPENDED (existing + newline + incoming) if both present;
+                   incoming only if existing blank; existing preserved if incoming blank
+Col H (7): date_resolved — overwritten
+
+NOT UPDATED by this scenario:
+- date_reported (col B)
+- type (col C)
+- description (col D) — also used as match key, never modified
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "updated": true,
+  "record_id": "<description echoed from input>",
+  "client_id": "<client_id echoed from input>"
+}
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always read description from client context injuries string — segment between
+  2nd and 3rd pipe: "date | type | DESCRIPTION | duration | notes"
+- Never modify or paraphrase the description — match must be exact
+- Send "" for notes if you only want to update status/date_resolved
+- Always call Injury to Client Load (Webhook) after resolving an injury
+- When resolving: set status "resolved", set date_resolved to today's date
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "description": "Right knee strain (mild), sore on stairs and under load",
+  "status": "resolved",
+  "expected_duration": "",
+  "notes": "Symptoms resolved after 10 days rest. Returning to full training gradually.",
+  "date_resolved": "2026-02-19"
+}
+
+Expected response:
+{
+  "updated": true,
+  "record_id": "Right knee strain (mild), sore on stairs and under load",
+  "client_id": "cli_001"
+}
+============================================================
+
+
+============================================================
+SCENARIO: Bill - Add Chronic Condition
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Add_Chronic_Condition_blueprint.json)
+WEBHOOK LABEL: POST/condition/add-or-update
+WEBHOOK URL: https://hook.eu2.make.com/box83ye6ison8gbpsecr1pufermgdx0b
+PURPOSE: Create or update a chronic contraindication in Contraindications_Chronic.
+         Router uses record_id to decide path — empty string creates, populated
+         chr_... value updates. After all contraindication writes complete, call
+         Injury to Client Load (Webhook) once to sync to Clients sheet.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — receives flat JSON body
+Module 6: BasicRouter — branches on record_id
+          Route 1 "No Record ID":  length(record_id) = 0  → create path
+          Route 2 "Has Record ID": length(record_id) > 0  → update path
+
+CREATE PATH (Route 1):
+  Module 2: addRow — insert new row to Contraindications_Chronic (col A blank)
+  Module 3: SetVariable2 — generate record_id
+            Format: "chr_YYYYMMDDHHmmss_<client_id>"
+            Example: "chr_20260219134426_cli_001"
+  Module 4: updateRow — write generated record_id back to col A
+  Module 5: WebhookRespond — return logged: true + record_id
+
+UPDATE PATH (Route 2):
+  Module 8:  filterRows — find row where col A (record_id) = 1.record_id
+  Module 10: updateRow — update severity, notes (append), last_reviewed, status
+  Module 12: WebhookRespond — return Updated: true + record_id
+
+-----------------------------
+INPUT CONTRACT — CREATE (record_id: "")
+-----------------------------
+- record_id (string) REQUIRED — pass as "" to trigger create path
+- client_id (string) REQUIRED
+- condition (string) REQUIRED
+- severity (string) OPTIONAL — e.g. "mild", "moderate", "severe"
+- affected_system (string) OPTIONAL — e.g. "cardiovascular", "musculoskeletal"
+- contraindicated_movements (string) OPTIONAL
+- notes (string) OPTIONAL
+- date_added (string) OPTIONAL — format YYYY-MM-DD
+- last_reviewed (string) OPTIONAL — format YYYY-MM-DD
+- status (string) REQUIRED — use "active" for new conditions
+
+-----------------------------
+INPUT CONTRACT — UPDATE (record_id: "chr_...")
+-----------------------------
+- record_id (string) REQUIRED — must be exact chr_... value from create response
+- client_id (string) REQUIRED
+- severity (string) OPTIONAL — send "" to leave unchanged
+- notes (string) OPTIONAL — APPENDED to existing if existing notes present;
+                             send "" to leave existing notes untouched
+- last_reviewed (string) OPTIONAL — Make auto-sets to today; send "" is fine
+- status (string) OPTIONAL — e.g. "active", "resolved", "monitoring"
+
+Fields NOT updated by update path (permanent record fields):
+- condition, affected_system, contraindicated_movements, date_added
+
+-----------------------------
+COLUMN MAPPING (Contraindications_Chronic)
+-----------------------------
+Col A (0): record_id
+Col B (1): client_id
+Col C (2): condition
+Col D (3): severity
+Col E (4): affected_system
+Col F (5): contraindicated_movements
+Col G (6): notes
+Col H (7): date_added
+Col I (8): last_reviewed — auto-set to today on update path
+Col J (9): status
+
+-----------------------------
+NOTES APPEND FORMULA (update path module 10)
+-----------------------------
+{{if(length(trim(8.`6`)) > 0; 8.`6` + " \n " + 1.notes; 1.notes)}}
+If existing notes present: existing + newline + incoming.
+If no existing notes: incoming only.
+If incoming notes blank: trailing newline written — acceptable for a rarely-used scenario.
+
+-----------------------------
+OUTPUT CONTRACT
+-----------------------------
+Create response:
+{
+  "logged": true,
+  "record_id": "chr_<timestamp>_<client_id>",
+  "client_id": "<client_id>"
+}
+
+Update response:
+{
+  "Updated": true,
+  "record_id": "<record_id from matched row>",
+  "client_id": "<client_id>"
+}
+
+NOTE: "Updated" is capitalised in the update response — this is as-built in Make.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always pass record_id — use "" for new conditions, chr_... for updates
+- Never omit record_id from the payload — router will not fire correctly
+- Store the record_id from the create response if you may need to update
+  this condition later in the same session
+- Always call Injury to Client Load (Webhook) after ALL contraindication
+  writes are complete — not after each individual write
+- Never write chronic conditions directly to the Clients sheet via User Upsert
+- Update path only touches severity, notes, last_reviewed, status —
+  never attempt to update condition name, affected_system, or contraindicated_movements
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Create:
+{
+  "record_id": "",
+  "client_id": "cli_001",
+  "condition": "Hypertension (controlled)",
+  "severity": "mild",
+  "affected_system": "cardiovascular",
+  "contraindicated_movements": "Heavy Valsalva manoeuvre, extreme isometric holds",
+  "notes": "Managed with medication. Monitor HR and BP response. Avoid sustained breath-holding under load.",
+  "date_added": "2026-02-19",
+  "last_reviewed": "2026-02-19",
+  "status": "active"
+}
+
+Expected create response:
+{
+  "logged": true,
+  "record_id": "chr_20260219134426_cli_001",
+  "client_id": "cli_001"
+}
+
+Update:
+{
+  "record_id": "chr_20260219134426_cli_001",
+  "client_id": "cli_001",
+  "severity": "moderate",
+  "notes": "Cleared for higher intensity work following cardiology review.",
+  "last_reviewed": "2026-02-19",
+  "status": "active"
+}
+
+Expected update response:
+{
+  "Updated": true,
+  "record_id": "chr_20260219134426_cli_001",
+  "client_id": "cli_001"
+}
+============================================================
+
+
+============================================================
+SCENARIO: Bill - Issue Log Updater
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Issue_Log_Updater_blueprint.json)
+WEBHOOK LABEL: POST/issues/log
+WEBHOOK URL: https://hook.eu2.make.com/9cip80yob4ybt8qrkyaxsows81teldu5
+PURPOSE: Create or update an entry in the Issue_Log sheet. Includes
+         automatic deduplication — if an open issue with matching
+         client_id + issue_type + entity_type + entity_id already exists,
+         that row is updated rather than a new one created. Also sends
+         an email notification on both create and update.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger
+Module 2:  SetVariables — normalise and trim all input fields; apply defaults
+Module 3:  SetVariables — compute dedupe_key, context_append string, email subject
+Module 4:  filterRows — search Issue_Log for open matching row using dedupe key
+           Matches on: issue_type (col D) + entity_type (col E) +
+                       client_id (col B) + entity_id (col F)
+           All comparisons case-insensitive. Limit 1.
+Router:
+  UPDATE branch (match found — __ROW_NUMBER__ > 0):
+    Module 6:  updateRow — update existing Issue_Log row
+    Module 8:  ActionSendEmail — notify on update
+    Module 10: WebhookRespond — return action: "updated"
+  CREATE branch (no match — __IMTLENGTH__ < 1):
+    Module 7:  addRow — insert new Issue_Log row
+    Module 9:  ActionSendEmail — notify on create
+    Module 11: WebhookRespond — return action: "created"
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. No nesting.
+
+Required:
+- issue_type (string) REQUIRED — category of issue e.g. "data_error", "coaching_gap",
+                                  "missing_field", "safety_flag", "session_anomaly"
+- entity_type (string) REQUIRED — what the issue relates to e.g. "session", "step",
+                                   "client", "block", "week", "exercise"
+- description (string) REQUIRED — plain English description of the issue
+
+Optional (send as "" if not applicable):
+- client_id (string) — defaults to "no_client" if missing or blank
+- source (string) — defaults to "bill" if missing or blank; other values: "system", "user"
+- entity_id (string) — the ID of the specific entity e.g. session_id, step_id, block_id
+- context (string) — additional context; appended with timestamp and source into
+                     the context column. Format stored: "[YYYY-MM-DD HH:mm:ss] source: context"
+- suggested_action (string) — recommended next step for whoever reviews the log
+- priority (string) — e.g. "low", "medium", "high", "critical"
+- status (string) — defaults to "open" if missing or blank; use "resolved" to close
+
+-----------------------------
+DEDUPLICATION LOGIC
+-----------------------------
+Make builds a dedupe key from:
+  lower(client_id + "|" + issue_type + "|" + entity_type + "|" + entity_id)
+
+If a row exists in Issue_Log matching all four fields AND the row is found
+by filterRows (no status filter — matches open OR closed rows), it is updated.
+If no match, a new row is created.
+
+IMPORTANT: Deduplication matches regardless of current status. A "resolved"
+issue with matching fields will be updated not recreated. If you want a
+genuinely new issue for the same entity, change entity_id or issue_type.
+
+-----------------------------
+UPDATE BEHAVIOUR (when existing row found)
+-----------------------------
+- description: preserved from original row (not overwritten)
+- context: existing context + "\n" + new context_append (appended)
+- suggested_action: preserved from original if new value is blank
+- status: overwritten with incoming value if non-blank; otherwise preserved
+- priority: overwritten with incoming value if non-blank; otherwise preserved
+- timestamp, client_id, source, issue_type, entity_type, entity_id: always overwritten
+
+-----------------------------
+COLUMN MAPPING (Issue_Log)
+-----------------------------
+Col A (0):  timestamp
+Col B (1):  client_id
+Col C (2):  source
+Col D (3):  issue_type
+Col E (4):  entity_type
+Col F (5):  entity_id
+Col G (6):  description
+Col H (7):  context
+Col I (8):  suggested_action
+Col J (9):  status
+Col K (10): priority
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Create response:
+{
+  "status": "ok",
+  "action": "created",
+  "row_index": "<new row number>",
+  "timestamp": "<YYYY-MM-DD HH:mm:ss>"
+}
+
+Update response:
+{
+  "status": "ok",
+  "action": "updated",
+  "row_index": "<existing row number>",
+  "timestamp": "<YYYY-MM-DD HH:mm:ss>"
+}
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Use this for genuine data or coaching issues that need human review —
+  not as a general logging mechanism for routine operations
+- Always include entity_id when the issue relates to a specific record —
+  this is critical for deduplication to work correctly
+- context should explain what Bill observed or what triggered the issue,
+  not repeat the description
+- suggested_action should be actionable for a human reviewer
+- For safety flags (e.g. client reports chest pain, dizziness): set
+  priority "critical" and source "bill"
+- Do not use this to log successful operations — only genuine issues
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A — create new issue:
+{
+  "client_id": "cli_001",
+  "source": "bill",
+  "issue_type": "missing_field",
+  "entity_type": "session",
+  "entity_id": "sess_wk_blk_20260219_cli_001_1_2",
+  "description": "Session has no focus assigned — skeleton row may be incomplete.",
+  "context": "Attempted to populate week 1 session 2. Focus field was blank in Plans_Sessions.",
+  "suggested_action": "Check Plans_Sessions row and verify Full Training Block Generator ran correctly.",
+  "priority": "medium",
+  "status": "open"
+}
+
+Test B — update/resolve existing issue:
+{
+  "client_id": "cli_001",
+  "source": "bill",
+  "issue_type": "missing_field",
+  "entity_type": "session",
+  "entity_id": "sess_wk_blk_20260219_cli_001_1_2",
+  "description": "",
+  "context": "Focus field manually corrected in sheet. Session now populated successfully.",
+  "suggested_action": "",
+  "priority": "",
+  "status": "resolved"
+}
+
+Expected: Test B will UPDATE the row created by Test A (same dedupe key),
+append context, and set status to "resolved".
+============================================================

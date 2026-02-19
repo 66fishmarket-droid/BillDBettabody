@@ -19,10 +19,10 @@
                 "restore": {
                     "parameters": {
                         "hook": {
+                            "label": "Bill Issue Updater",
                             "data": {
                                 "editable": "true"
-                            },
-                            "label": "Bill Issue Updater"
+                            }
                         }
                     }
                 },
@@ -40,6 +40,96 @@
                     }
                 ],
                 "interface": [
+                    {
+                        "name": "client_id",
+                        "label": "Client ID",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "source",
+                        "label": "Source",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "issue_type",
+                        "label": "Issue type",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "entity_type",
+                        "label": "Entity type",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "entity_id",
+                        "label": "Entity ID",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "description",
+                        "label": "Description",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "context",
+                        "label": "Context",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "suggested_action",
+                        "label": "Suggested action",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "priority",
+                        "label": "Priority",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "name": "status",
+                        "label": "Status",
+                        "help": "",
+                        "type": "text",
+                        "default": null,
+                        "required": false,
+                        "multiline": false
+                    },
                     {
                         "name": "__IMTMETHOD__",
                         "type": "text",
