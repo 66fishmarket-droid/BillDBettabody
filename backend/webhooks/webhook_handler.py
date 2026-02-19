@@ -38,16 +38,15 @@ def parse_make_response(response):
         # CRITICAL: Clean the raw response text BEFORE parsing
         # Make.com includes literal control characters in JSON strings
         raw_text = response.text
-        
-        # We can't just replace all newlines/tabs because the outer JSON
-        # structure uses them. We need to be smarter.
-        # 
-        # The pattern is: {"body": "{\n  ..."}
-        # We need to replace control chars INSIDE string values only
-        
-        # Actually, let's try a different approach:
-        # Parse what we can, then handle the body separately
-        
+
+        # Guard: Make.com sometimes returns an empty body on cold-start
+        # (scenario sleeping and didn't finish in time). Treat as transient error.
+        if not raw_text or not raw_text.strip():
+            raise ValueError(
+                f"Make.com returned an empty response body (HTTP {response.status_code}). "
+                "The scenario may be cold-starting — retry the request."
+            )
+
         # First attempt: Try to parse as-is (might work if Make.com fixed it)
         try:
             data = response.json()
@@ -93,38 +92,72 @@ def parse_make_response(response):
         raise
 
 
+def _post_with_retry(webhook_url, payload, timeout=30, retries=2, retry_delay=3):
+    """
+    POST to a Make.com webhook with retry on empty-body cold-start responses.
+
+    Make.com scenarios sleep after inactivity and may return an empty body on
+    the first call while waking up. A single retry after a short delay is enough
+    to recover in almost all cases.
+
+    Args:
+        webhook_url: Full Make.com webhook URL
+        payload: JSON payload dict
+        timeout: Per-request timeout in seconds
+        retries: Number of retry attempts after the initial call
+        retry_delay: Seconds to wait between attempts
+
+    Returns:
+        dict: Parsed response from parse_make_response
+
+    Raises:
+        ValueError: If all attempts return an empty body
+        requests.RequestException: On network errors
+    """
+    import time
+
+    last_error = None
+    for attempt in range(1 + retries):
+        try:
+            response = requests.post(
+                webhook_url,
+                json=payload,
+                headers={'Content-Type': 'application/json'},
+                timeout=timeout,
+            )
+            response.raise_for_status()
+            return parse_make_response(response)
+        except ValueError as e:
+            # Empty body — Make.com cold-start
+            last_error = e
+            if attempt < retries:
+                print(f"[Webhook] Empty response on attempt {attempt + 1}, retrying in {retry_delay}s...")
+                time.sleep(retry_delay)
+        except requests.RequestException:
+            raise
+
+    raise last_error
+
+
 def check_client_exists(client_id):
     """
     Check if a client_id exists in Google Sheets
     Section 3.2: check_client_id_available
-    
+
     Args:
         client_id: Client identifier to check
-        
+
     Returns:
         bool: True if client exists, False otherwise
     """
     webhook_url = Config.WEBHOOKS['check_client_exists']
-    
+
     if not webhook_url:
         raise ValueError("check_client_exists webhook URL not configured")
-    
-    payload = {
-        "client_id": client_id
-    }
-    
+
     try:
-        response = requests.post(
-            webhook_url,
-            json=payload,
-            headers={'Content-Type': 'application/json'},
-            timeout=30
-        )
-        response.raise_for_status()
-        
-        data = parse_make_response(response)
+        data = _post_with_retry(webhook_url, {"client_id": client_id})
         return data.get('exists', False)
-        
     except requests.RequestException as e:
         print(f"Error checking client exists: {str(e)}")
         raise
@@ -153,22 +186,9 @@ def load_client_context(client_id):
     
     if not webhook_url:
         raise ValueError("load_client_context webhook URL not configured")
-    
-    payload = {
-        "client_id": client_id
-    }
-    
+
     try:
-        response = requests.post(
-            webhook_url,
-            json=payload,
-            headers={'Content-Type': 'application/json'},
-            timeout=30
-        )
-        response.raise_for_status()
-        
-        # Use centralized parsing
-        context = parse_make_response(response)
+        context = _post_with_retry(webhook_url, {"client_id": client_id}, timeout=30)
 
         # Inject Exercise Bests directly from Google Sheets.
         # This replaces the Make.com fetch (modules 28-29 in the scenario)
