@@ -613,17 +613,31 @@ def get_rest_day_summary():
         profile = context.get('client_profile', context.get('profile', {}))
         nutrition = context.get('nutrition', {})
         contraindications = context.get('contraindications', context.get('Contraindications Temp', {}))
-        
+
+        # nutrition_targets may be a nested JSON string from Make.com — parse it safely
+        _nt = nutrition.get('nutrition_targets', {})
+        if isinstance(_nt, str):
+            try:
+                import json as _json
+                _nt = _json.loads(_nt)
+            except Exception:
+                _nt = {}
+        protein_target = _nt.get('protein', nutrition.get('protein_min', 'adequate'))
+
         # Count recent sessions for context
-        recent_sessions = len(context.get('sessions', {}).get('active', []))
-        
+        sessions_field = context.get('sessions', {})
+        if isinstance(sessions_field, dict):
+            recent_sessions = len(sessions_field.get('active', []))
+        else:
+            recent_sessions = 0
+
         prompt = f"""Generate a 2-3 sentence rest day message for this client.
 
 CLIENT CONTEXT:
-- Name: {profile.get('first_name', 'there')}
-- Primary Goal: {profile.get('goal_primary', 'general fitness')}
+- Name: {profile.get('first_name', 'there') if isinstance(profile, dict) else 'there'}
+- Primary Goal: {profile.get('goal_primary', 'general fitness') if isinstance(profile, dict) else 'general fitness'}
 - Recent sessions: {recent_sessions} scheduled this week
-- Daily protein target: {nutrition.get('nutrition_targets', {}).get('protein', nutrition.get('protein_min', 'adequate'))}g
+- Daily protein target: {protein_target}g
 - Active injuries: {'Yes' if contraindications else 'None'}
 
 TONE REQUIREMENTS:
@@ -645,7 +659,9 @@ Generate ONLY the 2-3 sentence message, nothing else."""
         })
         
     except Exception as e:
+        import traceback
         print(f"[Rest Day Summary] Error: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({
             'error': 'Failed to generate rest day summary',
             'details': str(e)

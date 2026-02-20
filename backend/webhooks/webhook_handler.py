@@ -92,7 +92,7 @@ def parse_make_response(response):
         raise
 
 
-def _post_with_retry(webhook_url, payload, timeout=30, retries=2, retry_delay=3):
+def _post_with_retry(webhook_url, payload, timeout=30, retries=3, retry_delay=5):
     """
     POST to a Make.com webhook with retry on empty-body cold-start responses.
 
@@ -126,12 +126,26 @@ def _post_with_retry(webhook_url, payload, timeout=30, retries=2, retry_delay=3)
                 timeout=timeout,
             )
             response.raise_for_status()
+            raw = response.text.strip()
+
+            # Make.com returns "Accepted" when the scenario runs asynchronously
+            # (immediate-response mode). Wait longer on this — scenario needs
+            # time to complete before we can get the result.
+            if raw == "Accepted":
+                wait = 12  # seconds — enough for Make.com to finish the scenario
+                if attempt < retries:
+                    print(f"[Webhook] Got 'Accepted' on attempt {attempt + 1} — scenario still running, waiting {wait}s...")
+                    time.sleep(wait)
+                    last_error = ValueError(f"Make.com scenario returned 'Accepted' (async mode) after {wait}s wait")
+                    continue
+                raise ValueError("Make.com scenario returned 'Accepted' on all attempts — check scenario response mode")
+
             return parse_make_response(response)
-        except ValueError as e:
-            # Empty body — Make.com cold-start
+        except (ValueError, json.JSONDecodeError) as e:
+            # Empty body or other non-JSON — cold-start or transient error
             last_error = e
             if attempt < retries:
-                print(f"[Webhook] Empty response on attempt {attempt + 1}, retrying in {retry_delay}s...")
+                print(f"[Webhook] Unparseable response on attempt {attempt + 1} (body={repr(response.text[:50])}), retrying in {retry_delay}s...")
                 time.sleep(retry_delay)
         except requests.RequestException:
             raise
@@ -188,7 +202,7 @@ def load_client_context(client_id):
         raise ValueError("load_client_context webhook URL not configured")
 
     try:
-        context = _post_with_retry(webhook_url, {"client_id": client_id}, timeout=30)
+        context = _post_with_retry(webhook_url, {"client_id": client_id}, timeout=90)
 
         # Inject Exercise Bests directly from Google Sheets.
         # This replaces the Make.com fetch (modules 28-29 in the scenario)

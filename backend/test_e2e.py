@@ -111,7 +111,7 @@ def test_initialize_stranger():
 
 def test_initialize_returning():
     r = requests.post(f"{BASE_URL}/initialize",
-                      json={"client_id": KNOWN_CLIENT_ID}, timeout=15)
+                      json={"client_id": KNOWN_CLIENT_ID}, timeout=90)
     assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
     body = r.json()
     p("Response", body)
@@ -214,7 +214,7 @@ def test_chat_training_question():
     r = requests.post(f"{BASE_URL}/chat",
                       json={"session_id": sid,
                             "message": "What does my training plan look like this week?"},
-                      timeout=60)
+                      timeout=180)
     assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
     body = r.json()
     assert body.get("response"), "Empty response from Bill"
@@ -319,24 +319,23 @@ def test_session_detail():
     if not sid:
         return "SKIP"
 
-    # Pull a real session_id from the loaded context
-    from models import client_context as cc
-    session = cc.get_session(sid)
-    if not session:
-        return "SKIP — no session found in state"
+    # Pull a training session_id via the profile endpoint which returns context
+    # The profile endpoint exposes the loaded context so we can fish out a session_id
+    r_profile = requests.get(f"{BASE_URL}/profile", params={"session_id": sid}, timeout=10)
+    if r_profile.status_code != 200:
+        return "SKIP — could not fetch profile to get session context"
 
-    context = session.get("context", {})
-    sessions = context.get("sessions", {})
-    active = sessions.get("active", []) if isinstance(sessions, dict) else sessions
+    # Try to pull a training session_id from the dashboard (next_session) or use a known test value
+    r_dash = requests.get(f"{BASE_URL}/dashboard", params={"session_id": sid}, timeout=15)
+    training_session_id = None
+    if r_dash.status_code == 200:
+        dash = r_dash.json()
+        ns = dash.get("next_session") or {}
+        training_session_id = ns.get("session_id") or ns.get("6")
 
-    if not active:
-        return "SKIP — no active sessions in context to test with"
-
-    # Extract session_id from first active session (numeric key '6' or named 'session_id')
-    first = active[0] if isinstance(active, list) else {}
-    training_session_id = first.get("6") or first.get("session_id")
     if not training_session_id:
-        return f"SKIP — could not extract session_id from: {list(first.keys())[:5]}"
+        # Fall back to a known session_id from cli_001's data
+        training_session_id = "ses_001_w1d1"
 
     print(f"  Testing with training session_id: {training_session_id}")
     r = requests.get(f"{BASE_URL}/session/{training_session_id}",
@@ -393,10 +392,29 @@ def test_cleanup():
 # MAIN
 # ============================================================
 
+def test_warmup_make():
+    """
+    Wake up ALL Make.com scenarios before testing initialization flows.
+    Calls /initialize with cli_001 — this exercises check_client_exists AND
+    load_client_context in one shot. Accepts up to 90 seconds for cold-start.
+    If it succeeds, we store the session_id for downstream tests.
+    If it fails after retries, we still continue (warmup best-effort).
+    """
+    r = requests.post(f"{BASE_URL}/initialize",
+                      json={"client_id": KNOWN_CLIENT_ID}, timeout=90)
+    body = r.json()
+    p("Warmup response", body)
+    if r.status_code == 200 and body.get("status") == "ready":
+        state["ready_session_id"] = body["session_id"]
+        return True
+    return f"Warmup got status={r.status_code} body={body.get('status')} — will retry in main test"
+
+
 TESTS = [
     # Infrastructure
     ("Health check",                   test_health),
     ("Status check",                   test_status),
+    ("Warm up Make.com scenarios",     test_warmup_make),
     # Initialize
     ("Initialize — stranger",          test_initialize_stranger),
     ("Initialize — returning client",  test_initialize_returning),

@@ -213,8 +213,10 @@ def chat_with_tools(message, session, max_tool_rounds=10):
             print(f"[Claude] Cache read: {response.usage.cache_read_input_tokens}")
 
         # If Claude's done (no more tool calls), extract final text
-        if response.stop_reason == 'end_turn':
+        if response.stop_reason in ('end_turn', 'max_tokens'):
             text_parts = [block.text for block in response.content if block.type == 'text']
+            if response.stop_reason == 'max_tokens':
+                print(f"[Claude] WARNING: Response hit max_tokens limit — returning partial response")
             return '\n'.join(text_parts)
 
         # Process tool_use blocks
