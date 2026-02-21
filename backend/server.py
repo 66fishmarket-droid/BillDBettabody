@@ -654,7 +654,8 @@ def get_rest_day_summary():
         contraindications = context.get('contraindications', context.get('Contraindications Temp', {}))
 
         # nutrition_targets may be a nested JSON string from Make.com — parse it safely
-        _nt = nutrition.get('nutrition_targets', {})
+        # Use `or {}` to handle explicit None values as well as missing keys
+        _nt = nutrition.get('nutrition_targets') or {}
         if isinstance(_nt, str):
             try:
                 import json as _json
