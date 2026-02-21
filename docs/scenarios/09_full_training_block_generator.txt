@@ -192,14 +192,21 @@ BILL BEHAVIOURAL RULES
   (sections 4.1–4.4): surplus for muscle gain, deficit for fat loss, maintenance
   for recomposition. Set protein from section 4.3 targets for the block goal.
   Derive carbs and fat from remaining calories per section 4.4 guidelines.
-  Format: {"calories": N, "protein": N, "carbs": N, "fat": N}
+  SERIALIZATION RULE: nutrition_targets MUST be sent as a JSON string,
+  NOT as a JSON object. Serialize before sending:
+  CORRECT:   "nutrition_targets": "{\"calories\": 2500, \"protein\": 160, \"carbs\": 250, \"fat\": 80}"
+  INCORRECT: "nutrition_targets": {"calories": 2500, ...}   ← object fails validation
+  This field is REQUIRED. Omitting it or sending an object will block the call.
 - ALWAYS populate plan.supplement_protocol from supplements explicitly agreed
   upon with the client in the current conversation. Do NOT invent supplements
   or copy blindly from context. If no supplement discussion has taken place
   before reaching this call, ask the client first — recommend evidence-based
   options from Calculations Reference section 4.5 (Tier 1 first), then include
   only what the client confirms.
-  Format: [{"name": "...", "dosage": "...", "timing": "..."}]
+  SERIALIZATION RULE: supplement_protocol MUST be sent as a JSON array string,
+  NOT as a JSON array. Serialize before sending:
+  CORRECT:   "supplement_protocol": "[{\"name\": \"Creatine\", \"dosage\": \"5g\", \"timing\": \"daily\"}]"
+  INCORRECT: "supplement_protocol": [{"name": "Creatine", ...}]  ← array fails validation
 
 -----------------------------
 KNOWN-GOOD TEST PAYLOAD

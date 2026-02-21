@@ -179,7 +179,7 @@ GENERATE_TRAINING_PLAN_SCHEMA = {
         },
         "plan": {
             "type": "object",
-            "required": ["phase_name", "phase_goal", "week_start", "duration_weeks", "days_per_week"],
+            "required": ["phase_name", "phase_goal", "week_start", "duration_weeks", "days_per_week", "nutrition_targets"],
             "properties": {
                 "plan_id": {"type": "string"},
                 "phase_name": {"type": "string", "minLength": 1},
@@ -189,7 +189,11 @@ GENERATE_TRAINING_PLAN_SCHEMA = {
                 "days_per_week": {"type": "integer", "minimum": 1, "maximum": 7},
                 "constraints": {"type": "string"},
                 "primary_locations": {"type": "string"},
-                "nutrition_targets": {"type": "string"},
+                "nutrition_targets": {
+                    "type": "string",
+                    "minLength": 10,
+                    "description": "JSON string: {\"calories\": N, \"protein\": N, \"carbs\": N, \"fat\": N}"
+                },
                 "supplement_protocol": {"type": "string"},
                 "notes": {"type": "string"}
             }

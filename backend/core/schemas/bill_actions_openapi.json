@@ -368,47 +368,14 @@
                         "description": "Summary of main training environments. Stored in plans_blocks.primary_locations."
                       },
                       "nutrition_targets": {
-                        "type": "object",
-                        "description": "Block-level daily nutrition targets. Stored (typically as JSON/text) in plans_blocks.nutrition_targets.",
-                        "properties": {
-                          "calories": {
-                            "type": "integer",
-                            "example": 2400
-                          },
-                          "protein": {
-                            "type": "integer",
-                            "example": 150
-                          },
-                          "carbs": {
-                            "type": "integer",
-                            "example": 250
-                          },
-                          "fat": {
-                            "type": "integer",
-                            "example": 70
-                          }
-                        }
+                        "type": "string",
+                        "description": "REQUIRED. Daily nutrition targets serialized as a JSON string. MUST be a string, not an object. Calculate using Mifflin-St Jeor TDEE + goal adjustments. Format EXACTLY: {\"calories\": 2500, \"protein\": 160, \"carbs\": 250, \"fat\": 80}",
+                        "example": "{\"calories\": 2500, \"protein\": 160, \"carbs\": 250, \"fat\": 80}"
                       },
                       "supplement_protocol": {
-                        "type": "array",
-                        "description": "Block-level supplement protocol. Stored (typically as JSON/text) in plans_blocks.supplement_protocol.",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string",
-                              "example": "Creatine monohydrate"
-                            },
-                            "dosage": {
-                              "type": "string",
-                              "example": "3–5 g daily"
-                            },
-                            "timing": {
-                              "type": "string",
-                              "example": "Any time of day"
-                            }
-                          }
-                        }
+                        "type": "string",
+                        "description": "Supplement protocol serialized as a JSON array string. MUST be a string, not an array. Only include supplements explicitly agreed with the client. Format EXACTLY: [{\"name\": \"Creatine\", \"dosage\": \"5g\", \"timing\": \"daily\"}]",
+                        "example": "[{\"name\": \"Creatine monohydrate\", \"dosage\": \"5g\", \"timing\": \"Any time\"}]"
                       },
                       "notes": {
                         "type": "string",
@@ -555,47 +522,14 @@
                         "nullable": true
                       },
                       "nutrition_targets": {
-                        "type": "object",
-                        "description": "Block-level daily nutrition targets. Stored (typically as JSON/text) in plans_blocks.nutrition_targets.",
-                        "properties": {
-                          "calories": {
-                            "type": "integer",
-                            "example": 2400
-                          },
-                          "protein": {
-                            "type": "integer",
-                            "example": 150
-                          },
-                          "carbs": {
-                            "type": "integer",
-                            "example": 250
-                          },
-                          "fat": {
-                            "type": "integer",
-                            "example": 70
-                          }
-                        }
+                        "type": "string",
+                        "description": "REQUIRED. Daily nutrition targets serialized as a JSON string. MUST be a string, not an object. Calculate using Mifflin-St Jeor TDEE + goal adjustments. Format EXACTLY: {\"calories\": 2500, \"protein\": 160, \"carbs\": 250, \"fat\": 80}",
+                        "example": "{\"calories\": 2500, \"protein\": 160, \"carbs\": 250, \"fat\": 80}"
                       },
                       "supplement_protocol": {
-                        "type": "array",
-                        "description": "Block-level supplement protocol. Stored (typically as JSON/text) in plans_blocks.supplement_protocol.",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": "string",
-                              "example": "Creatine monohydrate"
-                            },
-                            "dosage": {
-                              "type": "string",
-                              "example": "3–5 g daily"
-                            },
-                            "timing": {
-                              "type": "string",
-                              "example": "Any time of day"
-                            }
-                          }
-                        }
+                        "type": "string",
+                        "description": "Supplement protocol serialized as a JSON array string. MUST be a string, not an array. Only include supplements explicitly agreed with the client. Format EXACTLY: [{\"name\": \"Creatine\", \"dosage\": \"5g\", \"timing\": \"daily\"}]",
+                        "example": "[{\"name\": \"Creatine monohydrate\", \"dosage\": \"5g\", \"timing\": \"Any time\"}]"
                       },
                       "notes": {
                         "type": "string",
