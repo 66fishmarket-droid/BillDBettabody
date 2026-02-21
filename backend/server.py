@@ -11,7 +11,7 @@ from flask_cors import CORS
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
-from core.sheets_client import get_dashboard_data, get_session_detail
+from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data
 from core.sheets_writer import update_steps_actuals
 from models import client_context
 from core.context_loader import get_greeting_for_state
@@ -351,6 +351,45 @@ def dashboard():
             'error': 'Failed to load dashboard data',
             'details': str(e)
         }), 500
+
+
+# ============================================================
+# PROGRESS
+# ============================================================
+
+@app.route('/progress', methods=['GET'])
+def progress():
+    """
+    Progress and history data for the progress screen.
+
+    Reads four sheets: Exercise_Bests, Exercise_Library,
+    Plans_Sessions (completed), Plans_Steps (actuals).
+
+    Returns exercises grouped by training category with
+    first / best / recent values and % improvement.
+    """
+    try:
+        session_id = request.args.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'Missing session_id parameter'}), 400
+
+        session = client_context.get_session(session_id)
+        if not session:
+            return jsonify({'error': 'Invalid session_id — please initialize first'}), 400
+
+        client_id = session.get('client_id')
+        if not client_id:
+            return jsonify({'error': 'No client_id in session'}), 400
+
+        data = get_progress_data(client_id)
+        return jsonify(data)
+
+    except RuntimeError as e:
+        print(f"[Progress] Config error: {str(e)}")
+        return jsonify({'error': 'Google Sheets connection failed', 'details': str(e)}), 503
+    except Exception as e:
+        print(f"[Progress] Error: {str(e)}")
+        return jsonify({'error': 'Failed to load progress data', 'details': str(e)}), 500
 
 
 # ============================================================

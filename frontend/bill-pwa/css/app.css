@@ -970,6 +970,158 @@ p {
   margin: 0;
 }
 
+/* ============================================
+   Progress Screen
+   ============================================ */
+
+/* Group card */
+.prog-group-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.prog-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.prog-group-header:hover {
+  background: rgba(210, 105, 30, 0.06);
+}
+
+.prog-group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prog-group-name {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--bill-accent);
+  font-weight: 700;
+}
+
+.prog-group-meta {
+  font-size: 0.8rem;
+  color: var(--bill-text-muted);
+}
+
+.prog-group-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.prog-group-arrow {
+  font-size: 1.25rem;
+  color: var(--bill-primary);
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+/* % improvement badge */
+.prog-pct {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.prog-pct.positive { color: var(--bill-success); }
+.prog-pct.negative { color: #e05c5c; }
+
+/* Group body (accordion) */
+.prog-group-body {
+  border-top: 1px solid rgba(210, 105, 30, 0.15);
+}
+
+/* Individual exercise */
+.prog-exercise {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid rgba(210, 105, 30, 0.08);
+}
+
+.prog-exercise:last-child {
+  border-bottom: none;
+}
+
+.prog-exercise-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.prog-exercise-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--bill-text-light);
+}
+
+.prog-exercise-meta {
+  font-size: 0.75rem;
+  color: var(--bill-text-muted);
+  margin: var(--space-xs) 0 0;
+}
+
+/* Bar chart rows */
+.prog-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prog-bar-row {
+  display: grid;
+  grid-template-columns: 52px 62px 1fr;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.prog-bar-label {
+  font-size: 0.75rem;
+  color: var(--bill-text-muted);
+  text-align: right;
+}
+
+.prog-bar-value {
+  font-size: 0.8125rem;
+  color: var(--bill-text-light);
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.prog-bar-track {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.prog-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.prog-bar-fill.started {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.prog-bar-fill.recent {
+  background: var(--bill-primary);
+}
+
+.prog-bar-fill.best {
+  background: var(--bill-success);
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   h1 {

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#8b4513">
+
+  <title>Progress - Bill D'Bettabody</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="container">
+
+      <header class="mb-4">
+        <div class="flex items-center justify-between">
+          <button class="btn btn-secondary" id="back-btn">← Back</button>
+          <h1 style="font-size:1.25rem;margin:0;">Your Progress</h1>
+          <div style="width:80px"></div><!-- spacer -->
+        </div>
+      </header>
+
+      <p class="text-muted mb-3" style="font-size:0.875rem;">
+        % improvement from your first recorded session to your personal best.
+      </p>
+
+      <div id="progress-container">
+        <!-- Groups rendered here -->
+      </div>
+
+      <div id="progress-empty" hidden>
+        <div class="card text-center" style="padding: 2rem;">
+          <p class="text-muted">No progress data yet.</p>
+          <p class="text-muted" style="font-size:0.875rem;margin-top:0.5rem;">
+            Complete some sessions and your history will appear here.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/progress.js"></script>
+</body>
+</html>

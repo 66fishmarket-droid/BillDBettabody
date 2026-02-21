@@ -163,6 +163,68 @@ def get_exercise_bests(client_id):
 
 
 # ============================================================
+# INTERNAL HELPERS
+# ============================================================
+
+def _safe_float(val):
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return None
+
+
+def _get_progress_group(lib_entry):
+    """
+    Map an Exercise_Library row to a broad progress group name.
+    Uses body_region + movement_pattern + category + metric_family.
+    """
+    if not lib_entry:
+        return 'Other'
+
+    body_region    = str(lib_entry.get('body_region', '')         or '').strip().lower()
+    movement       = str(lib_entry.get('movement_pattern', '')    or '').strip().lower()
+    category       = str(lib_entry.get('category', '')            or '').strip().lower()
+    metric_family  = str(lib_entry.get('metric_family_default','') or '').strip().lower()
+    training_focus = str(lib_entry.get('training_focus', '')      or '').strip().lower()
+
+    # Cardio: distance vs endurance
+    if category in ('cardio', 'conditioning'):
+        if 'distance' in metric_family:
+            return 'Distance'
+        return 'Endurance'
+    if 'distance' in metric_family:
+        return 'Distance'
+
+    # Upper body: push vs pull
+    if body_region == 'upper':
+        push_patterns = ('push', 'press', 'fly', 'dip', 'extension')
+        pull_patterns = ('pull', 'row', 'curl', 'chin')
+        if any(p in movement for p in push_patterns):
+            return 'Upper Push'
+        if any(p in movement for p in pull_patterns):
+            return 'Upper Pull'
+        return 'Upper Body'
+
+    if body_region == 'lower':
+        return 'Lower Body'
+
+    if body_region in ('core', 'full_body', 'full body', 'total_body', 'total body'):
+        return 'Full Body & Core'
+
+    if 'endurance' in training_focus:
+        return 'Endurance'
+
+    return 'Other'
+
+
+_GROUP_ORDER = [
+    'Upper Push', 'Upper Pull', 'Lower Body',
+    'Full Body & Core', 'Distance', 'Endurance',
+    'Upper Body', 'Other',
+]
+
+
+# ============================================================
 # DASHBOARD DATA
 # ============================================================
 
@@ -523,4 +585,204 @@ def get_session_detail(client_id, session_id):
         raise
     except Exception as e:
         logger.error(f"[Sheets] Error building session detail for {client_id}, {session_id}: {e}")
+        return result
+
+
+# ============================================================
+# PROGRESS DATA
+# ============================================================
+
+def get_progress_data(client_id):
+    """
+    Build grouped progress data for the progress/history screen.
+
+    Four sheet reads:
+      1. Exercise_Bests  → first_value (started) + current_value (best ever)
+      2. Exercise_Library → grouping metadata (body_region, movement_pattern, etc.)
+      3. Plans_Sessions  → completed session IDs for this client
+      4. Plans_Steps     → most recent actual_top_set_value per exercise
+
+    Groups exercises into broad training categories, calculates % improvement
+    from first to best, and returns most recent performance separately.
+
+    Returns:
+        dict: {
+          "groups": [
+            {
+              "name": str,
+              "avg_improvement_pct": float | None,
+              "exercise_count": int,
+              "exercises": [
+                {
+                  "exercise_name": str,
+                  "metric_key": str,
+                  "unit": str,
+                  "first_value": float | None,
+                  "best_value": float | None,
+                  "recent_value": float | None,
+                  "improvement_pct": float | None,
+                  "session_count": int | str,
+                  "better_direction": str
+                }, ...
+              ]
+            }, ...
+          ]
+        }
+    """
+    result = {"groups": []}
+
+    try:
+        if not client_id:
+            return result
+
+        client_id_lower = str(client_id).lower()
+
+        # ----------------------------------------------------------
+        # 1. Exercise Bests — first and best values
+        # ----------------------------------------------------------
+        bests = get_exercise_bests(client_id)
+        if not bests:
+            return result
+
+        bests_by_name = {b['exercise_name']: b for b in bests}
+
+        # ----------------------------------------------------------
+        # 2. Exercise Library — grouping metadata
+        # ----------------------------------------------------------
+        lib_ws   = _get_worksheet(SHEET_NAMES['exercise_library'])
+        lib_rows = lib_ws.get_all_records()
+        lib_lookup = {}
+        for row in lib_rows:
+            name = str(row.get('exercise_name', '') or '').strip().lower()
+            if name and name not in lib_lookup:
+                lib_lookup[name] = row
+
+        # ----------------------------------------------------------
+        # 3. Plans_Sessions — completed session IDs for this client
+        # ----------------------------------------------------------
+        sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+        completed_ids = {
+            str(s.get('session_id', ''))
+            for s in all_sessions
+            if str(s.get('client_id', '')).lower() == client_id_lower
+            and str(s.get('status', '')).lower() == 'completed'
+        }
+
+        # ----------------------------------------------------------
+        # 4. Plans_Steps — most recent actual_top_set_value per exercise
+        # ----------------------------------------------------------
+        recent_by_exercise = {}  # exercise_name → {value, completed_timestamp}
+
+        if completed_ids:
+            steps_ws  = _get_worksheet(SHEET_NAMES['plans_steps'])
+            all_steps = steps_ws.get_all_records()
+
+            for step in all_steps:
+                if str(step.get('session_id', '')) not in completed_ids:
+                    continue
+                exercise  = str(step.get('exercise_name', '') or '').strip()
+                top_val   = step.get('actual_top_set_value', '')
+                ts        = str(step.get('completed_timestamp', '') or '')
+                if not exercise or not top_val or not ts:
+                    continue
+
+                existing = recent_by_exercise.get(exercise)
+                if not existing or ts > existing['completed_timestamp']:
+                    recent_by_exercise[exercise] = {
+                        'value': top_val,
+                        'completed_timestamp': ts,
+                    }
+
+        # ----------------------------------------------------------
+        # 5. Assemble exercise records and group them
+        # ----------------------------------------------------------
+        def _improvement_pct(first_val, best_val, better_direction):
+            f = _safe_float(first_val)
+            b = _safe_float(best_val)
+            if f is None or b is None or f == 0:
+                return None
+            if str(better_direction).lower() == 'lower':
+                return round(((f - b) / abs(f)) * 100, 1)
+            return round(((b - f) / abs(f)) * 100, 1)
+
+        groups_dict = {}
+
+        for exercise_name, best in bests_by_name.items():
+            first_val  = best.get('first_value', '')
+            best_val   = best.get('current_value', '')
+            if not first_val or not best_val:
+                continue
+
+            better_dir   = str(best.get('better_direction', 'higher') or 'higher')
+            improvement  = _improvement_pct(first_val, best_val, better_dir)
+            lib_entry    = lib_lookup.get(exercise_name.strip().lower())
+            group        = _get_progress_group(lib_entry)
+            recent       = recent_by_exercise.get(exercise_name, {})
+
+            record = {
+                'exercise_name':    exercise_name,
+                'metric_key':       best.get('metric_key', ''),
+                'unit':             best.get('current_unit', ''),
+                'first_value':      _safe_float(first_val),
+                'best_value':       _safe_float(best_val),
+                'recent_value':     _safe_float(recent.get('value')) if recent else None,
+                'improvement_pct':  improvement,
+                'session_count':    best.get('session_count', ''),
+                'better_direction': better_dir,
+            }
+
+            groups_dict.setdefault(group, []).append(record)
+
+        # ----------------------------------------------------------
+        # 6. Sort, average, and order groups
+        # ----------------------------------------------------------
+        groups = []
+
+        for group_name in _GROUP_ORDER:
+            exercises = groups_dict.pop(group_name, [])
+            if not exercises:
+                continue
+
+            exercises.sort(
+                key=lambda x: x.get('improvement_pct') or 0,
+                reverse=True
+            )
+
+            pcts    = [e['improvement_pct'] for e in exercises if e['improvement_pct'] is not None]
+            avg_pct = round(sum(pcts) / len(pcts), 1) if pcts else None
+
+            groups.append({
+                'name':                group_name,
+                'avg_improvement_pct': avg_pct,
+                'exercise_count':      len(exercises),
+                'exercises':           exercises,
+            })
+
+        # Any remaining groups not in _GROUP_ORDER
+        for group_name, exercises in groups_dict.items():
+            exercises.sort(key=lambda x: x.get('improvement_pct') or 0, reverse=True)
+            pcts    = [e['improvement_pct'] for e in exercises if e['improvement_pct'] is not None]
+            avg_pct = round(sum(pcts) / len(pcts), 1) if pcts else None
+            groups.append({
+                'name':                group_name,
+                'avg_improvement_pct': avg_pct,
+                'exercise_count':      len(exercises),
+                'exercises':           exercises,
+            })
+
+        result['groups'] = groups
+
+        logger.info(
+            f"[Sheets] Progress for {client_id}: "
+            f"{len(groups)} groups, "
+            f"{sum(g['exercise_count'] for g in groups)} exercises"
+        )
+
+        return result
+
+    except RuntimeError:
+        raise
+    except Exception as e:
+        logger.error(f"[Sheets] Error building progress data for {client_id}: {e}")
         return result

@@ -103,6 +103,11 @@ class BillAPI {
     return this.request('/nutrition/daily');
   }
 
+  // Progress & history
+  async getProgress(billSessionId) {
+    return this.request(`/progress?session_id=${encodeURIComponent(billSessionId)}`);
+  }
+
   // Exercise bests
   async getBests() {
     return this.request('/bests');
