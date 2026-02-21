@@ -1292,13 +1292,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "record_id": {
-                    "type": "string",
-                    "description": "Row identifier from the initial log response, e.g. 'row_23'."
-                  },
                   "client_id": {
                     "type": "string",
                     "description": "Client identifier, e.g. 'cli_001'."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Exact description of the injury as it appears in the client context injuries string (segment between 2nd and 3rd pipe: 'date | type | DESCRIPTION | duration | notes'). Must match exactly — this is used as the match key."
                   },
                   "status": {
                     "type": "string",
@@ -1306,20 +1306,20 @@
                   },
                   "expected_duration": {
                     "type": "string",
-                    "description": "Updated expected duration in days or a short descriptor, e.g. '10' or 'extended by 7 days'."
+                    "description": "Updated expected duration. Send empty string if unchanged."
                   },
                   "date_resolved": {
                     "type": "string",
-                    "description": "Date the issue was resolved, in YYYY-MM-DD format."
+                    "description": "Date the issue was resolved, in YYYY-MM-DD format. Set when resolving an injury."
                   },
                   "notes": {
                     "type": "string",
-                    "description": "Optional notes about recovery, remaining limitations, or why more time is needed."
+                    "description": "Notes about recovery. APPENDED to existing notes. Send empty string to leave unchanged."
                   }
                 },
                 "required": [
-                  "record_id",
                   "client_id",
+                  "description",
                   "status"
                 ]
               }

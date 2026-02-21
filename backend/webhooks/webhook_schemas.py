@@ -302,25 +302,25 @@ POST_CONTRAINDICATION_CHRONIC_SCHEMA = {
 
 UPDATE_CONTRAINDICATION_TEMP_SCHEMA = {
     "type": "object",
-    "required": ["record_id", "client_id", "status"],
+    "required": ["client_id", "description", "status"],
     "properties": {
-        "record_id": {
+        "client_id": {"type": "string", "minLength": 1},
+        "description": {
             "type": "string",
             "minLength": 1,
-            "description": "Row identifier from the initial log response, e.g. 'row_23'"
+            "description": "Exact injury description — match key used by filterRows (col D)"
         },
-        "client_id": {"type": "string", "minLength": 1},
         "status": {
             "type": "string",
             "description": "New status, e.g. 'resolved' or 'active'"
         },
         "expected_duration": {
             "type": "string",
-            "description": "Updated expected duration"
+            "description": "Updated expected duration (send '' if unchanged)"
         },
         "date_resolved": {
             "type": "string",
-            "description": "Date resolved (ISO format)"
+            "description": "Date resolved (ISO format YYYY-MM-DD)"
         },
         "notes": {"type": "string"}
     }

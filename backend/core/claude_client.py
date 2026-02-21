@@ -6,6 +6,7 @@ NOW SUPPORTS: Structured system prompts with cache_control + tool calling
 """
 
 import json
+import time
 import anthropic
 from config import Config
 from core.context_loader import build_system_prompt
@@ -192,17 +193,30 @@ def chat_with_tools(message, session, max_tool_rounds=10):
     for round_num in range(max_tool_rounds):
         print(f"[Claude] Round {round_num + 1} — sending {len(messages)} messages")
 
-        try:
-            response = client.messages.create(
-                model=Config.CLAUDE_MODEL,
-                max_tokens=Config.CLAUDE_MAX_TOKENS,
-                system=system_prompt,
-                messages=messages,
-                tools=tools if tools else None,
-            )
-        except anthropic.APIError as e:
-            print(f"[Claude] API Error on round {round_num + 1}: {e}")
-            raise
+        # Retry loop for rate limit errors
+        rate_limit_retries = 0
+        max_rate_limit_retries = 3
+        while True:
+            try:
+                response = client.messages.create(
+                    model=Config.CLAUDE_MODEL,
+                    max_tokens=Config.CLAUDE_MAX_TOKENS,
+                    system=system_prompt,
+                    messages=messages,
+                    tools=tools if tools else None,
+                )
+                break  # Success — exit retry loop
+            except anthropic.RateLimitError as e:
+                rate_limit_retries += 1
+                if rate_limit_retries > max_rate_limit_retries:
+                    print(f"[Claude] Rate limit: max retries ({max_rate_limit_retries}) exceeded on round {round_num + 1}")
+                    raise
+                wait_seconds = 60 * rate_limit_retries  # 60s, 120s, 180s
+                print(f"[Claude] Rate limit hit on round {round_num + 1} — waiting {wait_seconds}s (retry {rate_limit_retries}/{max_rate_limit_retries})")
+                time.sleep(wait_seconds)
+            except anthropic.APIError as e:
+                print(f"[Claude] API Error on round {round_num + 1}: {e}")
+                raise
 
         # Log usage
         print(f"[Claude] Stop reason: {response.stop_reason}")
