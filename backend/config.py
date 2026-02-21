@@ -22,7 +22,7 @@ class Config:
     # Claude API
     ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
     CLAUDE_MODEL = 'claude-sonnet-4-20250514'  # Sonnet 4
-    CLAUDE_MAX_TOKENS = 4096
+    CLAUDE_MAX_TOKENS = 8192
     
     # Make.com Webhook URLs - Active (MVP)
     WEBHOOKS = {
