@@ -13,6 +13,9 @@ class BillApp {
   async init() {
     console.log('[App] Initializing Bill D\'Bettabody PWA');
 
+    // Load session first (synchronous) so other scripts can read app.sessionId immediately
+    this.loadSession();
+
     // Register service worker
     if ('serviceWorker' in navigator) {
       try {
@@ -22,9 +25,6 @@ class BillApp {
         console.error('[App] Service worker registration failed:', error);
       }
     }
-
-    // Check for existing session
-    this.loadSession();
 
     // Set up navigation
     this.setupNavigation();

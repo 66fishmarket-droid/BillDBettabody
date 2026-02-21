@@ -60,14 +60,24 @@
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script>
-    // Login logic
-    document.getElementById('enter-btn').addEventListener('click', async () => {
-      const clientId = document.getElementById('client-id-input').value.trim();
+    const enterBtn = document.getElementById('enter-btn');
+    const clientInput = document.getElementById('client-id-input');
 
+    // If session already exists, skip login
+    if (app.sessionId) {
+      window.location.href = '/dashboard.html';
+    }
+
+    async function doLogin() {
+      const clientId = clientInput.value.trim();
       if (!clientId) {
         alert('Please enter a Client ID');
         return;
       }
+
+      // Show loading state
+      enterBtn.disabled = true;
+      enterBtn.textContent = 'Connecting...';
 
       try {
         const init = await api.initialize(clientId);
@@ -80,18 +90,23 @@
           client_id: init.client_id || clientId
         });
 
+        if (init.greeting) {
+          localStorage.setItem('bill_greeting', init.greeting);
+        }
+
         window.location.href = '/dashboard.html';
       } catch (error) {
         console.error('[Login] Initialize failed:', error);
-        alert('Failed to initialize. Check backend and try again.');
+        enterBtn.disabled = false;
+        enterBtn.textContent = 'Enter';
+        alert('Failed to connect. Is the backend running on port 5000?');
       }
-    });
+    }
 
-    // Allow Enter key to submit
-    document.getElementById('client-id-input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        document.getElementById('enter-btn').click();
-      }
+    enterBtn.addEventListener('click', doLogin);
+
+    clientInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') doLogin();
     });
   </script>
 </body>

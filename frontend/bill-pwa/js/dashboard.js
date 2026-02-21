@@ -104,15 +104,26 @@ class Dashboard {
       this.renderNoSession();
     }
 
-    // Nutrition (not yet wired from backend)
+    // Nutrition targets from Plans_Blocks
+    const nt = this.dashboard && this.dashboard.nutrition_targets;
     const caloriesEl = document.getElementById('calories-target');
     if (caloriesEl) {
-      caloriesEl.textContent = 0;
+      caloriesEl.textContent = (nt && nt.calories) ? nt.calories : '—';
     }
 
     const proteinEl = document.getElementById('protein-target');
     if (proteinEl) {
-      proteinEl.textContent = '0g';
+      proteinEl.textContent = (nt && nt.protein) ? `${nt.protein}g` : '—';
+    }
+
+    // Supplement protocol from Plans_Blocks
+    const supplements = this.dashboard && this.dashboard.supplement_protocol;
+    const suppList = document.getElementById('supplement-list');
+    if (suppList && supplements && supplements.length) {
+      suppList.innerHTML = supplements.map(s =>
+        `<li><strong>${s.name}</strong> — ${s.dosage}${s.timing ? `, ${s.timing}` : ''}</li>`
+      ).join('');
+      suppList.hidden = false;
     }
   }
 

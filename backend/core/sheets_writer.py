@@ -98,14 +98,22 @@ def update_steps_actuals(step_updates, status='completed', completed_timestamp=N
 
     allowed_fields = [
         'notes_athlete', 'status', 'completed_timestamp',
-        'actual_set1_reps', 'actual_set2_reps', 'actual_set3_reps',
-        'actual_set4_reps', 'actual_set5_reps',
-        'actual_set1_value', 'actual_set2_value', 'actual_set3_value',
-        'actual_set4_value', 'actual_set5_value',
-        'actual_set1_metric', 'actual_set2_metric', 'actual_set3_metric',
-        'actual_set4_metric', 'actual_set5_metric',
-        'actual_set1_rpe', 'actual_set2_rpe', 'actual_set3_rpe',
-        'actual_set4_rpe', 'actual_set5_rpe',
+        'actual_set1_reps',  'actual_set2_reps',  'actual_set3_reps',
+        'actual_set4_reps',  'actual_set5_reps',  'actual_set6_reps',
+        'actual_set7_reps',  'actual_set8_reps',  'actual_set9_reps',
+        'actual_set10_reps',
+        'actual_set1_value',  'actual_set2_value',  'actual_set3_value',
+        'actual_set4_value',  'actual_set5_value',  'actual_set6_value',
+        'actual_set7_value',  'actual_set8_value',  'actual_set9_value',
+        'actual_set10_value',
+        'actual_set1_metric',  'actual_set2_metric',  'actual_set3_metric',
+        'actual_set4_metric',  'actual_set5_metric',  'actual_set6_metric',
+        'actual_set7_metric',  'actual_set8_metric',  'actual_set9_metric',
+        'actual_set10_metric',
+        'actual_set1_rpe',  'actual_set2_rpe',  'actual_set3_rpe',
+        'actual_set4_rpe',  'actual_set5_rpe',  'actual_set6_rpe',
+        'actual_set7_rpe',  'actual_set8_rpe',  'actual_set9_rpe',
+        'actual_set10_rpe',
     ]
 
     timestamp = completed_timestamp or datetime.utcnow().isoformat()

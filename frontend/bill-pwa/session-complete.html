@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#8b4513">
+
+  <title>Session Complete - Bill D'Bettabody</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="container">
+
+      <div class="complete-hero mb-4">
+        <div class="complete-check">✓</div>
+        <h1 class="complete-heading">Session Complete</h1>
+        <p class="complete-subheading" id="complete-focus"></p>
+      </div>
+
+      <div class="card mb-3">
+        <div class="stats-grid" id="complete-stats"></div>
+      </div>
+
+      <div class="card mb-3" id="complete-exercises-card">
+        <h3 class="card-title mb-2">Exercises Logged</h3>
+        <ul class="complete-exercise-list" id="complete-exercise-list"></ul>
+      </div>
+
+      <div class="card mb-4 complete-quote-card">
+        <p class="complete-quote" id="complete-quote"></p>
+        <p class="complete-quote-attr">— Bill D'Bettabody</p>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-large" id="back-to-dashboard-btn">
+        Back to Dashboard
+      </button>
+
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/session-complete.js"></script>
+</body>
+</html>

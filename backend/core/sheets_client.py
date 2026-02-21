@@ -31,9 +31,11 @@ _SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # Sheet tab names — update here if any sheet is renamed
 SHEET_NAMES = {
-    'exercise_bests': 'Exercise_Bests',
-    'plans_sessions': 'Plans_Sessions',
-    'plans_steps':    'Plans_Steps',
+    'exercise_bests':  'Exercise_Bests',
+    'plans_sessions':  'Plans_Sessions',
+    'plans_steps':     'Plans_Steps',
+    'exercise_library': 'Exercise_Library',
+    'plans_blocks':     'Plans_Blocks',
 }
 
 # Module-level cached connection (one auth per process)
@@ -200,6 +202,8 @@ def get_dashboard_data(client_id):
         "session_exercise_bests": [],
         "recent_pbs": [],
         "block_summary": None,
+        "nutrition_targets": {},
+        "supplement_protocol": [],
     }
 
     try:
@@ -298,6 +302,54 @@ def get_dashboard_data(client_id):
             b for b in all_bests
             if str(b.get('current_timestamp', ''))[:10] >= seven_days_ago
         ]
+
+        # ----------------------------------------------------------
+        # 4. Block nutrition targets + supplement protocol
+        #    from Plans_Blocks — keyed by block_id from the next session.
+        #    Non-fatal: dashboard renders without these if lookup fails.
+        # ----------------------------------------------------------
+        block_id = str(next_sess.get('block_id', '')).strip()
+        if block_id:
+            try:
+                blocks_ws  = _get_worksheet(SHEET_NAMES['plans_blocks'])
+                all_blocks = blocks_ws.get_all_records()
+
+                block = next(
+                    (b for b in all_blocks if str(b.get('block_id', '')) == block_id),
+                    None
+                )
+
+                if block:
+                    # nutrition_targets: stored as JSON object string
+                    nt_raw = str(block.get('nutrition_targets', '') or '').strip()
+                    if nt_raw:
+                        try:
+                            result['nutrition_targets'] = json.loads(nt_raw)
+                        except Exception:
+                            logger.warning(
+                                f"[Sheets] Could not parse nutrition_targets for block {block_id}"
+                            )
+
+                    # supplement_protocol: stored as comma-separated JSON objects
+                    # e.g. {"name":"Creatine","dosage":"5g","timing":"daily"}, {...}
+                    sp_raw = str(block.get('supplement_protocol', '') or '').strip()
+                    if sp_raw:
+                        try:
+                            if not sp_raw.startswith('['):
+                                sp_raw = '[' + sp_raw + ']'
+                            result['supplement_protocol'] = json.loads(sp_raw)
+                        except Exception:
+                            logger.warning(
+                                f"[Sheets] Could not parse supplement_protocol for block {block_id}"
+                            )
+
+                    logger.info(
+                        f"[Sheets] Block {block_id}: "
+                        f"nutrition_targets={bool(result['nutrition_targets'])}, "
+                        f"supplements={len(result['supplement_protocol'])}"
+                    )
+            except Exception as e:
+                logger.warning(f"[Sheets] Plans_Blocks lookup failed (non-fatal): {e}")
 
         logger.info(
             f"[Sheets] Dashboard for {client_id}: "
@@ -400,7 +452,50 @@ def get_session_detail(client_id, session_id):
         result["steps"] = session_steps
 
         # ----------------------------------------------------------
-        # 3. Exercise bests relevant to this session
+        # 3. Join Exercise_Library fields onto each step
+        # Fields attached: video_url, exercise_description_long,
+        #   coaching_cues_short, equipment, safety_notes,
+        #   common_mistakes, regression, progression
+        # Join key: exercise_name (case-insensitive)
+        # Non-fatal — step cards still render without library data.
+        # ----------------------------------------------------------
+        _LIB_FIELDS = (
+            'video_url', 'exercise_description_short', 'exercise_description_long',
+            'coaching_cues_short', 'equipment', 'safety_notes', 'common_mistakes',
+            'regression', 'progression',
+        )
+
+        if session_steps:
+            try:
+                lib_ws = _get_worksheet(SHEET_NAMES['exercise_library'])
+                lib_rows = lib_ws.get_all_records()
+
+                # Build lookup: lowercase exercise_name → first matching row
+                lib_lookup = {}
+                for row in lib_rows:
+                    name = str(row.get('exercise_name', '')).strip().lower()
+                    if name and name not in lib_lookup:
+                        lib_lookup[name] = row
+
+                joined = 0
+                for step in session_steps:
+                    key = str(step.get('exercise_name', '')).strip().lower()
+                    lib_entry = lib_lookup.get(key)
+                    if lib_entry:
+                        for field in _LIB_FIELDS:
+                            # Only fill if not already set on the step
+                            if not step.get(field):
+                                step[field] = lib_entry.get(field, '')
+                        joined += 1
+
+                logger.info(
+                    f"[Sheets] Exercise_Library joined: {joined}/{len(session_steps)} steps matched"
+                )
+            except Exception as e:
+                logger.warning(f"[Sheets] Exercise_Library join failed (non-fatal): {e}")
+
+        # ----------------------------------------------------------
+        # 4. Exercise bests relevant to this session
         # ----------------------------------------------------------
         exercise_names = []
         seen = set()
