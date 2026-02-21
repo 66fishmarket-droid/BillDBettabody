@@ -46,37 +46,34 @@ class SessionPreview {
     this.steps = data.steps || [];
     console.log('[Session Preview] Steps loaded:', this.steps.length);
 
-    // Extract equipment
+    // Extract equipment from Exercise Library join (field set by backend)
     this.steps.forEach(step => {
-      if (step.exercise_name) {
-        // Simple equipment detection from exercise names
-        // Later we can enhance this with actual equipment data from Exercise Library
-        if (step.exercise_name.includes('Barbell')) this.equipment.add('Barbell');
-        if (step.exercise_name.includes('Dumbbell')) this.equipment.add('Dumbbells');
-        if (step.exercise_name.includes('Machine') || step.exercise_name.includes('Leg Curl')) this.equipment.add('Machines');
-        if (step.exercise_name.includes('Band')) this.equipment.add('Resistance Bands');
-        if (step.exercise_name.includes('Bike') || step.exercise_name.includes('Assault Bike')) this.equipment.add('Cardio Equipment');
-        if (step.exercise_name.includes('Box') || step.exercise_name.includes('Bulgarian')) this.equipment.add('Bench/Box');
+      if (step.equipment) {
+        // equipment field may be comma-separated e.g. "barbell, rack"
+        step.equipment.split(',').forEach(e => {
+          const trimmed = e.trim();
+          if (trimmed) this.equipment.add(trimmed);
+        });
       }
     });
   }
 
   render() {
     // Session header
-    document.getElementById('session-name').textContent = 
-      this.session.phase || 'Training Session';
-    
-    document.getElementById('session-focus').textContent = 
-      this.session.focus || '';
-    
-    document.getElementById('session-phase').textContent = 
-      this.session.phase || '';
-    
-    document.getElementById('session-location').textContent = 
+    document.getElementById('session-name').textContent =
+      this.session.focus || 'Training Session';
+
+    document.getElementById('session-focus').textContent =
+      this.session.session_summary || '';
+
+    document.getElementById('session-phase').textContent =
+      this.session.phase_name || '';
+
+    document.getElementById('session-location').textContent =
       this.session.location || 'gym';
-    
-    document.getElementById('session-duration').textContent = 
-      `${this.session.estimated_duration_minutes || 45} min`;
+
+    document.getElementById('session-duration').textContent =
+      `${this.session.estimated_duration || 45} min`;
     
     document.getElementById('session-intensity').textContent = 
       `RPE ${this.session.intended_intensity_rpe || 7}/10`;
