@@ -16,6 +16,11 @@ class ProgressScreen {
   }
 
   async load() {
+    if (!app.sessionId) {
+      window.location.href = '/index.html';
+      return;
+    }
+
     try {
       app.showLoading('Loading your progress...');
       const data = await api.getProgress(app.sessionId);
@@ -32,6 +37,11 @@ class ProgressScreen {
     } catch (err) {
       app.hideLoading();
       console.error('[Progress] Load failed:', err);
+      // If session is invalid, redirect to login rather than showing a dead error
+      if (err.message && err.message.includes('400')) {
+        window.location.href = '/index.html';
+        return;
+      }
       app.showError('Could not load progress data. Please try again.');
     }
   }

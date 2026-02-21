@@ -108,6 +108,10 @@ class BillAPI {
     return this.request(`/progress?session_id=${encodeURIComponent(billSessionId)}`);
   }
 
+  async getWeek(billSessionId) {
+    return this.request(`/week?session_id=${encodeURIComponent(billSessionId)}`);
+  }
+
   // Exercise bests
   async getBests() {
     return this.request('/bests');

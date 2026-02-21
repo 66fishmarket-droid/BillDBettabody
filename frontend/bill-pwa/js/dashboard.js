@@ -85,8 +85,10 @@ class Dashboard {
 
     const sessionsEl = document.getElementById('sessions-completed');
     if (sessionsEl) {
-      const completed = this.profile && this.profile.completed_sessions;
-      sessionsEl.textContent = completed || 0;
+      const completed = (this.dashboard && this.dashboard.completed_sessions != null)
+        ? this.dashboard.completed_sessions
+        : (this.profile && this.profile.completed_sessions) || 0;
+      sessionsEl.textContent = completed;
     }
 
     const weekEl = document.getElementById('current-week');

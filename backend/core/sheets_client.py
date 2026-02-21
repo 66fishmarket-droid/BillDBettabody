@@ -266,6 +266,7 @@ def get_dashboard_data(client_id):
         "block_summary": None,
         "nutrition_targets": {},
         "supplement_protocol": [],
+        "completed_sessions": 0,
     }
 
     try:
@@ -279,6 +280,13 @@ def get_dashboard_data(client_id):
 
         client_id_lower = str(client_id).lower()
         terminal_statuses = {'completed', 'skipped', 'cancelled'}
+
+        # Count completed sessions while we have the full list
+        result['completed_sessions'] = sum(
+            1 for s in all_sessions
+            if str(s.get('client_id', '')).lower() == client_id_lower
+            and str(s.get('status', '')).lower() == 'completed'
+        )
 
         upcoming = [
             s for s in all_sessions
@@ -427,6 +435,126 @@ def get_dashboard_data(client_id):
     except Exception as e:
         logger.error(f"[Sheets] Error building dashboard for {client_id}: {e}")
         return result  # Return whatever was built before the error
+
+
+# ============================================================
+# WEEK VIEW
+# ============================================================
+
+def get_week_sessions(client_id):
+    """
+    Return all sessions for the client's current training week.
+
+    "Current week" = the week_id of the next upcoming session.
+    Falls back to the next 7 calendar days if no week_id is found.
+
+    Each session includes its main-body exercise names from Plans_Steps.
+
+    Returns:
+        dict with keys:
+          week_id       (str | None)
+          week_number   (int | None)
+          phase_name    (str | None)
+          sessions      (list[dict]) — ordered by day number / date
+    """
+    result = {
+        "week_id": None,
+        "week_number": None,
+        "phase_name": None,
+        "sessions": [],
+    }
+
+    try:
+        today_str = datetime.utcnow().strftime('%Y-%m-%d')
+        client_id_lower = str(client_id).lower()
+        terminal_statuses = {'completed', 'skipped', 'cancelled'}
+
+        sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+
+        client_sessions = [
+            s for s in all_sessions
+            if str(s.get('client_id', '')).lower() == client_id_lower
+        ]
+
+        # Find the next upcoming session to anchor the week
+        upcoming = [
+            s for s in client_sessions
+            if str(s.get('status', '')).lower() not in terminal_statuses
+            and str(s.get('session_date', '')) >= today_str
+        ]
+        upcoming.sort(key=lambda s: str(s.get('session_date', '')))
+
+        if not upcoming:
+            return result
+
+        anchor = upcoming[0]
+        week_id = str(anchor.get('week_id', '') or '').strip()
+
+        # All sessions in the same week
+        if week_id:
+            week_sessions = [
+                s for s in client_sessions
+                if str(s.get('week_id', '') or '') == week_id
+            ]
+        else:
+            # Fallback: sessions within 7 days of today
+            cutoff = (datetime.utcnow() + timedelta(days=7)).strftime('%Y-%m-%d')
+            week_sessions = [
+                s for s in client_sessions
+                if today_str <= str(s.get('session_date', '')) <= cutoff
+            ]
+
+        week_sessions.sort(key=lambda s: (str(s.get('session_date', '')), int(s.get('day', 0) or 0)))
+
+        result['week_id']     = week_id or None
+        result['week_number'] = anchor.get('week_number') or None
+        result['phase_name']  = str(anchor.get('phase_name', '') or '').strip() or None
+
+        # Load step exercise names for each session in the week
+        steps_ws  = _get_worksheet(SHEET_NAMES['plans_steps'])
+        all_steps = steps_ws.get_all_records()
+
+        steps_by_session = {}
+        for step in all_steps:
+            sid = str(step.get('session_id', '') or '')
+            if sid:
+                steps_by_session.setdefault(sid, []).append(step)
+
+        for s in week_sessions:
+            sid      = str(s.get('session_id', '') or '')
+            steps    = steps_by_session.get(sid, [])
+            main_ex  = [
+                step.get('exercise_name', '')
+                for step in sorted(steps, key=lambda t: int(t.get('step_order', 0) or 0))
+                if str(step.get('segment_type', '')).lower() == 'main'
+                and step.get('exercise_name')
+            ]
+
+            result['sessions'].append({
+                'session_id':               sid,
+                'session_date':             str(s.get('session_date', '') or ''),
+                'day_of_week':              str(s.get('day_of_week', '') or ''),
+                'focus':                    str(s.get('focus', '') or ''),
+                'location':                 str(s.get('location', '') or ''),
+                'estimated_duration':       s.get('estimated_duration_minutes', ''),
+                'intended_intensity_rpe':   s.get('intended_intensity_rpe', ''),
+                'status':                   str(s.get('status', '') or ''),
+                'session_summary':          str(s.get('session_summary', '') or ''),
+                'exercises':                main_ex,
+            })
+
+        logger.info(
+            f"[Sheets] Week view for {client_id}: "
+            f"week_id={week_id}, {len(result['sessions'])} sessions"
+        )
+        return result
+
+    except RuntimeError:
+        raise
+    except Exception as e:
+        logger.error(f"[Sheets] Error building week view for {client_id}: {e}")
+        return result
 
 
 # ============================================================
