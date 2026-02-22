@@ -228,7 +228,7 @@ _GROUP_ORDER = [
 # DASHBOARD DATA
 # ============================================================
 
-def get_dashboard_data(client_id):
+def get_dashboard_data(client_id, _retry=True):
     """
     Fetch everything the frontend home screen needs in a single call.
 
@@ -281,10 +281,11 @@ def get_dashboard_data(client_id):
         client_id_lower = str(client_id).lower()
         terminal_statuses = {'completed', 'skipped', 'cancelled'}
 
-        # Count all sessions for this client (scheduled + completed)
+        # Count completed sessions for this client
         result['completed_sessions'] = sum(
             1 for s in all_sessions
             if str(s.get('client_id', '')).lower() == client_id_lower
+            and str(s.get('status', '')).lower() == 'completed'
         )
 
         upcoming = [
@@ -432,6 +433,10 @@ def get_dashboard_data(client_id):
     except RuntimeError:
         raise  # Config/connection errors should surface, not be swallowed
     except Exception as e:
+        if _retry and _is_connection_error(e):
+            logger.warning(f"[Sheets] Connection reset in get_dashboard_data — reconnecting and retrying")
+            reset_connection()
+            return get_dashboard_data(client_id, _retry=False)
         logger.error(f"[Sheets] Error building dashboard for {client_id}: {e}")
         return result  # Return whatever was built before the error
 
@@ -440,7 +445,16 @@ def get_dashboard_data(client_id):
 # WEEK VIEW
 # ============================================================
 
-def get_week_sessions(client_id):
+def _is_connection_error(exc):
+    """Return True if the exception is a transient network/connection error."""
+    msg = str(exc).lower()
+    return any(k in msg for k in (
+        'connectionreseterror', 'connection aborted', 'connection reset',
+        'connectionabortederror', 'remotedisconnected', 'broken pipe',
+    ))
+
+
+def get_week_sessions(client_id, _retry=True):
     """
     Return all sessions for the client's current training week.
 
@@ -552,6 +566,10 @@ def get_week_sessions(client_id):
     except RuntimeError:
         raise
     except Exception as e:
+        if _retry and _is_connection_error(e):
+            logger.warning(f"[Sheets] Connection reset in get_week_sessions — reconnecting and retrying")
+            reset_connection()
+            return get_week_sessions(client_id, _retry=False)
         logger.error(f"[Sheets] Error building week view for {client_id}: {e}")
         return result
 

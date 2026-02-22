@@ -141,7 +141,12 @@ class Dashboard {
     // Session details
     const detailsEl = document.getElementById('session-details');
     if (detailsEl) {
+      const summaryBlock = session.session_summary
+        ? `<p style="font-size:0.875rem;color:#b0b0b0;margin-bottom:0.75rem;line-height:1.5;">${session.session_summary}</p>`
+        : '';
+
       detailsEl.innerHTML = `
+        ${summaryBlock}
         <div class="mb-3">
           <div class="flex justify-between items-center mb-2">
             <span class="font-semibold">Phase:</span>
@@ -161,11 +166,9 @@ class Dashboard {
           </div>
         </div>
 
-        <div class="bg-gray-50 p-3 rounded-lg">
-          <p class="text-sm text-gray-600 mb-2">Session Overview:</p>
-          <div class="flex justify-between text-sm">
-            <span>${session.exercise_count || 0} total exercises</span>
-          </div>
+        <div style="background:rgba(255,255,255,0.05);padding:0.75rem;border-radius:8px;">
+          <p style="font-size:0.8rem;color:#b0b0b0;margin-bottom:0.25rem;">Session Overview</p>
+          <span style="font-size:0.875rem;">${session.exercise_count || 0} exercises planned</span>
         </div>
       `;
     }

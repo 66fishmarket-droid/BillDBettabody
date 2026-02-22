@@ -480,8 +480,10 @@ def _resolve_client_id_from_bill_session():
     Returns (client_id, session_obj, error_response_tuple_or_None).
     """
     bill_session_id = request.args.get('session_id') or request.args.get('bill_session_id')
-    if request.is_json:
-        data = request.json or {}
+    # Only read JSON body for methods that carry a body (POST/PUT/PATCH).
+    # Flask 3.0 raises BadRequest on request.json for GET with empty body + JSON content-type.
+    if request.method not in ('GET', 'HEAD', 'OPTIONS'):
+        data = request.get_json(force=False, silent=True) or {}
         bill_session_id = bill_session_id or data.get('bill_session_id') or data.get('session_id')
 
     if not bill_session_id:
