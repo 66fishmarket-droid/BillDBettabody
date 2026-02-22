@@ -38,11 +38,23 @@ class ProgressScreen {
       app.hideLoading();
       console.error('[Progress] Load failed:', err);
       // If session is invalid, redirect to login rather than showing a dead error
-      if (err.message && err.message.includes('400')) {
+      if (err.message && (err.message.includes('400') || err.message.includes('401'))) {
         window.location.href = '/index.html';
         return;
       }
-      app.showError('Could not load progress data. Please try again.');
+      // Try to surface backend detail from response body
+      let detail = '';
+      try {
+        const raw = err.responseBody || '';
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          detail = parsed.details || parsed.error || '';
+        }
+      } catch (_) {}
+      const msg = detail
+        ? `Could not load progress data: ${detail}`
+        : 'Could not load progress data. Check the backend terminal for details.';
+      app.showError(msg);
     }
   }
 

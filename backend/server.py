@@ -12,7 +12,7 @@ from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
 from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_week_sessions
-from core.sheets_writer import update_steps_actuals
+from core.sheets_writer import update_steps_actuals, update_session_status
 from models import client_context
 from core.context_loader import get_greeting_for_state
 from webhooks import webhook_handler
@@ -590,26 +590,45 @@ def complete_session(session_id):
                 mapped['step_id'] = step_id
                 steps_upsert.append(mapped)
 
-        # Build session_updates (if provided or derivable)
-        session_updates = data.get('session_updates')
-        if session_updates is None:
-            session_updates = {}
-            for key in ['location', 'focus', 'exercises', 'macros', 'supplements', 'notes', 'session_status', 'session_summary']:
-                if key in data:
-                    session_updates[key] = data.get(key)
-            if not session_updates:
-                session_updates = None
+        # Extract session-level notes/summary from the payload.
+        # Frontend sends: session_updates.notes and session_updates.session_summary
+        # Plans_Sessions columns: session_notes (athlete) and session_summary
+        raw_session_updates = data.get('session_updates') or {}
+        session_notes = (
+            data.get('session_notes')
+            or raw_session_updates.get('session_notes')
+            or raw_session_updates.get('notes')  # frontend uses 'notes' key
+            or None
+        )
+        session_summary = (
+            data.get('session_summary')
+            or raw_session_updates.get('session_summary')
+            or None
+        )
 
         # Build step updates for Sheets writer
         if not steps_upsert:
             return jsonify({'error': 'No step updates provided'}), 400
 
-        # Write actuals directly to Plans_Steps
+        completed_ts = datetime.utcnow().isoformat()
+
+        # 1. Write step actuals directly to Plans_Steps
         write_result = update_steps_actuals(
             steps_upsert,
             status='completed',
-            completed_timestamp=datetime.utcnow().isoformat()
+            completed_timestamp=completed_ts
         )
+
+        # 2. Mark session as completed in Plans_Sessions (+ optional notes/summary)
+        session_write = update_session_status(
+            session_id=session_id,
+            status='completed',
+            session_notes=session_notes,
+            session_summary=session_summary,
+        )
+
+        if not session_write.get('updated'):
+            print(f"[Session Complete] WARNING: Plans_Sessions row not updated — {session_write.get('reason')}")
 
         # Post-write context refresh
         if should_refresh_context_after('session_update') and bill_session:
@@ -623,7 +642,8 @@ def complete_session(session_id):
             'session_id': session_id,
             'steps_updated': write_result.get('updated'),
             'steps_missing': write_result.get('missing'),
-            'timestamp': datetime.now().isoformat()
+            'session_status_updated': session_write.get('updated', False),
+            'timestamp': completed_ts,
         })
 
     except ValueError as e:

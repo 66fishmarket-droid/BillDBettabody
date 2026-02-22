@@ -33,9 +33,13 @@ class BillAPI {
 
     try {
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        let body = '';
+        try { body = await response.text(); } catch (_) {}
+        const err = new Error(`API Error: ${response.status} ${response.statusText}`);
+        err.responseBody = body;
+        throw err;
       }
 
       return await response.json();

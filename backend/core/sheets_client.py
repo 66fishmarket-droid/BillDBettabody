@@ -281,11 +281,10 @@ def get_dashboard_data(client_id):
         client_id_lower = str(client_id).lower()
         terminal_statuses = {'completed', 'skipped', 'cancelled'}
 
-        # Count completed sessions while we have the full list
+        # Count all sessions for this client (scheduled + completed)
         result['completed_sessions'] = sum(
             1 for s in all_sessions
             if str(s.get('client_id', '')).lower() == client_id_lower
-            and str(s.get('status', '')).lower() == 'completed'
         )
 
         upcoming = [

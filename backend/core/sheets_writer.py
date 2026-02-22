@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 _SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 SHEET_NAMES = {
-    'plans_steps': 'Plans_Steps',
+    'plans_steps':    'Plans_Steps',
+    'plans_sessions': 'Plans_Sessions',
 }
 
 _spreadsheet = None
@@ -153,3 +154,88 @@ def update_steps_actuals(step_updates, status='completed', completed_timestamp=N
         ws.batch_update(updates)
 
     return {'updated': len(updates), 'missing': missing}
+
+
+def update_session_status(session_id, status='completed', session_notes=None, session_summary=None):
+    """
+    Update Plans_Sessions row for a given session_id.
+
+    Sets session_status on every call.
+    Optionally updates session_notes and session_summary if provided.
+
+    Plans_Sessions headers (relevant):
+      session_id, session_status, session_notes, session_summary
+
+    Args:
+        session_id (str): The session identifier.
+        status (str): Value for session_status column (default 'completed').
+        session_notes (str | None): Athlete notes; skipped if None.
+        session_summary (str | None): Session summary text; skipped if None.
+
+    Returns:
+        dict: { 'updated': True } if the row was found and updated,
+              { 'updated': False, 'reason': '...' } otherwise.
+    """
+    if not session_id:
+        return {'updated': False, 'reason': 'No session_id provided'}
+
+    ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
+
+    headers = ws.row_values(1)
+    if not headers:
+        raise RuntimeError("Plans_Sessions header row is empty.")
+
+    header_index = {h: i + 1 for i, h in enumerate(headers)}
+
+    session_id_col = header_index.get('session_id')
+    if not session_id_col:
+        raise RuntimeError("Plans_Sessions missing 'session_id' header.")
+
+    status_col   = header_index.get('session_status')
+    notes_col    = header_index.get('session_notes')
+    summary_col  = header_index.get('session_summary')
+
+    # Find the row matching session_id
+    all_session_ids = ws.col_values(session_id_col)
+    target_row = None
+    for idx, val in enumerate(all_session_ids, start=1):
+        if idx == 1:
+            continue  # skip header
+        if str(val).strip() == str(session_id).strip():
+            target_row = idx
+            break
+
+    if not target_row:
+        logger.warning(f"[Sheets Writer] session_id '{session_id}' not found in Plans_Sessions")
+        return {'updated': False, 'reason': f"session_id '{session_id}' not found"}
+
+    updates = []
+
+    if status_col:
+        updates.append({
+            'range': gspread.utils.rowcol_to_a1(target_row, status_col),
+            'values': [[status]]
+        })
+
+    if session_notes is not None and notes_col:
+        updates.append({
+            'range': gspread.utils.rowcol_to_a1(target_row, notes_col),
+            'values': [[session_notes]]
+        })
+
+    if session_summary is not None and summary_col:
+        updates.append({
+            'range': gspread.utils.rowcol_to_a1(target_row, summary_col),
+            'values': [[session_summary]]
+        })
+
+    if updates:
+        ws.batch_update(updates)
+        logger.info(
+            f"[Sheets Writer] Updated Plans_Sessions row {target_row} "
+            f"for session_id '{session_id}': status={status}, "
+            f"notes={'set' if session_notes is not None else 'skipped'}, "
+            f"summary={'set' if session_summary is not None else 'skipped'}"
+        )
+
+    return {'updated': True}

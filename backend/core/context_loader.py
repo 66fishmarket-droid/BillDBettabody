@@ -24,6 +24,7 @@ Cache invalidation: Different operation types create separate caches.
 """
 
 import os
+from datetime import datetime
 from config import Config
 from core.bill_config import OperatingMode, ClientState
 
@@ -291,6 +292,12 @@ def build_client_context_text(session):
 
     parts = []
 
+    # CRITICAL: Always inject today's date so Bill calculates session_dates correctly.
+    # Without this, Bill uses stale/hallucinated dates when calling populate_training_week.
+    today_str = datetime.utcnow().strftime('%Y-%m-%d')
+    parts.append("=" * 60)
+    parts.append(f"TODAY'S DATE: {today_str}  ← USE THIS FOR ALL DATE CALCULATIONS")
+    parts.append("All session_date values you generate must be >= this date unless explicitly editing historical data.")
     parts.append("=" * 60)
     parts.append("CURRENT CLIENT CONTEXT")
     parts.append(f"Last refreshed: {session.get('last_refresh', 'Never')}")
