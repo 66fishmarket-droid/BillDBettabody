@@ -285,13 +285,13 @@ def get_dashboard_data(client_id, _retry=True):
         result['completed_sessions'] = sum(
             1 for s in all_sessions
             if str(s.get('client_id', '')).lower() == client_id_lower
-            and str(s.get('status', '')).lower() == 'completed'
+            and _effective_session_status(s) == 'completed'
         )
 
         upcoming = [
             s for s in all_sessions
             if str(s.get('client_id', '')).lower() == client_id_lower
-            and str(s.get('status', '')).lower() not in terminal_statuses
+            and _effective_session_status(s) not in terminal_statuses
             and str(s.get('session_date', '')) >= today_str
         ]
 
@@ -447,6 +447,21 @@ def get_dashboard_data(client_id, _retry=True):
 # WEEK VIEW
 # ============================================================
 
+def _effective_session_status(s):
+    """
+    Return the current effective status of a Plans_Sessions row.
+
+    Plans_Sessions has two status-related columns:
+      - 'status'          written by Make.com at plan creation (e.g. 'scheduled')
+      - 'session_status'  written by Python (sheets_writer) on completion/skip
+
+    session_status reflects the latest actual state, so it takes priority.
+    Fall back to 'status' if session_status is empty (not yet acted on).
+    """
+    ss = str(s.get('session_status', '') or '').strip().lower()
+    return ss if ss else str(s.get('status', '') or '').strip().lower()
+
+
 def _is_connection_error(exc):
     """Return True if the exception is a transient network/connection error."""
     msg = str(exc).lower()
@@ -495,7 +510,7 @@ def get_week_sessions(client_id, _retry=True):
         # Find the next upcoming session to anchor the week
         upcoming = [
             s for s in client_sessions
-            if str(s.get('status', '')).lower() not in terminal_statuses
+            if _effective_session_status(s) not in terminal_statuses
             and str(s.get('session_date', '')) >= today_str
         ]
         upcoming.sort(key=lambda s: str(s.get('session_date', '')))
@@ -554,7 +569,7 @@ def get_week_sessions(client_id, _retry=True):
                 'location':                 str(s.get('location', '') or ''),
                 'estimated_duration':       s.get('estimated_duration_minutes', ''),
                 'intended_intensity_rpe':   s.get('intended_intensity_rpe', ''),
-                'status':                   str(s.get('status', '') or ''),
+                'status':                   _effective_session_status(s),
                 'session_summary':          str(s.get('session_summary', '') or ''),
                 'exercises':                main_ex,
             })

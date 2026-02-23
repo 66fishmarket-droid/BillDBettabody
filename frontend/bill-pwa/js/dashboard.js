@@ -6,6 +6,7 @@ class Dashboard {
     this.dashboard = null;
     this.restSummary = null;
     this.profile = null;
+    this.completedSummary = null;  // set when user just finished a session
   }
 
   async init() {
@@ -18,6 +19,13 @@ class Dashboard {
         console.warn('[Dashboard] No session found. Redirecting to login.');
         window.location.href = '/index.html';
         return;
+      }
+
+      // Check if the user just completed a session (set by session-active.js)
+      const raw = localStorage.getItem('bill_session_summary');
+      if (raw) {
+        try { this.completedSummary = JSON.parse(raw); } catch (_) {}
+        localStorage.removeItem('bill_session_summary');
       }
 
       // Load dashboard + profile
@@ -99,8 +107,10 @@ class Dashboard {
         : 'Starting soon';
     }
 
-    // Today's session
-    if (this.dashboard && this.dashboard.next_session) {
+    // Today's session card
+    if (this.completedSummary) {
+      this.renderSessionComplete(this.completedSummary);
+    } else if (this.dashboard && this.dashboard.next_session) {
       this.renderSession(this.dashboard);
     } else {
       this.renderNoSession();
@@ -187,6 +197,66 @@ class Dashboard {
     }
   }
 
+  renderSessionComplete(summary) {
+    // Update card header
+    const card = document.getElementById('session-card');
+    if (card) {
+      const title = card.querySelector('.card-title');
+      if (title) title.textContent = 'Session Complete!';
+    }
+
+    const focusEl = document.getElementById('session-focus');
+    if (focusEl) focusEl.textContent = summary.focus || 'Training Session';
+
+    const detailsEl = document.getElementById('session-details');
+    if (detailsEl) {
+      const exerciseRows = (summary.main_exercises || []).length
+        ? `<div style="margin-top:0.75rem;background:rgba(255,255,255,0.05);padding:0.75rem;border-radius:8px;">
+             <p style="font-size:0.75rem;color:#b0b0b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.5rem;">Completed</p>
+             <ul style="list-style:none;padding:0;margin:0;">
+               ${summary.main_exercises.map(e =>
+                 `<li style="font-size:0.875rem;color:#f5f5f5;padding:0.2rem 0;">✓ ${e}</li>`
+               ).join('')}
+             </ul>
+           </div>`
+        : '';
+
+      const rpeRow = summary.rpe
+        ? `<div style="display:flex;justify-content:space-between;margin-top:0.5rem;">
+             <span style="font-size:0.875rem;color:#b0b0b0;">Session RPE</span>
+             <strong style="color:#f5f5f5;">${summary.rpe} / 10</strong>
+           </div>`
+        : '';
+
+      // If there's a next session coming up, mention it
+      const nextSession = this.dashboard && this.dashboard.next_session;
+      const nextRow = nextSession
+        ? `<div style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:rgba(210,105,30,0.1);border-radius:8px;border-left:3px solid var(--bill-primary);">
+             <p style="font-size:0.75rem;color:#b0b0b0;margin-bottom:0.15rem;">Next session</p>
+             <p style="font-size:0.875rem;color:#f5f5f5;">${nextSession.focus || 'Training Session'} — ${nextSession.session_date || ''}</p>
+           </div>`
+        : '';
+
+      detailsEl.innerHTML = `
+        <div style="text-align:center;padding:1rem 0 0.5rem;">
+          <div style="font-size:2.5rem;margin-bottom:0.4rem;">🎉</div>
+          <p style="font-weight:700;color:#f5f5f5;font-size:1.1rem;">Great work!</p>
+          <p style="font-size:0.875rem;color:#b0b0b0;margin-top:0.2rem;">Another session in the bank. Recovery starts now.</p>
+        </div>
+        ${rpeRow}
+        ${exerciseRows}
+        ${nextRow}
+      `;
+    }
+
+    // Replace Start Session with View Progress
+    const startBtn = document.getElementById('start-session-btn');
+    if (startBtn) {
+      startBtn.textContent = '📈 View Your Progress';
+      startBtn.style.display = 'block';
+    }
+  }
+
   renderNoSession() {
     const detailsEl = document.getElementById('session-details');
     if (detailsEl) {
@@ -224,6 +294,12 @@ class Dashboard {
   }
 
   onStartSession() {
+    // If the user just completed a session, the button routes to progress
+    if (this.completedSummary) {
+      window.location.href = '/progress.html';
+      return;
+    }
+
     if (!this.dashboard || !this.dashboard.next_session) {
       app.showError('No session available to start');
       return;
