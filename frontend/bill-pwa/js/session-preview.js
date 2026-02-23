@@ -84,6 +84,12 @@ class SessionPreview {
 
     // Render equipment
     this.renderEquipment();
+
+    // Only show Start Session for scheduled (upcoming) sessions
+    const status = (this.session.status || '').toLowerCase();
+    if (status !== 'scheduled' && status !== '') {
+      document.getElementById('start-bar').style.display = 'none';
+    }
   }
 
   renderExerciseSegment(segmentType, elementId, durationId) {
