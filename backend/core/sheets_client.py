@@ -17,6 +17,7 @@ If a field returns empty/wrong, check the actual sheet header spelling first.
 """
 
 import os
+import re
 import json
 import logging
 from datetime import datetime, timedelta
@@ -31,11 +32,13 @@ _SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # Sheet tab names — update here if any sheet is renamed
 SHEET_NAMES = {
-    'exercise_bests':  'Exercise_Bests',
-    'plans_sessions':  'Plans_Sessions',
-    'plans_steps':     'Plans_Steps',
-    'exercise_library': 'Exercises_Library',
-    'plans_blocks':     'Plans_Blocks',
+    'exercise_bests':     'Exercise_Bests',
+    'plans_sessions':     'Plans_Sessions',
+    'plans_steps':        'Plans_Steps',
+    'exercise_library':   'Exercises_Library',
+    'plans_blocks':       'Plans_Blocks',
+    'metric_definitions': 'Metric_definitions',
+    'exercise_metric_map':'Exercise_Metric_Map',
 }
 
 # Module-level cached connection (one auth per process)
@@ -173,6 +176,15 @@ def _safe_float(val):
         return None
 
 
+def _week_number_from_id(week_id):
+    """Extract the rightmost number from a week_id string.
+    e.g. 'blk_001_w3' → 3,  'week_4' → 4,  'w12' → 12
+    Returns None if no number found.
+    """
+    nums = re.findall(r'\d+', str(week_id or ''))
+    return int(nums[-1]) if nums else None
+
+
 def _get_progress_group(lib_entry):
     """
     Map an Exercise_Library row to a broad progress group name.
@@ -304,6 +316,10 @@ def get_dashboard_data(client_id, _retry=True):
         next_sess = upcoming[0]
         session_id = str(next_sess.get('session_id', ''))
 
+        week_id     = str(next_sess.get('week_id', '') or '').strip()
+        week_number = _week_number_from_id(week_id)
+        phase_name  = str(next_sess.get('phase', '') or '').strip()
+
         result['next_session'] = {
             'session_id':           session_id,
             'session_date':         next_sess.get('session_date', ''),
@@ -312,14 +328,14 @@ def get_dashboard_data(client_id, _retry=True):
             'session_summary':      next_sess.get('session_summary', ''),
             'location':             next_sess.get('location', ''),
             'estimated_duration':   next_sess.get('estimated_duration_minutes', ''),
-            'phase_name':           next_sess.get('phase_name', ''),
-            'week_number':          next_sess.get('week_number', ''),
+            'phase_name':           phase_name,
+            'week_number':          week_number,
             'exercise_count':       0,  # filled in step 2
         }
 
         result['block_summary'] = {
-            'phase_name':  next_sess.get('phase_name', ''),
-            'week_number': next_sess.get('week_number', ''),
+            'phase_name':  phase_name,
+            'week_number': week_number,
             'block_id':    next_sess.get('block_id', ''),
         }
 
@@ -538,8 +554,8 @@ def get_week_sessions(client_id, _retry=True):
         week_sessions.sort(key=lambda s: (str(s.get('session_date', '')), int(s.get('day', 0) or 0)))
 
         result['week_id']     = week_id or None
-        result['week_number'] = anchor.get('week_number') or None
-        result['phase_name']  = str(anchor.get('phase_name', '') or '').strip() or None
+        result['week_number'] = _week_number_from_id(week_id)
+        result['phase_name']  = str(anchor.get('phase', '') or '').strip() or None
 
         # Load step exercise names for each session in the week
         steps_ws  = _get_worksheet(SHEET_NAMES['plans_steps'])
@@ -686,7 +702,7 @@ def get_session_detail(client_id, session_id):
         _LIB_FIELDS = (
             'video_url', 'exercise_description_short', 'exercise_description_long',
             'coaching_cues_short', 'equipment', 'safety_notes', 'common_mistakes',
-            'regression', 'progression',
+            'regression', 'progression', 'metric_family_default',
         )
 
         if session_steps:
@@ -747,6 +763,76 @@ def get_session_detail(client_id, session_id):
                 )
             except Exception as e:
                 logger.warning(f"[Sheets] Exercise_Library join failed (non-fatal): {e}")
+
+        # ----------------------------------------------------------
+        # 3b. Metric_definitions + Exercise_Metric_Map joins
+        #
+        #  metric_key:         exercise_name → Exercise_Metric_Map (priority 1, enabled)
+        #                      fallback: metric_family_default → Metric_definitions
+        #                                (is_default_for_family = TRUE)
+        #  metric_context_key: exercise_name → Exercise_Metric_Map.context_key
+        #
+        #  Both honour "only fill if not already set on the step" so that
+        #  any value Make.com wrote to Plans_Steps is preserved.
+        # ----------------------------------------------------------
+        if session_steps:
+            try:
+                # Build metric_family → metric_key from Metric_definitions
+                family_to_metric_key = {}
+                md_ws = _get_worksheet(SHEET_NAMES['metric_definitions'])
+                for row in md_ws.get_all_records():
+                    if str(row.get('is_default_for_family', '')).strip().upper() != 'TRUE':
+                        continue
+                    family = str(row.get('metric_family', '') or '').strip().lower()
+                    key    = str(row.get('metric_key',    '') or '').strip()
+                    if family and key and family not in family_to_metric_key:
+                        family_to_metric_key[family] = key
+
+                # Build exercise_name → {metric_key, context_key} from Exercise_Metric_Map
+                # Sorted by priority ascending so priority=1 wins; one entry per exercise name.
+                emm_ws   = _get_worksheet(SHEET_NAMES['exercise_metric_map'])
+                emm_rows = sorted(
+                    [r for r in emm_ws.get_all_records()
+                     if str(r.get('enabled', '')).strip().upper() == 'TRUE'],
+                    key=lambda r: int(r.get('priority', 999) or 999)
+                )
+                exercise_to_metric = {}
+                for row in emm_rows:
+                    name = str(row.get('exercise_name', '') or '').strip().lower()
+                    if name and name not in exercise_to_metric:
+                        exercise_to_metric[name] = {
+                            'metric_key':         str(row.get('metric_key',   '') or '').strip(),
+                            'metric_context_key':  str(row.get('context_key',  '') or '').strip(),
+                        }
+
+                # Apply to each step
+                metric_joined = 0
+                for step in session_steps:
+                    ex_key   = str(step.get('exercise_name', '') or '').strip().lower()
+                    emm_entry = exercise_to_metric.get(ex_key)
+
+                    # metric_key: Exercise_Metric_Map first, then Metric_definitions fallback
+                    if not step.get('metric_key'):
+                        if emm_entry and emm_entry['metric_key']:
+                            step['metric_key'] = emm_entry['metric_key']
+                        else:
+                            family = str(step.get('metric_family_default', '') or '').strip().lower()
+                            if family and family in family_to_metric_key:
+                                step['metric_key'] = family_to_metric_key[family]
+
+                    # metric_context_key: Exercise_Metric_Map only
+                    if not step.get('metric_context_key') and emm_entry:
+                        step['metric_context_key'] = emm_entry['metric_context_key']
+
+                    if step.get('metric_key'):
+                        metric_joined += 1
+
+                logger.info(
+                    f"[Sheets] Metric join: {metric_joined}/{len(session_steps)} steps resolved"
+                )
+
+            except Exception as e:
+                logger.warning(f"[Sheets] Metric join failed (non-fatal): {e}")
 
         # ----------------------------------------------------------
         # 4. Exercise bests relevant to this session
@@ -989,6 +1075,107 @@ def get_progress_data(client_id):
     except Exception as e:
         logger.error(f"[Sheets] Error building progress data for {client_id}: {e}")
         return result
+
+
+# ============================================================
+# LIFETIME STATS
+# ============================================================
+
+def get_lifetime_stats(client_id):
+    """
+    Compute lifetime aggregate stats from Plans_Steps for completed sessions.
+
+    Iterates all actual_setN_value / actual_setN_reps columns (1–10) for
+    each step belonging to a completed session of this client.
+
+    Returns:
+        dict: {
+          'sessions_completed': int,
+          'total_sets': int,
+          'total_reps': int,
+          'total_volume_kg': int,   # sum of (weight_kg × reps) for kg sets
+          'total_distance_m': int,  # sum of distance values converted to metres
+        }
+    """
+    result = {
+        'sessions_completed': 0,
+        'total_sets': 0,
+        'total_reps': 0,
+        'total_volume_kg': 0,
+        'total_distance_m': 0,
+    }
+
+    if not client_id:
+        return result
+
+    try:
+        client_id_lower = str(client_id).lower()
+
+        # Completed session IDs for this client
+        sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+        completed_ids = {
+            str(s.get('session_id', ''))
+            for s in all_sessions
+            if str(s.get('client_id', '')).lower() == client_id_lower
+            and _effective_session_status(s) == 'completed'
+        }
+
+        result['sessions_completed'] = len(completed_ids)
+
+        if not completed_ids:
+            return result
+
+        steps_ws = _get_worksheet(SHEET_NAMES['plans_steps'])
+        all_steps = steps_ws.get_all_records()
+
+        volume_kg = 0.0
+        distance_m = 0.0
+
+        for step in all_steps:
+            if str(step.get('session_id', '')) not in completed_ids:
+                continue
+
+            for n in range(1, 11):
+                reps_raw   = step.get(f'actual_set{n}_reps', '')
+                value_raw  = step.get(f'actual_set{n}_value', '')
+                metric     = str(step.get(f'actual_set{n}_metric', '') or '').strip().lower()
+
+                reps  = _safe_float(reps_raw)
+                value = _safe_float(value_raw)
+
+                if reps is None and value is None:
+                    continue  # empty set slot
+
+                result['total_sets'] += 1
+
+                if reps is not None:
+                    result['total_reps'] += int(reps)
+
+                if value is not None:
+                    if metric == 'kg':
+                        volume_kg += value * (int(reps) if reps else 1)
+                    elif metric in ('m', 'metres', 'meters'):
+                        distance_m += value
+                    elif metric == 'km':
+                        distance_m += value * 1000
+
+        result['total_volume_kg'] = round(volume_kg)
+        result['total_distance_m'] = round(distance_m)
+
+        logger.info(
+            f"[Sheets] Lifetime stats for {client_id}: "
+            f"sessions={result['sessions_completed']}, "
+            f"sets={result['total_sets']}, reps={result['total_reps']}, "
+            f"volume_kg={result['total_volume_kg']}, distance_m={result['total_distance_m']}"
+        )
+
+    except RuntimeError:
+        raise
+    except Exception as e:
+        logger.error(f"[Sheets] Error computing lifetime stats for {client_id}: {e}")
+
+    return result
 
 
 # ============================================================

@@ -2,6 +2,7 @@ class ProgressScreen {
 
   constructor() {
     this.groups = [];
+    this.lifetimeStats = null;
     this.expandedGroups = new Set();
   }
 
@@ -27,6 +28,9 @@ class ProgressScreen {
       app.hideLoading();
 
       this.groups = data.groups || [];
+      this.lifetimeStats = data.lifetime_stats || null;
+
+      this.renderLifetimeStats();
 
       if (!this.groups.length) {
         document.getElementById('progress-empty').hidden = false;
@@ -56,6 +60,49 @@ class ProgressScreen {
         : 'Could not load progress data. Check the backend terminal for details.';
       app.showError(msg);
     }
+  }
+
+  renderLifetimeStats() {
+    const el = document.getElementById('lifetime-stats');
+    if (!el) return;
+
+    const s = this.lifetimeStats;
+    if (!s || s.sessions_completed === 0) {
+      el.hidden = true;
+      return;
+    }
+
+    const fmtNum = (n) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(n);
+    const fmtKg  = (n) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + 't' : n + ' kg';
+    const fmtDist = (n) => n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, '') + ' km' : n + ' m';
+
+    const stats = [
+      { label: 'Sessions', value: fmtNum(s.sessions_completed) },
+      { label: 'Total Sets', value: fmtNum(s.total_sets) },
+      { label: 'Total Reps', value: fmtNum(s.total_reps) },
+    ];
+
+    if (s.total_volume_kg > 0) {
+      stats.push({ label: 'Volume Lifted', value: fmtKg(s.total_volume_kg) });
+    }
+    if (s.total_distance_m > 0) {
+      stats.push({ label: 'Distance', value: fmtDist(s.total_distance_m) });
+    }
+
+    el.innerHTML = `
+      <div class="card mb-4">
+        <p class="font-semibold mb-1" style="font-family:var(--font-heading);font-size:1rem;">Lifetime Totals</p>
+        <div class="lifetime-stats-grid">
+          ${stats.map(stat => `
+            <div class="lifetime-stat">
+              <div class="lifetime-stat-value">${stat.value}</div>
+              <div class="lifetime-stat-label">${stat.label}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    el.hidden = false;
   }
 
   render() {

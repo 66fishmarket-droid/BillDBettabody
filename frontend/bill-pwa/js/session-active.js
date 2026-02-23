@@ -5,6 +5,8 @@ class SessionActive {
     this.session = null;
     this.steps = [];
     this.stepSetCounts = [];
+    this.restTimers = {};     // stepIdx → intervalId
+    this.restRemaining = {};  // stepIdx → seconds remaining
   }
 
   init() {
@@ -92,6 +94,8 @@ class SessionActive {
         <div class="sets-rows" id="sets-rows-${idx}">
           ${Array.from({ length: setCount }, (_, i) => this.renderSetRow(idx, i + 1)).join('')}
         </div>
+
+        ${this.renderRestTimer(step, idx)}
 
         <div class="step-actions-row">
           <div>
@@ -257,6 +261,81 @@ class SessionActive {
     return `<div class="prescription-block">${bodyHtml}${coachHtml}</div>`;
   }
 
+  // ─── Rest timer ───────────────────────────────────────────────────────────
+
+  renderRestTimer(step, idx) {
+    const secs = parseInt(step.rest_seconds, 10);
+    if (!secs || secs <= 0) return '';
+    return `
+      <div class="rest-timer" id="rest-timer-${idx}">
+        <span class="rest-timer-label">Rest</span>
+        <span class="rest-timer-display" id="rest-display-${idx}">${this.fmtTime(secs)}</span>
+        <button class="rest-timer-btn" id="rest-btn-${idx}"
+                data-step="${idx}" data-seconds="${secs}">▶ Start</button>
+      </div>
+    `;
+  }
+
+  fmtTime(secs) {
+    if (secs < 60) return `${secs}s`;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  startRestTimer(stepIdx, totalSecs) {
+    // Clear any existing timer for this step
+    this.stopRestTimer(stepIdx);
+
+    this.restRemaining[stepIdx] = totalSecs;
+
+    const displayEl = document.getElementById(`rest-display-${stepIdx}`);
+    const btnEl     = document.getElementById(`rest-btn-${stepIdx}`);
+    const timerEl   = document.getElementById(`rest-timer-${stepIdx}`);
+
+    if (btnEl) btnEl.textContent = '✕ Stop';
+    if (timerEl) timerEl.classList.add('running');
+
+    this.restTimers[stepIdx] = setInterval(() => {
+      this.restRemaining[stepIdx]--;
+      const rem = this.restRemaining[stepIdx];
+
+      if (displayEl) displayEl.textContent = this.fmtTime(rem);
+
+      if (rem <= 0) {
+        this.stopRestTimer(stepIdx);
+        if (displayEl) displayEl.textContent = 'Go!';
+        if (timerEl) {
+          timerEl.classList.remove('running');
+          timerEl.classList.add('done');
+          setTimeout(() => timerEl.classList.remove('done'), 2500);
+        }
+        if (btnEl) {
+          btnEl.textContent = '▶ Start';
+          btnEl.dataset.seconds = totalSecs;
+        }
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      }
+    }, 1000);
+  }
+
+  stopRestTimer(stepIdx) {
+    if (this.restTimers[stepIdx]) {
+      clearInterval(this.restTimers[stepIdx]);
+      delete this.restTimers[stepIdx];
+    }
+    const totalSecs = parseInt(
+      document.getElementById(`rest-btn-${stepIdx}`)?.dataset.seconds || 0, 10
+    );
+    const displayEl = document.getElementById(`rest-display-${stepIdx}`);
+    const btnEl     = document.getElementById(`rest-btn-${stepIdx}`);
+    const timerEl   = document.getElementById(`rest-timer-${stepIdx}`);
+
+    if (displayEl && totalSecs) displayEl.textContent = this.fmtTime(totalSecs);
+    if (btnEl) btnEl.textContent = '▶ Start';
+    if (timerEl) timerEl.classList.remove('running');
+  }
+
   // ─── Exercise info modal ──────────────────────────────────────────────────
 
   showExerciseInfo(idx) {
@@ -360,14 +439,27 @@ class SessionActive {
     return d.innerHTML;
   }
 
-  // Format compact digit-only patterns (e.g. "2010" → "2 · 0 · 1 · 0")
-  // Used for tempo, reps_pattern, rpe_pattern — single digits strung together.
+  // Format patterns for display with · separators, agnostic of input format.
+  // "2010"     → "2 · 0 · 1 · 0"  (compact digits — each char is one value)
+  // "2-0-1-0"  → "2 · 0 · 1 · 0"  (hyphen-separated)
+  // "8,10,12"  → "8 · 10 · 12"    (comma-separated multi-digit values)
+  // "8 6 6"    → "8 · 6 · 6"      (space-separated)
   formatPattern(str) {
     if (!str) return '';
     const s = String(str).trim();
+    if (!s) return '';
+
+    // If any separator character is present, split on it
+    if (/[,\-\/\s]/.test(s)) {
+      const parts = s.split(/[\s,\-\/]+/).filter(p => p.length > 0);
+      if (parts.length > 1) return parts.join(' · ');
+    }
+
+    // Compact all-digit string — each character is its own value
     if (/^\d+$/.test(s) && s.length > 1) {
       return s.split('').join(' · ');
     }
+
     return this.esc(s);
   }
 
@@ -418,6 +510,17 @@ class SessionActive {
       }
       if (e.target.classList.contains('details-btn')) {
         this.showExerciseInfo(Number(e.target.dataset.step));
+      }
+      if (e.target.classList.contains('rest-timer-btn')) {
+        const stepIdx = Number(e.target.dataset.step);
+        if (this.restTimers[stepIdx]) {
+          // Timer running — stop and reset
+          this.stopRestTimer(stepIdx);
+        } else {
+          // Start timer
+          const secs = parseInt(e.target.dataset.seconds, 10);
+          this.startRestTimer(stepIdx, secs);
+        }
       }
     });
 

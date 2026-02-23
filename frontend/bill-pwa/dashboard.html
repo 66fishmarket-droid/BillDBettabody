@@ -38,8 +38,11 @@
       <!-- Client Summary Card -->
       <div class="card mb-3">
         <div class="card-header">
-          <h2 class="card-title mb-1">Your Progress</h2>
-          <p class="card-subtitle" id="client-name"></p>
+          <div class="card-header-text">
+            <h2 class="card-title mb-1">Your Progress</h2>
+            <p class="card-subtitle" id="client-name"></p>
+          </div>
+          <a href="/progress.html" class="card-action-btn">📈 Progress</a>
         </div>
         
         <div class="stats-grid">
@@ -48,8 +51,8 @@
             <span class="stat-label">Sessions Done</span>
           </div>
           <div class="stat-item">
-            <span class="stat-value" id="current-week">Week 0</span>
-            <span class="stat-label">Current Phase</span>
+            <span class="stat-value" id="current-week">—</span>
+            <span class="stat-label" id="current-phase">Current Phase</span>
           </div>
         </div>
       </div>
@@ -57,8 +60,11 @@
       <!-- Today's Session Card -->
       <div class="card mb-3" id="session-card">
         <div class="card-header">
-          <h2 class="card-title mb-1">Today's Session</h2>
-          <p class="card-subtitle" id="session-focus"></p>
+          <div class="card-header-text">
+            <h2 class="card-title mb-1">Today's Session</h2>
+            <p class="card-subtitle" id="session-focus"></p>
+          </div>
+          <a href="/week.html" class="card-action-btn">📅 This Week</a>
         </div>
         
         <div id="session-details">
@@ -73,8 +79,10 @@
       <!-- Daily Nutrition Card -->
       <div class="card mb-3">
         <div class="card-header">
-          <h2 class="card-title mb-1">Daily Targets</h2>
-          <p class="card-subtitle">Nutrition goals for today</p>
+          <div class="card-header-text">
+            <h2 class="card-title mb-1">Daily Targets</h2>
+            <p class="card-subtitle">Nutrition goals for today</p>
+          </div>
         </div>
 
         <div class="stats-grid">
@@ -89,16 +97,6 @@
         </div>
 
         <ul class="supplement-list" id="supplement-list" hidden></ul>
-      </div>
-
-      <!-- Bottom Navigation Buttons -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <a href="/week.html" class="btn btn-primary btn-large" style="text-decoration:none;text-align:center;">
-          📅 This Week
-        </a>
-        <a href="/progress.html" class="btn btn-primary btn-large" style="text-decoration:none;text-align:center;">
-          📈 Progress
-        </a>
       </div>
 
     </div>

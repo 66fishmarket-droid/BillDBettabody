@@ -100,11 +100,17 @@ class Dashboard {
     }
 
     const weekEl = document.getElementById('current-week');
+    const phaseEl = document.getElementById('current-phase');
     if (weekEl) {
       const block = this.dashboard ? this.dashboard.block_summary : null;
       weekEl.textContent = block && block.week_number
         ? `Week ${block.week_number}`
         : 'Starting soon';
+      if (phaseEl) {
+        phaseEl.textContent = (block && block.phase_name)
+          ? block.phase_name
+          : 'Current Phase';
+      }
     }
 
     // Today's session card

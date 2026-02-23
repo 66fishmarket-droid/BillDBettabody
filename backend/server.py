@@ -11,7 +11,7 @@ from flask_cors import CORS
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
-from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_week_sessions, audit_exercise_names
+from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_lifetime_stats, get_week_sessions, audit_exercise_names
 from core.sheets_writer import update_steps_actuals, update_session_status
 from models import client_context
 from core.context_loader import get_greeting_for_state
@@ -415,6 +415,7 @@ def progress():
             return jsonify({'error': 'No client_id in session'}), 400
 
         data = get_progress_data(client_id)
+        data['lifetime_stats'] = get_lifetime_stats(client_id)
         return jsonify(data)
 
     except RuntimeError as e:
