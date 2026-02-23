@@ -26,31 +26,47 @@
       <!-- Login Card -->
       <div class="card text-center">
         <p class="mb-4 text-lg">Right then, let's get you sorted.</p>
-        
-        <!-- Client ID Input (temporary until device ID auto-login) -->
-        <div class="mb-4">
-          <label for="client-id-input" class="block text-sm text-left mb-2 text-muted">
-            Enter your Client ID:
-          </label>
-          <input 
-            type="text" 
-            id="client-id-input" 
-            class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-amber-600 focus:outline-none"
-            placeholder="e.g., cli_sherlock"
-            value="cli_demo"
-          />
-          <p class="text-xs text-muted mt-2 text-left">
-            For now, use "cli_demo" to see the demo data
-          </p>
+
+        <!-- Existing client login -->
+        <div id="login-panel">
+          <div class="mb-4">
+            <label for="client-id-input" class="block text-sm text-left mb-2 text-muted">
+              Your Client ID:
+            </label>
+            <input
+              type="text"
+              id="client-id-input"
+              class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-amber-600 focus:outline-none"
+              placeholder="e.g., cli_sherlock"
+              autocomplete="off"
+            />
+          </div>
+
+          <button class="btn btn-primary btn-block btn-large" id="enter-btn">
+            Enter
+          </button>
+
+          <button class="btn btn-secondary btn-block mt-3" id="new-user-btn">
+            New here? Get Started
+          </button>
         </div>
 
-        <button class="btn btn-primary btn-block btn-large" id="enter-btn">
-          Enter
-        </button>
-
-        <p class="text-xs text-muted mt-4">
-          🔒 Auto-login via device ID coming soon
-        </p>
+        <!-- New user panel (hidden by default) -->
+        <div id="new-user-panel" style="display:none;text-align:left;">
+          <h3 style="font-size:1.05rem;font-weight:700;color:var(--bill-accent);margin-bottom:0.75rem;">Getting Started with Bill</h3>
+          <p style="font-size:0.9rem;color:#c0c0c0;line-height:1.6;margin-bottom:0.75rem;">
+            Bill D'Bettabody is a personalised AI coaching service. To get started, your coach will set up your profile and give you a Client ID.
+          </p>
+          <ol style="font-size:0.875rem;color:#b0b0b0;line-height:1.8;padding-left:1.25rem;margin-bottom:1rem;">
+            <li>Reach out to your coach to register</li>
+            <li>Your coach sets up your training profile with Bill</li>
+            <li>You receive your personal Client ID</li>
+            <li>Enter it above and you're off</li>
+          </ol>
+          <button class="btn btn-secondary btn-block" id="back-to-login-btn">
+            ← I already have a Client ID
+          </button>
+        </div>
       </div>
 
     </div>
@@ -60,22 +76,36 @@
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script>
-    const enterBtn = document.getElementById('enter-btn');
-    const clientInput = document.getElementById('client-id-input');
+    const enterBtn      = document.getElementById('enter-btn');
+    const clientInput   = document.getElementById('client-id-input');
+    const newUserBtn    = document.getElementById('new-user-btn');
+    const backBtn       = document.getElementById('back-to-login-btn');
+    const loginPanel    = document.getElementById('login-panel');
+    const newUserPanel  = document.getElementById('new-user-panel');
 
     // If session already exists, skip login
     if (app.sessionId) {
       window.location.href = '/dashboard.html';
     }
 
+    // Toggle panels
+    newUserBtn.addEventListener('click', () => {
+      loginPanel.style.display   = 'none';
+      newUserPanel.style.display = 'block';
+    });
+
+    backBtn.addEventListener('click', () => {
+      newUserPanel.style.display = 'none';
+      loginPanel.style.display   = 'block';
+    });
+
     async function doLogin() {
       const clientId = clientInput.value.trim();
       if (!clientId) {
-        alert('Please enter a Client ID');
+        alert('Please enter your Client ID');
         return;
       }
 
-      // Show loading state
       enterBtn.disabled = true;
       enterBtn.textContent = 'Connecting...';
 
@@ -99,12 +129,11 @@
         console.error('[Login] Initialize failed:', error);
         enterBtn.disabled = false;
         enterBtn.textContent = 'Enter';
-        alert('Failed to connect. Is the backend running on port 5000?');
+        alert('Could not find that Client ID. Please check with your coach.');
       }
     }
 
     enterBtn.addEventListener('click', doLogin);
-
     clientInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') doLogin();
     });
