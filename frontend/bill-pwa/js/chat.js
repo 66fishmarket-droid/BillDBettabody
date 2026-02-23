@@ -1,5 +1,14 @@
 // Bill D'Bettabody - Chat Logic
 
+const THINKING_MESSAGES = [
+  'Thinking...',
+  'Processing...',
+  'Checking your data...',
+  'Preparing response...',
+  'Working on it...',
+  'Almost there...',
+];
+
 class Chat {
   constructor() {
     this.messagesEl = null;
@@ -7,6 +16,8 @@ class Chat {
     this.sendBtn = null;
     this.statusEl = null;
     this.isLoading = false;
+    this._thinkingInterval = null;
+    this._thinkingIndex = 0;
   }
 
   async init() {
@@ -47,7 +58,7 @@ class Chat {
     this.isLoading = true;
     this.sendBtn.disabled = true;
     this.inputEl.disabled = true;
-    this.setStatus('Connecting...', 'var(--bill-warning)');
+    this.startThinking();
     this.showTyping();
 
     const trigger = [
@@ -63,7 +74,7 @@ class Chat {
     try {
       const result = await api.chat(trigger, app.sessionId);
       this.hideTyping();
-      this.setStatus('Online', 'var(--bill-success)');
+      this.stopThinking();
       if (result && result.response) {
         this.addMessage('bill', result.response);
       } else {
@@ -72,7 +83,7 @@ class Chat {
     } catch (err) {
       console.error('[Chat] New user intro failed:', err);
       this.hideTyping();
-      this.setStatus('Online', 'var(--bill-success)');
+      this.stopThinking();
       this.addMessage('bill', "Right then. I'm Bill. Tell me what you're after and we'll take it from there.");
     } finally {
       this.isLoading = false;
@@ -146,6 +157,23 @@ class Chat {
     }
   }
 
+  startThinking() {
+    this._thinkingIndex = 0;
+    this.setStatus(THINKING_MESSAGES[0], 'var(--bill-warning)');
+    this._thinkingInterval = setInterval(() => {
+      this._thinkingIndex = (this._thinkingIndex + 1) % THINKING_MESSAGES.length;
+      this.setStatus(THINKING_MESSAGES[this._thinkingIndex], 'var(--bill-warning)');
+    }, 2000);
+  }
+
+  stopThinking() {
+    if (this._thinkingInterval) {
+      clearInterval(this._thinkingInterval);
+      this._thinkingInterval = null;
+    }
+    this.setStatus('Online', 'var(--bill-success)');
+  }
+
   scrollToBottom() {
     this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
   }
@@ -171,14 +199,14 @@ class Chat {
     this.isLoading = true;
     this.sendBtn.disabled = true;
     this.inputEl.disabled = true;
-    this.setStatus('Thinking...', 'var(--bill-warning)');
+    this.startThinking();
 
     this.showTyping();
 
     try {
       const result = await api.chat(text, app.sessionId);
       this.hideTyping();
-      this.setStatus('Online', 'var(--bill-success)');
+      this.stopThinking();
 
       if (result && result.response) {
         this.addMessage('bill', result.response);
@@ -188,7 +216,7 @@ class Chat {
     } catch (error) {
       console.error('[Chat] Request failed:', error);
       this.hideTyping();
-      this.setStatus('Online', 'var(--bill-success)');
+      this.stopThinking();
       this.addMessage('bill', "Right, something broke. Give it another go.");
     } finally {
       this.isLoading = false;
