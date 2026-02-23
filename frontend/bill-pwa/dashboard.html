@@ -30,6 +30,11 @@
         <p class="text-center text-muted" id="today-date"></p>
       </header>
 
+      <!-- Talk to Bill Button -->
+      <button class="btn btn-secondary btn-block mb-3" id="chat-btn">
+        💬 Talk to Bill
+      </button>
+
       <!-- Client Summary Card -->
       <div class="card mb-3">
         <div class="card-header">
@@ -86,18 +91,13 @@
         <ul class="supplement-list" id="supplement-list" hidden></ul>
       </div>
 
-      <!-- Talk to Bill Button -->
-      <button class="btn btn-secondary btn-block mb-3" id="chat-btn">
-        💬 Talk to Bill
-      </button>
-
-      <!-- Quick Links -->
-      <div class="text-center" style="display:flex;justify-content:space-between;padding:0 0.25rem;">
-        <a href="/week.html" class="text-muted" style="text-decoration: none;">
-          📅 This Week →
+      <!-- Bottom Navigation Buttons -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+        <a href="/week.html" class="btn btn-primary btn-large" style="text-decoration:none;text-align:center;">
+          📅 This Week
         </a>
-        <a href="/progress.html" class="text-muted" style="text-decoration: none;">
-          View Progress & History →
+        <a href="/progress.html" class="btn btn-primary btn-large" style="text-decoration:none;text-align:center;">
+          📈 Progress
         </a>
       </div>
 

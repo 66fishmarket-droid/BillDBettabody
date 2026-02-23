@@ -166,10 +166,17 @@ class Dashboard {
           </div>
         </div>
 
+        ${session.exercise_names && session.exercise_names.length ? `
+        <div style="background:rgba(255,255,255,0.05);padding:0.75rem;border-radius:8px;">
+          <p style="font-size:0.8rem;color:#b0b0b0;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.5px;">Today's Exercises</p>
+          <ul style="list-style:none;padding:0;margin:0;">
+            ${session.exercise_names.map(n => `<li style="font-size:0.875rem;color:#f5f5f5;padding:0.25rem 0;border-bottom:1px solid rgba(255,255,255,0.06);">${n}</li>`).join('')}
+          </ul>
+        </div>` : `
         <div style="background:rgba(255,255,255,0.05);padding:0.75rem;border-radius:8px;">
           <p style="font-size:0.8rem;color:#b0b0b0;margin-bottom:0.25rem;">Session Overview</p>
           <span style="font-size:0.875rem;">${session.exercise_count || 0} exercises planned</span>
-        </div>
+        </div>`}
       `;
     }
 

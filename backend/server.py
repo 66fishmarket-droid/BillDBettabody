@@ -11,7 +11,7 @@ from flask_cors import CORS
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
-from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_week_sessions
+from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_week_sessions, audit_exercise_names
 from core.sheets_writer import update_steps_actuals, update_session_status
 from models import client_context
 from core.context_loader import get_greeting_for_state
@@ -764,6 +764,40 @@ Generate ONLY the 2-3 sentence message, nothing else."""
 
 
 # ============================================================
+# DIAGNOSTIC — EXERCISE NAME AUDIT
+# ============================================================
+
+@app.route('/diag/exercise-names', methods=['GET'])
+def diag_exercise_names():
+    """
+    Audit exercise names in Plans_Steps against the Exercises_Library.
+
+    Returns three buckets:
+      exact    — names that match the library exactly (good)
+      fuzzy    — names that match via substring (tolerated, but should be fixed)
+      unmatched — names with no library match (need to be fixed in the sheet)
+
+    Optional query param:
+      ?client_id=cli_001  — scope the audit to one client
+      ?include_exact=false — omit exact matches from the response (shorter output)
+    """
+    try:
+        client_id     = request.args.get('client_id') or None
+        include_exact = request.args.get('include_exact', 'true').lower() != 'false'
+
+        data = audit_exercise_names(client_id=client_id)
+
+        if not include_exact:
+            data.pop('exact', None)
+
+        return jsonify(data)
+
+    except Exception as e:
+        print(f"[Diag] Exercise name audit error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+# ============================================================
 # SESSION CLEANUP
 # ============================================================
 
@@ -807,7 +841,8 @@ def not_found(error):
             'POST /session/<session_id>/complete',
             'POST /refresh-context',
             'POST /context-integrity-check',
-            'GET /sessions/rest-day-summary?session_id=...'
+            'GET /sessions/rest-day-summary?session_id=...',
+            'GET /diag/exercise-names?client_id=...&include_exact=false',
         ]
     }), 404
 

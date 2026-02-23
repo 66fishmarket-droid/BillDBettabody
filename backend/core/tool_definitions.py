@@ -20,6 +20,7 @@ ENABLED_TOOLS = {
     'post_contraindication_temp',       # Log temporary injuries
     'update_contraindication_temp',     # Update injury status (resolved, etc)
     'post_contraindication_chronic',    # Log chronic conditions
+    'exercise_filter',                  # Look up canonical exercise names from library
     'issue_log_updater',
 }
 

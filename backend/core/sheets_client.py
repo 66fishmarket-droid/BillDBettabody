@@ -34,7 +34,7 @@ SHEET_NAMES = {
     'exercise_bests':  'Exercise_Bests',
     'plans_sessions':  'Plans_Sessions',
     'plans_steps':     'Plans_Steps',
-    'exercise_library': 'Exercise_Library',
+    'exercise_library': 'Exercises_Library',
     'plans_blocks':     'Plans_Blocks',
 }
 
@@ -353,6 +353,8 @@ def get_dashboard_data(client_id, _retry=True):
                 if name and name not in seen:
                     session_exercise_names.append(name)
                     seen.add(name)
+
+            result['next_session']['exercise_names'] = session_exercise_names
 
         # ----------------------------------------------------------
         # 3. Exercise Bests — session-relevant + recent
@@ -684,10 +686,39 @@ def get_session_detail(client_id, session_id):
                     if name and name not in lib_lookup:
                         lib_lookup[name] = row
 
+                lib_names = list(lib_lookup.keys())  # for fuzzy fallback
+
+                def _fuzzy_lib_match(step_key):
+                    """
+                    Fallback when exact match fails.
+                    1. Check if any library name *contains* the step name as a whole word
+                       e.g. step="romanian deadlift" matches "romanian deadlift (barbell)"
+                    2. Check if the step name *contains* a library name as a whole word
+                       e.g. step="barbell deadlift" matches "deadlift (barbell)"
+                    Returns the best matching library row or None.
+                    """
+                    if not step_key:
+                        return None
+                    # Strategy 1: step_key is a substring of a library name
+                    candidates = [n for n in lib_names if step_key in n]
+                    if len(candidates) == 1:
+                        return lib_lookup[candidates[0]]
+                    # Strategy 2: a library name is a substring of step_key
+                    candidates = [n for n in lib_names if n in step_key]
+                    if len(candidates) == 1:
+                        return lib_lookup[candidates[0]]
+                    # Multiple or zero candidates — too ambiguous, skip
+                    return None
+
                 joined = 0
+                fuzzy_joined = 0
                 for step in session_steps:
                     key = str(step.get('exercise_name', '')).strip().lower()
                     lib_entry = lib_lookup.get(key)
+                    if not lib_entry:
+                        lib_entry = _fuzzy_lib_match(key)
+                        if lib_entry:
+                            fuzzy_joined += 1
                     if lib_entry:
                         for field in _LIB_FIELDS:
                             # Only fill if not already set on the step
@@ -696,7 +727,8 @@ def get_session_detail(client_id, session_id):
                         joined += 1
 
                 logger.info(
-                    f"[Sheets] Exercise_Library joined: {joined}/{len(session_steps)} steps matched"
+                    f"[Sheets] Exercise_Library joined: {joined}/{len(session_steps)} steps matched "
+                    f"({fuzzy_joined} via fuzzy)"
                 )
             except Exception as e:
                 logger.warning(f"[Sheets] Exercise_Library join failed (non-fatal): {e}")
@@ -801,6 +833,7 @@ def get_progress_data(client_id):
             name = str(row.get('exercise_name', '') or '').strip().lower()
             if name and name not in lib_lookup:
                 lib_lookup[name] = row
+        lib_names = list(lib_lookup.keys())
 
         # ----------------------------------------------------------
         # 3. Plans_Sessions — completed session IDs for this client
@@ -861,7 +894,17 @@ def get_progress_data(client_id):
 
             better_dir   = str(best.get('better_direction', 'higher') or 'higher')
             improvement  = _improvement_pct(first_val, best_val, better_dir)
-            lib_entry    = lib_lookup.get(exercise_name.strip().lower())
+            ex_key       = exercise_name.strip().lower()
+            lib_entry    = lib_lookup.get(ex_key)
+            if not lib_entry:
+                # Fuzzy fallback: name is substring of one library entry, or vice versa
+                candidates = [n for n in lib_names if ex_key in n]
+                if len(candidates) == 1:
+                    lib_entry = lib_lookup[candidates[0]]
+                else:
+                    candidates = [n for n in lib_names if n in ex_key]
+                    if len(candidates) == 1:
+                        lib_entry = lib_lookup[candidates[0]]
             group        = _get_progress_group(lib_entry)
             recent       = recent_by_exercise.get(exercise_name, {})
 
@@ -931,3 +974,153 @@ def get_progress_data(client_id):
     except Exception as e:
         logger.error(f"[Sheets] Error building progress data for {client_id}: {e}")
         return result
+
+
+# ============================================================
+# EXERCISE NAME AUDIT
+# ============================================================
+
+def audit_exercise_names(client_id=None):
+    """
+    Compare all exercise names in Plans_Steps against the Exercises_Library.
+
+    For each unique exercise name finds in Plans_Steps, reports whether it
+    matches the library exactly, matches via fuzzy fallback, or has no match.
+
+    Used to identify exercises that were prescribed with non-canonical names
+    (i.e. Bill invented the name rather than using exercise_filter output).
+
+    Args:
+        client_id (str | None): If provided, only audit steps for this client.
+                                If None, audit ALL clients.
+
+    Returns:
+        dict: {
+          "summary": {
+            "total_unique_names": int,
+            "exact_matches": int,
+            "fuzzy_matches": int,
+            "no_matches": int,
+          },
+          "exact": [{"exercise_name": str, "session_ids": [...]}],
+          "fuzzy": [{"exercise_name": str, "matched_library_name": str, "session_ids": [...]}],
+          "unmatched": [{"exercise_name": str, "session_ids": [...], "client_ids": [...]}],
+          "library_names": [str, ...]  — full list of canonical names for reference
+        }
+    """
+    result = {
+        "summary": {
+            "total_unique_names": 0,
+            "exact_matches": 0,
+            "fuzzy_matches": 0,
+            "no_matches": 0,
+        },
+        "exact": [],
+        "fuzzy": [],
+        "unmatched": [],
+        "library_names": [],
+    }
+
+    # ── 1. Load Exercises_Library ────────────────────────────
+    lib_ws   = _get_worksheet(SHEET_NAMES['exercise_library'])
+    lib_rows = lib_ws.get_all_records()
+
+    lib_lookup = {}
+    for row in lib_rows:
+        name = str(row.get('exercise_name', '') or '').strip().lower()
+        if name and name not in lib_lookup:
+            lib_lookup[name] = row
+
+    lib_names = list(lib_lookup.keys())
+    result["library_names"] = sorted(
+        str(row.get('exercise_name', '')) for row in lib_rows
+        if row.get('exercise_name')
+    )
+
+    # ── 2. Load Plans_Steps (optionally filtered by client) ──
+    steps_ws  = _get_worksheet(SHEET_NAMES['plans_steps'])
+    all_steps = steps_ws.get_all_records()
+
+    if client_id:
+        # Plans_Steps doesn't store client_id directly — join via session_id
+        sessions_ws  = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+        client_id_lower = str(client_id).lower()
+        client_session_ids = {
+            str(s.get('session_id', ''))
+            for s in all_sessions
+            if str(s.get('client_id', '')).lower() == client_id_lower
+        }
+        steps = [s for s in all_steps if str(s.get('session_id', '')) in client_session_ids]
+    else:
+        # Need client info per session for the report
+        sessions_ws  = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+        session_to_client = {
+            str(s.get('session_id', '')): str(s.get('client_id', ''))
+            for s in all_sessions
+        }
+        steps = all_steps
+
+    # ── 3. Collect unique names with session context ─────────
+    # name_lower → {"display_name": str, "session_ids": set, "client_ids": set}
+    name_registry = {}
+
+    for step in steps:
+        raw_name = str(step.get('exercise_name', '') or '').strip()
+        if not raw_name:
+            continue
+        key = raw_name.lower()
+        if key not in name_registry:
+            name_registry[key] = {
+                "display_name": raw_name,
+                "session_ids": set(),
+                "client_ids": set(),
+            }
+        sid = str(step.get('session_id', '') or '')
+        if sid:
+            name_registry[key]["session_ids"].add(sid)
+            if client_id is None:
+                cid = session_to_client.get(sid, '')
+                if cid:
+                    name_registry[key]["client_ids"].add(cid)
+
+    # ── 4. Classify each name ────────────────────────────────
+    for key, info in sorted(name_registry.items()):
+        display     = info["display_name"]
+        session_ids = sorted(info["session_ids"])
+        client_ids  = sorted(info["client_ids"])
+
+        entry = {"exercise_name": display, "session_ids": session_ids}
+        if client_ids:
+            entry["client_ids"] = client_ids
+
+        if key in lib_lookup:
+            result["exact"].append(entry)
+        else:
+            # Try fuzzy: step name is substring of exactly one library name
+            candidates = [n for n in lib_names if key in n]
+            if len(candidates) == 1:
+                result["fuzzy"].append({**entry, "matched_library_name": lib_lookup[candidates[0]].get('exercise_name', candidates[0])})
+            else:
+                # Try reverse: a library name is substring of the step name
+                candidates = [n for n in lib_names if n in key]
+                if len(candidates) == 1:
+                    result["fuzzy"].append({**entry, "matched_library_name": lib_lookup[candidates[0]].get('exercise_name', candidates[0])})
+                else:
+                    result["unmatched"].append(entry)
+
+    # ── 5. Summary ───────────────────────────────────────────
+    result["summary"]["total_unique_names"] = len(name_registry)
+    result["summary"]["exact_matches"]      = len(result["exact"])
+    result["summary"]["fuzzy_matches"]      = len(result["fuzzy"])
+    result["summary"]["no_matches"]         = len(result["unmatched"])
+
+    logger.info(
+        f"[Sheets] Exercise name audit: {result['summary']['total_unique_names']} unique names — "
+        f"{result['summary']['exact_matches']} exact, "
+        f"{result['summary']['fuzzy_matches']} fuzzy, "
+        f"{result['summary']['no_matches']} unmatched"
+    )
+
+    return result
