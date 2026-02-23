@@ -1,0 +1,159 @@
+============================================================
+SCENARIO: Bill - Issue Log Updater
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Issue_Log_Updater_blueprint.json)
+WEBHOOK LABEL: POST/issues/log
+WEBHOOK URL: https://hook.eu2.make.com/9cip80yob4ybt8qrkyaxsows81teldu5
+PURPOSE: Create or update an entry in the Issue_Log sheet. Includes
+         automatic deduplication — if an open issue with matching
+         client_id + issue_type + entity_type + entity_id already exists,
+         that row is updated rather than a new one created. Also sends
+         an email notification on both create and update.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger
+Module 2:  SetVariables — normalise and trim all input fields; apply defaults
+Module 3:  SetVariables — compute dedupe_key, context_append string, email subject
+Module 4:  filterRows — search Issue_Log for open matching row using dedupe key
+           Matches on: issue_type (col D) + entity_type (col E) +
+                       client_id (col B) + entity_id (col F)
+           All comparisons case-insensitive. Limit 1.
+Router:
+  UPDATE branch (match found — __ROW_NUMBER__ > 0):
+    Module 6:  updateRow — update existing Issue_Log row
+    Module 8:  ActionSendEmail — notify on update
+    Module 10: WebhookRespond — return action: "updated"
+  CREATE branch (no match — __IMTLENGTH__ < 1):
+    Module 7:  addRow — insert new Issue_Log row
+    Module 9:  ActionSendEmail — notify on create
+    Module 11: WebhookRespond — return action: "created"
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. No nesting.
+
+Required:
+- issue_type (string) REQUIRED — category of issue e.g. "data_error", "coaching_gap",
+                                  "missing_field", "safety_flag", "session_anomaly"
+- entity_type (string) REQUIRED — what the issue relates to e.g. "session", "step",
+                                   "client", "block", "week", "exercise"
+- description (string) REQUIRED — plain English description of the issue
+
+Optional (send as "" if not applicable):
+- client_id (string) — defaults to "no_client" if missing or blank
+- source (string) — defaults to "bill" if missing or blank; other values: "system", "user"
+- entity_id (string) — the ID of the specific entity e.g. session_id, step_id, block_id
+- context (string) — additional context; appended with timestamp and source into
+                     the context column. Format stored: "[YYYY-MM-DD HH:mm:ss] source: context"
+- suggested_action (string) — recommended next step for whoever reviews the log
+- priority (string) — e.g. "low", "medium", "high", "critical"
+- status (string) — defaults to "open" if missing or blank; use "resolved" to close
+
+-----------------------------
+DEDUPLICATION LOGIC
+-----------------------------
+Make builds a dedupe key from:
+  lower(client_id + "|" + issue_type + "|" + entity_type + "|" + entity_id)
+
+If a row exists in Issue_Log matching all four fields AND the row is found
+by filterRows (no status filter — matches open OR closed rows), it is updated.
+If no match, a new row is created.
+
+IMPORTANT: Deduplication matches regardless of current status. A "resolved"
+issue with matching fields will be updated not recreated. If you want a
+genuinely new issue for the same entity, change entity_id or issue_type.
+
+-----------------------------
+UPDATE BEHAVIOUR (when existing row found)
+-----------------------------
+- description: preserved from original row (not overwritten)
+- context: existing context + "\n" + new context_append (appended)
+- suggested_action: preserved from original if new value is blank
+- status: overwritten with incoming value if non-blank; otherwise preserved
+- priority: overwritten with incoming value if non-blank; otherwise preserved
+- timestamp, client_id, source, issue_type, entity_type, entity_id: always overwritten
+
+-----------------------------
+COLUMN MAPPING (Issue_Log)
+-----------------------------
+Col A (0):  timestamp
+Col B (1):  client_id
+Col C (2):  source
+Col D (3):  issue_type
+Col E (4):  entity_type
+Col F (5):  entity_id
+Col G (6):  description
+Col H (7):  context
+Col I (8):  suggested_action
+Col J (9):  status
+Col K (10): priority
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+Create response:
+{
+  "status": "ok",
+  "action": "created",
+  "row_index": "<new row number>",
+  "timestamp": "<YYYY-MM-DD HH:mm:ss>"
+}
+
+Update response:
+{
+  "status": "ok",
+  "action": "updated",
+  "row_index": "<existing row number>",
+  "timestamp": "<YYYY-MM-DD HH:mm:ss>"
+}
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Use this for genuine data or coaching issues that need human review —
+  not as a general logging mechanism for routine operations
+- Always include entity_id when the issue relates to a specific record —
+  this is critical for deduplication to work correctly
+- context should explain what Bill observed or what triggered the issue,
+  not repeat the description
+- suggested_action should be actionable for a human reviewer
+- For safety flags (e.g. client reports chest pain, dizziness): set
+  priority "critical" and source "bill"
+- Do not use this to log successful operations — only genuine issues
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOADS
+-----------------------------
+Test A — create new issue:
+{
+  "client_id": "cli_001",
+  "source": "bill",
+  "issue_type": "missing_field",
+  "entity_type": "session",
+  "entity_id": "sess_wk_blk_20260219_cli_001_1_2",
+  "description": "Session has no focus assigned — skeleton row may be incomplete.",
+  "context": "Attempted to populate week 1 session 2. Focus field was blank in Plans_Sessions.",
+  "suggested_action": "Check Plans_Sessions row and verify Full Training Block Generator ran correctly.",
+  "priority": "medium",
+  "status": "open"
+}
+
+Test B — update/resolve existing issue:
+{
+  "client_id": "cli_001",
+  "source": "bill",
+  "issue_type": "missing_field",
+  "entity_type": "session",
+  "entity_id": "sess_wk_blk_20260219_cli_001_1_2",
+  "description": "",
+  "context": "Focus field manually corrected in sheet. Session now populated successfully.",
+  "suggested_action": "",
+  "priority": "",
+  "status": "resolved"
+}
+
+Expected: Test B will UPDATE the row created by Test A (same dedupe key),
+append context, and set status to "resolved".
+============================================================

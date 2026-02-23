@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2a2a2a">
+  
+  <title>Bill D'Bettabody</title>
+  
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="page flex items-center justify-center min-h-screen">
+    <div class="container max-w-md">
+      
+      <!-- Bill's Portrait -->
+      <div class="text-center mb-6">
+        <img src="/assets/bill-portrait.png" alt="Bill D'Bettabody" 
+             class="w-40 h-40 rounded-full mx-auto mb-4 border-4 border-amber-800 shadow-2xl">
+        <h1 class="text-4xl mb-2">Bill D'Bettabody</h1>
+        <p class="text-muted">Your AI Fitness Coach</p>
+      </div>
+
+      <!-- Login Card -->
+      <div class="card text-center">
+        <p class="mb-4 text-lg">Right then, let's get you sorted.</p>
+
+        <!-- Existing client login -->
+        <div id="login-panel">
+          <div class="mb-4">
+            <label for="client-id-input" class="block text-sm text-left mb-2 text-muted">
+              Your Client ID:
+            </label>
+            <input
+              type="text"
+              id="client-id-input"
+              class="w-full px-4 py-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:border-amber-600 focus:outline-none"
+              placeholder="e.g., cli_sherlock"
+              autocomplete="off"
+            />
+          </div>
+
+          <button class="btn btn-primary btn-block btn-large" id="enter-btn">
+            Enter
+          </button>
+
+          <button class="btn btn-secondary btn-block mt-3" id="new-user-btn">
+            New here? Get Started
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/js/mock-data.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    const enterBtn    = document.getElementById('enter-btn');
+    const clientInput = document.getElementById('client-id-input');
+    const newUserBtn  = document.getElementById('new-user-btn');
+
+    // If session already exists, skip login
+    if (app.sessionId) {
+      window.location.href = '/dashboard.html';
+    }
+
+    // ── Existing client login ────────────────────────────────────────────────
+    async function doLogin() {
+      const clientId = clientInput.value.trim();
+      if (!clientId) {
+        alert('Please enter your Client ID');
+        return;
+      }
+
+      enterBtn.disabled = true;
+      enterBtn.textContent = 'Connecting...';
+
+      try {
+        const init = await api.initialize(clientId);
+        if (!init || !init.session_id) {
+          throw new Error('Initialization failed');
+        }
+
+        app.saveSession({
+          session_id: init.session_id,
+          client_id: init.client_id || clientId
+        });
+
+        if (init.greeting) {
+          localStorage.setItem('bill_greeting', init.greeting);
+        }
+
+        window.location.href = '/dashboard.html';
+      } catch (error) {
+        console.error('[Login] Initialize failed:', error);
+        enterBtn.disabled = false;
+        enterBtn.textContent = 'Enter';
+        alert('Could not find that Client ID. Please check with your coach.');
+      }
+    }
+
+    enterBtn.addEventListener('click', doLogin);
+    clientInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    // ── New user — jump straight into chat with Bill ─────────────────────────
+    newUserBtn.addEventListener('click', async () => {
+      newUserBtn.disabled = true;
+      newUserBtn.textContent = 'Starting chat...';
+
+      try {
+        // Initialize a stranger session (empty client_id → Bill knows nothing yet)
+        const init = await api.initialize('');
+        if (!init || !init.session_id) throw new Error('Session creation failed');
+
+        app.saveSession({
+          session_id: init.session_id,
+          client_id: ''   // no client_id for discovery session
+        });
+
+        // Signal to chat.js that it should auto-trigger Bill's intro
+        localStorage.setItem('bill_new_user_intro', 'true');
+
+        window.location.href = '/chat.html';
+      } catch (error) {
+        console.error('[New User] Failed:', error);
+        newUserBtn.disabled = false;
+        newUserBtn.textContent = 'New here? Get Started';
+        alert('Could not connect. Is the backend running?');
+      }
+    });
+  </script>
+</body>
+</html>

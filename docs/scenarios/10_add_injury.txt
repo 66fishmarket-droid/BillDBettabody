@@ -1,0 +1,93 @@
+============================================================
+SCENARIO: Bill - Add Injury
+CANONICAL SOURCE: Make Blueprint JSON (Bill_-_Add_Injury_blueprint.json)
+WEBHOOK LABEL: POST/injury/add
+WEBHOOK URL: https://hook.eu2.make.com/7n8m9rg7chlxjrtfcdrekx1qc12smsyn
+PURPOSE: Log a temporary contraindication (injury) as a new row in
+         Contraindications_Temp. No duplicate detection — each call
+         creates a new row. After all injury/condition writes are complete,
+         call Bill - Injury to Client Load (Webhook) once to sync to Clients sheet.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1: Webhook trigger — receives flat JSON body
+Module 2: addRow — write new row to Contraindications_Temp
+Module 3: WebhookRespond — return logged confirmation with row number
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. No nesting.
+
+Required:
+- client_id (string) REQUIRED
+- date_reported (string) REQUIRED — format YYYY-MM-DD
+- type (string) REQUIRED — use "injury" for injuries
+- description (string) REQUIRED — plain English description of the injury
+- status (string) REQUIRED — use "active" for new injuries
+
+Optional (send as "" if unknown — do not omit keys):
+- expected_duration (string) — e.g. "7-14 days", "4-6 weeks"
+- notes (string) — coaching notes, movement restrictions, monitoring flags
+- date_resolved (string) — format YYYY-MM-DD or "" if unresolved
+
+IMPORTANT: No enum validation. Make writes whatever strings are sent.
+           Prefer "" over null for optional fields.
+
+-----------------------------
+COLUMN MAPPING (Contraindications_Temp)
+-----------------------------
+Col A (0): client_id
+Col B (1): date_reported
+Col C (2): type
+Col D (3): description
+Col E (4): expected_duration
+Col F (5): status
+Col G (6): notes
+Col H (7): date_resolved
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "logged": true,
+  "record_id": "row_<rowNumber>",
+  "client_id": "<client_id echoed from input>"
+}
+
+IMPORTANT: record_id format is "row_<number>" where number is the Google Sheets
+row number. This is the value required by Update Injury Status to find the row.
+Store this if you may need to update or resolve this injury later in the session.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Call once per distinct injury — do not batch multiple injuries in one call
+- Always call Injury to Client Load (Webhook) after ALL contraindication
+  writes are complete — not after each individual write
+- Never write injuries directly to the Clients sheet via User Upsert
+- status should always be "active" on creation
+- If client reports multiple injuries, make multiple calls then one sync
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001",
+  "date_reported": "2026-02-19",
+  "type": "injury",
+  "description": "Right knee strain (mild), sore on stairs and deep squat",
+  "expected_duration": "7-14 days",
+  "status": "active",
+  "notes": "Avoid deep knee flexion. Monitor swelling. Sub leg press for squat.",
+  "date_resolved": ""
+}
+
+Expected response:
+{
+  "logged": true,
+  "record_id": "row_42",
+  "client_id": "cli_001"
+}
+============================================================

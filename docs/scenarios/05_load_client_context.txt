@@ -1,0 +1,237 @@
+============================================================
+SCENARIO: Bill - Load Client Context
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Load Client Context V2 blueprint (4).json)
+WEBHOOK LABEL: Bill - Client ID Receiver V2
+WEBHOOK URL: https://hook.eu2.make.com/4uq52ajluecic9p29n4dg3ypck6cgnxn
+PURPOSE:
+Load the full client context bundle for a given client_id.
+Returns profile, plan, weeks, sessions, steps, nutrition,
+history counts, engagement state, and contraindication placeholders.
+Called at session start and whenever Bill needs a full context refresh.
+Exercise Bests are NOT included — these are loaded directly by the
+Flask backend from Google Sheets and cached separately.
+Contraindications fields are returned as empty placeholders — they are
+populated into the Clients sheet by the daily scheduled sync scenario,
+not by this webhook.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 1:  Webhook trigger — expects client_id
+Module 2:  filterRows — Search Clients sheet column A for client_id
+           (case-insensitive, limit 1)
+Module 25: BasicRouter
+  Branch A (client found): __ROW_NUMBER__ > 0
+    Module 30: SetVariables — Set date vars
+    Module 32: filterRows — Search Injuries (not used in response — retired)
+    Module 3:  filterRows — Get Active Block (Plans sheet)
+    Module 4:  filterRows — Get Completed Blocks
+    Module 5:  BasicAggregator — Completed Blocks Array
+    Module 6:  filterRows — Get Active Week
+    Module 7:  filterRows — Get Upcoming Weeks
+    Module 8:  BasicAggregator — Upcoming Week Aggregator
+    Module 9:  filterRows — Get Completed Weeks
+    Module 10: BasicAggregator — Completed Week Aggregator
+    Module 11: filterRows — Get Active Sessions
+    Module 12: BasicAggregator — Active Sessions Array
+    Module 13: filterRows — Get Completed Sessions
+    Module 14: BasicAggregator — Completed Sessions Array
+    Module 40: SetVariable2 — Most Recent Session
+    Module 15: SetVariables — Nutrition + Supplement Vars
+    Module 16: filterRows — Get Active Steps
+    Module 17: BasicAggregator — Aggregate Active Steps
+    Module 18: filterRows — Get Completed Steps
+    Module 19: BasicAggregator — Aggregate Completed Steps
+    Module 21: SetVariables — Session Counts
+    Module 22: SetVariable2 — Total Blocks
+    Module 23: SetVariable2 — Engagement State
+    Module 20: json:CreateJSON — Build response payload
+    Module 27: WebhookRespond — Return full context JSON
+  Branch B (not found): __IMTLENGTH__ < 1
+    Module 26: WebhookRespond — Return not found response
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. One key only:
+- client_id (string) REQUIRED
+
+No nesting. No other keys referenced.
+
+Fragile bits / must-follow rules:
+- filterRows searches Clients column A using case-insensitive text equal
+- If client_id is missing the filter expression will fail and scenario errors
+- client_id must exactly match the ID stored in the Clients sheet (case-insensitive)
+
+-----------------------------
+OUTPUT CONTRACT — FOUND (HTTP 200)
+-----------------------------
+{
+  "status": "OK",
+  "client_id": "<string>",
+  "timestamp": "<string>",            // UTC, format: "YYYY-MM-DD HHmmss"
+  "client_engagement_state": "<string>",
+  "client_profile": {
+    "client_id": "<string>",
+    "first_name": "<string>",
+    "last_name": "<string>",
+    "email": "<string>",
+    "timezone": "<string>",
+    "sex": "<string>",
+    "age_years": "<string>",
+    "height_cm": "<string>",
+    "weight_kg": "<string>",
+    "waist_circumference_cm": "<string>",
+    "training_experience": "<string>",
+    "primary_background": "<string>",
+    "last_trained_date": "<string>",
+    "typical_sessions_per_week_last_3_months": "<string>",
+    "cardio_fitness_level": "<string>",
+    "strength_level": "<string>",
+    "movement_quality": "<string>",
+    "goals": "<string>",
+    "goal_primary": "<string>",
+    "goal_secondary": "<string>",
+    "goal_tertiary": "<string>",
+    "goal_timeframe_months": "<string>",
+    "schedule": "<string>",
+    "equipment": "<string>",
+    "equipment_home": "<string>",
+    "equipment_gym": "<string>",
+    "equipment_preference": "<string>",
+    "gym_travel_time_minutes": "<string>",
+    "chronic_contraindications": "<string>",  // populated by daily sync
+    "injuries": "<string>",                    // populated by daily sync
+    "risk_summary": "<string>",
+    "diet_style": "<string>",
+    "calorie_target": "<string>",
+    "protein_min": "<string>",
+    "supplements": "<string>",
+    "sleep_quality": "<string>",
+    "stress_level": "<string>",
+    "work_pattern": "<string>",
+    "family_responsibilities": "<string>",
+    "watch_platform": "<string>",
+    "watch_user_id": "<string>",
+    "preferences": "<string>",
+    "notes": "<string>",
+    "last_profile_update": "<string>"
+  },
+  "plan_context": {
+    "active_block": {
+      "plan_id": "<string>",
+      "block_id": "<string>",
+      "client_id": "<string>",
+      "phase_name": "<string>",
+      "phase_goal": "<string>",
+      "week_start": "<string>",
+      "duration_weeks": "<string>",
+      "days_per_week": "<string>",
+      "constraints": "<string>",
+      "primary_locations": "<string>",
+      "nutrition_targets": "<string>",
+      "supplement_protocol": "<string>",
+      "notes": "<string>",
+      "plan_status": "<string>",
+      "created_at": "<string>",
+      "updated_at": "<string>"
+    },
+    "completed_blocks": [ <array of block objects> ]
+  },
+  "weeks": {
+    "active": {
+      "week_id": "<string>",
+      "plan_id": "<string>",
+      "block_id": "<string>",
+      "client_id": "<string>",
+      "week_number": "<string>",
+      "week_type": "<string>",
+      "primary_focus": "<string>",
+      "secondary_focus": "<string>",
+      "intensity_pattern": "<string>",
+      "notes": "<string>",
+      "week_start_date": "<string>",
+      "week_end_date": "<string>",
+      "week_status": "<string>"
+    },
+    "upcoming": [ <array of week objects> ],
+    "completed": [ <array of week objects> ]
+  },
+  "sessions": {
+    "active": [ <array of session objects> ],
+    "completed": [ <array of session objects> ]
+  },
+  "steps": {
+    "active": [ <array of step objects> ],
+    "completed": [ <array of step objects> ]
+  },
+  "nutrition": {
+    "nutrition_targets": "<string>",
+    "supplement_protocol": "<string>"
+  },
+  "history_summary": {
+    "completed_blocks": "<string>",
+    "total_blocks": "<string>",
+    "completed_weeks": "<string>",
+    "completed_sessions": "<string>",
+    "completed_steps": "<string>"
+  },
+  "context_validity": {
+    "total_blocks": "<string>",
+    "completed_blocks_count": "<string>",
+    "active_sessions_count": "<string>",
+    "completed_sessions_count": "<string>",
+    "total_sessions": "<string>",
+    "upcoming_weeks_count": "<string>",
+    "completed_weeks_count": "<string>",
+    "active_steps_count": "<string>",
+    "completed_steps_count": "<string>"
+  },
+  "contraindications_temp": "",       // always empty — populated by daily sync
+  "contraindications_chronic": []     // always empty — populated by daily sync
+}
+
+-----------------------------
+OUTPUT CONTRACT — NOT FOUND
+-----------------------------
+Response shape when client_id not found in Clients sheet:
+{
+  "status": "not_found",
+  "client_id": "<echoed from input>"
+}
+
+Bill behavioural rule: if status is not_found, do not proceed with
+any training or coaching actions. Inform the user their profile
+does not exist and offer to start onboarding.
+
+-----------------------------
+BILL BEHAVIOURAL RULES
+-----------------------------
+- Always call this at the start of a new coaching session before
+  any training, planning, or advice actions
+- Never use cached context older than the current session without
+  offering to refresh
+- Exercise Bests are NOT in this payload — they are loaded and
+  cached by the Flask backend directly from Google Sheets
+- contraindications_temp and contraindications_chronic will always
+  be empty in this response — read injuries and chronic_contraindications
+  from client_profile instead (populated by daily sync)
+- If plan_context.active_block is empty, no active training block exists —
+  do not attempt to load weeks/sessions/steps; offer to create a new plan
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001"
+}
+
+Expected: HTTP 200 with full context bundle, status: "OK"
+
+Test (not found):
+{
+  "client_id": "cli_999999"
+}
+
+Expected: HTTP 200 with status: "not_found"
+============================================================

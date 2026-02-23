@@ -1,0 +1,1133 @@
+============================================================
+BILL D'BETTABODY — CALCULATIONS REFERENCE
+============================================================
+
+Version: 1.0
+Status: Active
+Companion file: Bill_Instructions_V2.txt
+Sources: ACSM, ISSN, NSCA, ESPEN, WMA, published peer-reviewed
+research. All formulas cited by originating author/year where known.
+
+HOW BILL USES THIS FILE:
+Load relevant sections only when planning or prescribing.
+Never present raw numbers to athletes without interpretation.
+All outputs are estimates — pair with subjective anchors,
+qualify uncertainty, and defer to athlete feedback.
+This file informs judgement. It does not replace it.
+
+HARD RULE: Never fabricate paper titles, authors, or URLs.
+Source organisations may be cited generically. Specific
+citations in this file are from confirmed peer-reviewed work.
+
+============================================================
+PART 1 — STRENGTH ESTIMATION (E1RM)
+============================================================
+
+------------------------------------------------------------
+1.1 WHAT E1RM IS AND ISN'T
+------------------------------------------------------------
+
+E1RM (Estimated 1-Repetition Maximum) predicts the maximum
+load an athlete could lift for one rep, calculated from a
+submaximal performance. It is an approximation — not a
+measurement — and should never be treated as confirmed
+capability.
+
+Accuracy is best when:
+- Reps are in the 2–10 range (especially 3–8)
+- Effort is close to true failure (RPE 9–10)
+- Form is consistent and controlled
+- The athlete is experienced with the movement
+
+Accuracy degrades when:
+- Reps exceed 10–12 (fatigue and fibre-type differences
+  distort the relationship)
+- The athlete is a beginner (inconsistent effort regulation)
+- Form breaks down under load
+- The movement has a high technical demand (e.g. Olympic lifts)
+
+E1RM values must:
+- Be treated as provisional until validated across multiple
+  sessions
+- Never be presented to the athlete as their "true max"
+- Never be used to prescribe maximal or near-maximal attempts
+  without further calibration
+
+------------------------------------------------------------
+1.2 E1RM FORMULAS
+------------------------------------------------------------
+
+All formulas use:
+  W = weight lifted (kg)
+  R = reps completed
+
+EPLEY (1985) — most widely used, NSCA-referenced:
+  E1RM = W × (1 + R/30)
+  Best for: general population, 1–10 reps
+  Slight overestimate vs Brzycki at low reps
+
+BRZYCKI (1993) — conservative, NCAA-validated:
+  E1RM = W × (36 / (37 – R))
+  Best for: college athletes, research settings, 2–10 reps
+  More conservative than Epley, preferred when erring safe
+  Note: formula breaks down mathematically at R ≥ 37
+
+MAYHEW (1992) — best for moderate-to-high reps:
+  E1RM = (100 × W) / (52.2 + (41.9 × e^(–0.055 × R)))
+  Best for: 6–12 reps, diverse populations
+  Most accurate of classical formulas above 10 reps
+
+LOMBARDI (1989) — nonlinear, handles higher rep ranges:
+  E1RM = W × (R^0.10)
+  Best for: experienced lifters, moderate fatigue patterns
+  Tends to produce slightly higher estimates than Epley/Brzycki
+
+WATHEN (1994) — NSCA recommended, accurate for power athletes:
+  E1RM = (100 × W) / (48.8 + (53.8 × e^(–0.075 × R)))
+  Best for: strength/power athletes, 2–10 reps
+
+WHICH TO USE:
+- Bill's default: Epley (simplest, widely understood, suitable
+  for general use, good for 2–10 reps)
+- When being conservative (beginners, return from injury,
+  uncertain data quality): use Brzycki — it produces lower
+  estimates
+- When reps are 10+: use Mayhew
+- When in doubt: average Epley + Brzycki for a mid-range estimate
+
+EXAMPLE — 80 kg × 5 reps:
+  Epley:   80 × (1 + 5/30)  = 93.3 kg
+  Brzycki: 80 × (36/(37–5)) = 90.0 kg
+  Mayhew:  ~91.5 kg
+  Wathen:  ~92.0 kg
+
+------------------------------------------------------------
+1.3 LOAD PRESCRIPTION FROM E1RM (% 1RM TABLES)
+------------------------------------------------------------
+
+Once E1RM is estimated, use these ranges to prescribe load.
+These are NSCA/ACSM-referenced ranges. Treat as starting points.
+
+GOAL              %1RM        REPS/SET    REST
+-------------------------------------------------------
+Maximal Strength  85–100%     1–5         3–5 min
+Strength/Power    75–90%      3–6         2–4 min
+Hypertrophy       65–85%      6–12        60–90 sec
+Muscular Endurance 50–65%     12–20+      30–60 sec
+Normalisation     50–70%      6–15        90–120 sec
+
+NOTE: These percentages assume RPE 7–9 for most sets.
+Beginners should stay at the lower end of each range.
+Advanced athletes may push to the upper end on key sets.
+
+REVERSE LOOKUP — reps at a given %1RM (Epley approximation):
+  %1RM    Approx Reps
+  100%    1
+  95%     2–3
+  90%     4–5
+  85%     5–6
+  80%     7–8
+  75%     9–10
+  70%     11–12
+  65%     13–15
+  60%     15–20
+
+------------------------------------------------------------
+1.4 CROSS-EXERCISE STRENGTH INFERENCE
+------------------------------------------------------------
+
+When an athlete has performance data in one exercise, Bill
+may conservatively infer starting loads in related movements.
+Inference must be stated as provisional. Athlete feedback
+validates or overrides within 1–2 sessions.
+
+LOWER BODY
+  Back Squat 1RM       → Front Squat ~85%
+  Back Squat 1RM       → Goblet Squat ~60–70% (limited ROM)
+  Back Squat 1RM       → Leg Press ~1.5–2× (machine-assisted)
+  Deadlift 1RM         → RDL ~70–80%
+  Deadlift 1RM         → Trap Bar Deadlift ~95–100%
+  Leg Press 1RM        → Back Squat ~55–65%
+
+UPPER BODY — PUSH
+  Barbell Bench 1RM    → DB Bench ~45–50% per dumbbell
+  Barbell Bench 1RM    → Push-up (BW) ~65–70% of BW (~0.65BW)
+  Barbell OHP 1RM      → DB OHP ~45% per dumbbell
+
+UPPER BODY — PULL
+  Chin-up (BW)         → Lat Pulldown ~BW equivalent + 10–15%
+  Barbell Row 1RM      → DB Row ~50% per dumbbell
+  Deadlift 1RM         → Barbell Row ~65–70%
+
+CONFIDENCE NOTES:
+- Same bilateral compound → compound: moderate confidence
+- Bilateral → unilateral: lower confidence, larger individual
+  variation
+- Free weight → machine: lower confidence (stability demand
+  removed, typically allows more load)
+- All estimates degrade the more biomechanically dissimilar
+  the exercises are
+
+------------------------------------------------------------
+1.5 AGE ADJUSTMENT FOR STRENGTH
+------------------------------------------------------------
+
+Strength peaks 18–30 years, remains largely stable 30–45,
+then declines. These are general population norms, not
+athletes. Trained individuals retain significantly more.
+
+AGE BAND    STRENGTH RELATIVE TO PEAK (general population)
+18–30       100% (peak)
+31–40       97–100% (minimal decline, often maintained)
+41–50       90–95% (muscle mass stable to mild decline)
+51–60       80–90% (1.5% per year decline in strength)
+61–70       65–80% (decline accelerates, ~3% per year)
+71–80       50–65% (significant functional impact)
+80+         <50% (high individual variation)
+
+Source: PMC sarcopenia literature; NIA Baltimore Longitudinal
+Study of Aging; Karolinska Institute 47-year cohort (2025).
+
+TRAINING IMPLICATION:
+- For athletes 50+: prioritise compound movement quality over
+  load maximisation; include power work (faster tempos, jumps)
+  to counter preferential fast-twitch loss
+- For athletes 60+: reduce rep ranges near failure; higher
+  frequency, lower per-session volume often works better
+- For athletes 70+: functional strength patterns (squat,
+  hinge, carry) take priority over loading
+- All ages: resistance training markedly slows the decline.
+  An active 70-year-old may retain 80%+ of a sedentary
+  40-year-old's strength
+
+MASTERS-SPECIFIC GUARDRAILS:
+- Longer rest periods required (3–5 min for heavy sets)
+- Longer adaptation phases (10–14 days vs 7 for younger)
+- Recovery sessions between hard sessions become critical
+- Joint loading quality > absolute load at all times
+
+============================================================
+PART 2 — VOLUME & PROGRESSION
+============================================================
+
+------------------------------------------------------------
+2.1 WEEKLY VOLUME LANDMARKS (Israetel Framework)
+------------------------------------------------------------
+
+These landmarks are directional tools for programming volume
+across a mesocycle. They are not fixed prescriptions.
+Individual variation is substantial.
+
+TERMINOLOGY:
+MV  = Maintenance Volume — volume to prevent muscle loss
+MEV = Minimum Effective Volume — minimum to stimulate growth
+MAV = Maximum Adaptive Volume — optimal growth range
+MRV = Maximum Recoverable Volume — upper recovery limit
+
+GENERAL WORKING VOLUME RANGES (sets/muscle group/week):
+
+MUSCLE GROUP      MV    MEV    MAV      MRV
+Chest             4     8      12–18    20–22
+Back (total)      6     10     15–22    25+
+Shoulders         4     8      12–18    20+
+Biceps            4     6      10–15    18–20
+Triceps           4     6      10–14    18
+Quads             4     8      12–18    20+
+Hamstrings        4     6      10–15    18
+Glutes            4     6      12–16    20+
+Calves            6     8      12–16    20+
+Core (direct)     2     4      8–12     16
+
+Sources: Israetel (Renaissance Periodization, 2019);
+Schoenfeld et al., IUSCA position stand (2021);
+Weightology systematic review; Pelland et al. meta-regression
+(BJSM / SportRxiv, 2024 — confirms volume-hypertrophy
+dose-response with diminishing returns).
+
+KEY FINDINGS FROM RECENT RESEARCH:
+- 10+ sets/muscle group/week reliably outperforms <10 for
+  hypertrophy (Schoenfeld meta-analysis)
+- Optimal per-session volume: 6–8 hard sets/muscle group
+  (with long rests). Diminishing returns above this
+- Frequency of 2–3× per week per muscle group generally
+  superior to once-weekly bro splits
+- Gains increase with volume up to MRV, then plateau or
+  decline due to impaired recovery
+
+BEGINNER ADJUSTMENT:
+- Beginners respond to much lower volumes (MEV ≈ MV range)
+- Start at bottom of MEV, progress conservatively
+- Individual MRV is lower for beginners; monitor recovery
+
+------------------------------------------------------------
+2.2 LOADING PARAMETERS BY GOAL
+------------------------------------------------------------
+
+GOAL             SETS  REPS    %1RM      REST       FREQUENCY
+Maximal Strength 3–6   1–5     80–95%    3–5 min    2–4×/week
+Hypertrophy      3–5   6–12    65–80%    60–90 sec  2–3×/week
+Muscular Endur.  2–4   12–20   50–65%    30–60 sec  2–3×/week
+Power            3–5   2–5     30–70%*   2–4 min    2–3×/week
+General Fitness  2–3   8–15    60–75%    60–90 sec  2–3×/week
+
+*Power: load varies by movement — speed of execution is the
+priority, not load. Explosive intent on every rep.
+
+------------------------------------------------------------
+2.3 PROGRESSION MODELS
+------------------------------------------------------------
+
+LINEAR PROGRESSION (beginners):
+- Add fixed load each session (e.g. 2.5 kg per session on
+  upper body, 5 kg on lower)
+- Continue until stalls for 2+ consecutive sessions
+- Most effective in first 3–12 months of training
+
+DOUBLE PROGRESSION (early intermediate):
+- Set a rep range (e.g. 3×8–12)
+- When top of range achieved with good form across all sets,
+  increase load at next session
+- Increase load by 2.5–5 kg then return to bottom of range
+
+WAVE LOADING (intermediate-advanced):
+- Planned undulation across weeks:
+  Week 1: higher volume, moderate load (10–15 reps)
+  Week 2: moderate volume, moderate-high load (6–10 reps)
+  Week 3: lower volume, high load (3–6 reps)
+  Week 4: deload
+- Accumulates multiple stimuli across a block
+
+PERCENTAGE-BASED (intermediate-advanced, requires reliable 1RM):
+- Prescribe weekly loads as % of tested or estimated 1RM
+- Requires accurate baseline. Do not use without confirmed data.
+
+------------------------------------------------------------
+2.4 DELOAD PRINCIPLES
+------------------------------------------------------------
+
+WHEN TO DELOAD:
+- Every 4–8 weeks proactively (most athletes 4–6 weeks)
+- When performance drops for 2+ sessions despite adequate
+  recovery
+- When fatigue, sleep quality, mood consistently poor
+- After any high-stress life period
+- After illness or extended absence
+
+DELOAD STRUCTURE:
+- Reduce volume by 30–50% (keep some sets)
+- Keep intensity (load) at 60–70% of recent working loads
+  OR maintain load and dramatically reduce volume
+- One week is typically sufficient
+- Active recovery: light cardio, mobility, technique work
+
+DELOAD IS NOT FAILURE. It is scheduled recovery. Bill must
+never frame deloads as setbacks or wasted time.
+
+============================================================
+PART 3 — ENDURANCE & AEROBIC REFERENCE
+============================================================
+
+------------------------------------------------------------
+3.1 MAXIMUM HEART RATE ESTIMATION
+------------------------------------------------------------
+
+HRmax cannot be accurately calculated — only estimated or
+measured. Standard deviation of all formulas is ±10–12 bpm.
+Athletes should test rather than rely on estimates wherever
+possible (field test or lab test).
+
+FORMULA 1 — Fox (1971), the classic "220 – age":
+  HRmax = 220 – age
+  Status: widely known, convenient, but least accurate
+  SD: ±12 bpm; underestimates in older adults
+
+FORMULA 2 — Tanaka (2001), most accurate for general adults:
+  HRmax = 208 – (0.7 × age)
+  Status: preferred formula (validated in >350 studies)
+  More accurate for adults 40+
+  SD: ±10 bpm
+
+FORMULA 3 — Gulati (2010), validated specifically for women:
+  HRmax = 206 – (0.88 × age)
+  Use when: female athlete, especially 40+
+
+FORMULA 4 — HUNT (Nes et al., 2013), active individuals:
+  HRmax = 211 – (0.64 × age)
+  Validated in large Norwegian fitness study
+  Slightly higher estimates — may fit trained athletes better
+
+QUICK REFERENCE (Tanaka formula):
+  Age 20: HRmax ≈ 194 bpm
+  Age 25: HRmax ≈ 190 bpm
+  Age 30: HRmax ≈ 187 bpm
+  Age 35: HRmax ≈ 184 bpm
+  Age 40: HRmax ≈ 180 bpm
+  Age 45: HRmax ≈ 177 bpm
+  Age 50: HRmax ≈ 173 bpm
+  Age 55: HRmax ≈ 169 bpm
+  Age 60: HRmax ≈ 166 bpm
+  Age 65: HRmax ≈ 163 bpm
+  Age 70: HRmax ≈ 159 bpm
+
+CAUTION: Beta-blockers and other cardiac medications
+significantly suppress heart rate response. Never use HR
+targets without asking about medications. Defer to RPE
+or a medical professional if medications are present.
+
+------------------------------------------------------------
+3.2 HEART RATE ZONES — 5-ZONE MODEL
+------------------------------------------------------------
+
+TWO CALCULATION METHODS:
+
+METHOD A — Simple %HRmax (no resting HR required):
+  Zone 1 (Recovery):   50–60% HRmax
+  Zone 2 (Aerobic):    60–70% HRmax
+  Zone 3 (Tempo):      70–80% HRmax
+  Zone 4 (Threshold):  80–90% HRmax
+  Zone 5 (Max Effort): 90–100% HRmax
+
+METHOD B — Karvonen (Heart Rate Reserve, more personalised):
+  HRR = HRmax – RHR (resting heart rate)
+  Target HR = (HRR × %intensity) + RHR
+
+  Zone 1: (HRR × 0.50–0.60) + RHR
+  Zone 2: (HRR × 0.60–0.70) + RHR
+  Zone 3: (HRR × 0.70–0.80) + RHR
+  Zone 4: (HRR × 0.80–0.90) + RHR
+  Zone 5: (HRR × 0.90–1.00) + RHR
+
+WHICH TO USE:
+- Karvonen preferred when resting HR is known (more
+  personalised, correlates better with VO2max %)
+- Simple %HRmax when resting HR unavailable
+- Either method: state which was used and its limitations
+
+EFFORT ANCHORS (use when HR monitor unavailable):
+  Zone 1: Easy. Full sentences. Could hold a phone call.
+  Zone 2: Comfortable. Full sentences, some effort.
+           Classic conversational pace. Nose breathing possible.
+  Zone 3: Moderate. Short sentences. Breathing noticeably
+           heavier. Can still speak.
+  Zone 4: Hard. Single words or short phrases only.
+           Breathing is laboured.
+  Zone 5: Maximum. Cannot speak. Unsustainable. Seconds only.
+
+TRAINING DISTRIBUTION (Seiler, 2010 — polarised model):
+  Endurance athletes: ~80% time in Zone 1–2, ~20% Zone 4–5
+  Minimal time in Zone 3 (metabolically costly, limited return)
+  For general health: majority in Zone 2 is evidence-based
+
+RESTING HEART RATE REFERENCE:
+  Well-trained adult:   38–55 bpm
+  Active adult:         55–65 bpm
+  Sedentary adult:      65–75 bpm
+  Elevated (possible concern): 90+ bpm at rest consistently
+
+------------------------------------------------------------
+3.3 VO2MAX ESTIMATION
+------------------------------------------------------------
+
+VO2max (ml/kg/min) = maximum oxygen uptake per kg of body mass.
+The gold standard measure of aerobic fitness.
+
+FIELD TEST 1 — Cooper 12-Minute Run (Cooper, 1968):
+  VO2max = (distance in metres – 504.9) / 44.73
+  Procedure: Run as far as possible in exactly 12 minutes
+             on a flat surface. Record distance in metres.
+  Limitations: Maximal effort test — not suitable for
+               deconditioned individuals, those with cardiac
+               history, or complete beginners.
+
+FIELD TEST 2 — Rockport 1-Mile Walk (Kline et al., 1987):
+  FEMALE: VO2max = 132.853 – (0.0769 × weight_lb)
+                    – (0.3877 × age) – (3.2649 × time_min)
+                    – (0.1565 × HR)
+  MALE: Same as female + 6.315
+
+  Procedure: Walk 1 mile as fast as possible without running.
+             Record total time (minutes) and heart rate
+             immediately upon finishing.
+  Weight must be in pounds (kg × 2.205).
+  Note: Subtract 6 ml/kg/min for athletes aged 18–24.
+  Limitation: Accuracy depends on true maximal walking pace
+              and accurate post-exercise HR measurement.
+  Advantage: Safe for lower-fitness populations.
+
+VO2MAX CLASSIFICATIONS BY AGE AND SEX (ml/kg/min):
+(ACSM norms, general adult population)
+
+MEN:
+  Age      Poor   Below Avg   Avg     Good    Excellent
+  20–29    <38    38–43       44–48   49–56   57+
+  30–39    <34    34–38       39–43   44–50   51+
+  40–49    <30    30–35       36–41   42–49   50+
+  50–59    <25    25–30       31–35   36–42   43+
+  60–69    <21    21–24       25–29   30–35   36+
+
+WOMEN:
+  Age      Poor   Below Avg   Avg     Good    Excellent
+  20–29    <28    28–34       35–38   39–44   45+
+  30–39    <24    24–29       30–33   34–39   40+
+  40–49    <20    20–24       25–28   29–34   35+
+  50–59    <17    17–20       21–24   25–30   31+
+  60–69    <15    15–18       19–22   23–27   28+
+
+NOTE: VO2max declines ~1% per year after age 30,
+accelerating after age 60. Training can offset this
+substantially — active 70-year-olds routinely exceed
+sedentary 40-year-olds.
+
+GARMIN/WEARABLE ESTIMATES: Treat as directional, not precise.
+Garmin/Apple estimates typically have ±5–10% error.
+Useful for tracking trends over time, not for benchmarking.
+
+------------------------------------------------------------
+3.4 RUNNING — PACE PREDICTION (RIEGEL FORMULA)
+------------------------------------------------------------
+
+Riegel Formula (1977, Runner's World):
+  T2 = T1 × (D2 / D1)^1.06
+
+  T1 = known time (seconds) at known distance D1
+  D2 = target distance (same units as D1)
+  T2 = predicted time for D2
+
+EXAMPLE — 5K in 25:00 (1500 sec), predicting 10K:
+  T2 = 1500 × (10000 / 5000)^1.06
+  T2 = 1500 × 2^1.06 = 1500 × 2.085 = 3127 sec ≈ 52:07
+
+MOST ACCURATE: between distances not far apart (5K → 10K,
+10K → HM, HM → marathon). Accuracy degrades at extremes
+(e.g. 800m → marathon).
+
+ASSUMES: appropriate training for the target distance,
+similar terrain and conditions, not accounting for taper
+or race-day specifics.
+
+REFERENCE PACE TABLE — common finish times and paces:
+
+  5K:          Min/km   Min/mile
+  Under 20:00  < 4:00   < 6:26
+  20:00        4:00     6:26
+  25:00        5:00     8:03
+  30:00        6:00     9:40
+  35:00        7:00     11:16
+  40:00        8:00     12:52
+
+  10K PREDICTIONS (from 5K, Riegel):
+  5K → 10K:    Multiply 5K time × 2.085
+  e.g. 25:00 5K → 52:07 10K
+
+  HM PREDICTIONS (from 10K, Riegel):
+  10K → HM:   Multiply 10K time × 2.223
+  e.g. 52:07 10K → 1:55:51 HM
+
+  MARATHON PREDICTIONS (from HM, Riegel):
+  HM → Marathon: Multiply HM time × 2.188
+  e.g. 1:55:51 HM → 4:14:12 Marathon
+
+ACCURACY NOTE: Riegel achieves ~80% accuracy in research
+settings (Pelland et al. PMC comparison). Cameron and
+Daniels VDOT models offer alternatives but use the same
+power-law principle. For most Bill coaching purposes,
+Riegel is sufficient.
+
+------------------------------------------------------------
+3.5 AGE GRADING FOR RUNNING
+------------------------------------------------------------
+
+World Masters Athletics (WMA, formerly WAVA) age grading
+allows comparison of performances across ages and sexes.
+
+AGE GRADE % = (Age Standard for your age/sex / Your time) × 100
+
+Interpretation:
+  90–100%  World class
+  80–90%   National class
+  70–80%   Regional class
+  60–70%   Local competitive
+  50–60%   Good club standard
+  Below 50% Recreational
+
+APPROXIMATE PERFORMANCE DECLINE BY AGE (running, WMA data):
+  Peak:      18–35 years (minimal decline)
+  35–50:     ~0.5% per year performance decline
+  50–60:     ~1.0% per year
+  60–70:     ~1.5–2.0% per year
+  70+:       ~2.5–3.0%+ per year
+
+PRACTICAL USE FOR BILL:
+- A 60-year-old running 5K in 28:00 may be equivalent in
+  relative terms to a 30-year-old running ~22:00
+- Age grading prevents unfair self-comparison across decades
+- Use to frame progress over time as an athlete ages
+
+------------------------------------------------------------
+3.6 SWIM — SWOLF SCORE
+------------------------------------------------------------
+
+SWOLF = Strokes per length + Seconds per length
+
+Example: 45 seconds to complete a 25m length + 18 strokes
+         taken = SWOLF 63
+
+WHAT IT MEASURES: Swimming efficiency (a blend of speed and
+stroke count). Lower score = more efficient.
+
+GENERAL REFERENCE RANGES (25m pool):
+  SWOLF < 30   Elite / competitive swimmers
+  30–40        Trained club swimmer
+  40–50        Recreational, improving technique
+  50–60        Beginner with coaching
+  60+          Very early stage, technique focus needed
+
+NOTE: SWOLF is pool-length specific. 25m and 50m pools
+produce different scores — do not compare between them.
+
+TRACKING USE: Track SWOLF over sessions to monitor efficiency
+gains even when pace isn't improving dramatically. Most
+modern swim-capable GPS watches record SWOLF automatically.
+
+SWIMMING VO2MAX NOTE: Swimmers typically score 10–15%
+lower VO2max in pool vs dry land tests due to horizontal
+body position, water pressure, and different muscular demand.
+Do not compare swimming VO2max estimates to running estimates.
+
+------------------------------------------------------------
+3.7 CYCLING — FTP AND POWER ZONES
+------------------------------------------------------------
+
+FTP (Functional Threshold Power) = the maximum average
+power output (watts) a trained cyclist can sustain for
+~60 minutes. It is the central reference point for
+cycling zone prescription.
+
+ESTIMATION METHOD (20-minute field test):
+- Warm up 15–20 min with 3× 1-min efforts near max
+- Ride 20 minutes at maximum sustainable effort
+- FTP = 95% of average power over 20 minutes
+
+POWER ZONES (% FTP):
+  Zone 1 (Active Recovery): < 55%
+  Zone 2 (Endurance):       55–75%
+  Zone 3 (Tempo):           76–90%
+  Zone 4 (Threshold):       91–105%
+  Zone 5 (VO2max):          106–120%
+  Zone 6 (Anaerobic):       121–150%
+  Zone 7 (Neuromuscular):   150%+
+
+FTP NORMS (W/kg — power-to-weight ratio):
+  MALE:
+    Untrained:         < 2.0 W/kg
+    Recreational:      2.0–3.0
+    Trained:           3.0–4.0
+    Cat 3/4 racer:     4.0–5.0
+    Elite/Pro:         5.0+
+
+  FEMALE:
+    Untrained:         < 1.5 W/kg
+    Recreational:      1.5–2.5
+    Trained:           2.5–3.5
+    Cat 3/4 racer:     3.5–4.5
+    Elite/Pro:         4.5+
+
+When no power meter is available, HR zones substitute.
+RPE anchors apply as per Section 3.2 effort table.
+
+============================================================
+PART 4 — NUTRITION REFERENCE
+============================================================
+
+------------------------------------------------------------
+4.1 TDEE ESTIMATION (Mifflin-St Jeor, 1990)
+------------------------------------------------------------
+
+TDEE = Total Daily Energy Expenditure = maintenance calories.
+
+STEP 1 — Calculate BMR:
+  MALE:   BMR = (10 × weight_kg) + (6.25 × height_cm)
+                – (5 × age) + 5
+  FEMALE: BMR = (10 × weight_kg) + (6.25 × height_cm)
+                – (5 × age) – 161
+
+STEP 2 — Multiply by activity factor:
+  Sedentary (desk job, little exercise): BMR × 1.20
+  Lightly active (1–3 days/week):        BMR × 1.375
+  Moderately active (3–5 days/week):     BMR × 1.55
+  Very active (hard training 6–7 days):  BMR × 1.725
+  Extremely active (athlete or physical job + training):
+                                          BMR × 1.90
+
+ACCURACY: Mifflin-St Jeor outperforms Harris-Benedict and
+WHO/FAO equations; predicts within ±10% in most healthy
+adults (Frankenfield systematic review, 2005; validated
+through 2024). R² = 0.71. Individual error still exists —
+treat as starting point, adjust by 2–4 weeks of real-world
+intake/weight tracking.
+
+WORKED EXAMPLES:
+
+35-year-old male, 80 kg, 178 cm, moderately active:
+  BMR = (10×80) + (6.25×178) – (5×35) + 5
+      = 800 + 1112.5 – 175 + 5 = 1742.5 kcal
+  TDEE = 1742.5 × 1.55 = 2701 kcal/day
+
+40-year-old female, 65 kg, 165 cm, lightly active:
+  BMR = (10×65) + (6.25×165) – (5×40) – 161
+      = 650 + 1031.25 – 200 – 161 = 1320 kcal
+  TDEE = 1320 × 1.375 = 1815 kcal/day
+
+NOTE: These are estimates. Athletes in heavy training phases
+often underestimate actual TDEE. Track weight over 2–4 weeks
+and adjust calories accordingly.
+
+------------------------------------------------------------
+4.2 CALORIC TARGETS BY GOAL
+------------------------------------------------------------
+
+MAINTENANCE:
+  Target = TDEE (no change)
+
+FAT LOSS (evidence-based, sustainable):
+  Deficit: 250–500 kcal/day below TDEE
+  Rate:    0.5–1.0% body weight loss per week
+  Max:     1.0% BW/week (faster risks muscle loss)
+  Warning: >500 kcal deficit increases muscle loss risk,
+           especially without adequate protein + training
+  Preferred: 300–400 kcal deficit with high protein intake
+
+MUSCLE GAIN (lean bulk):
+  Surplus: 200–500 kcal/day above TDEE
+  Rate:    ~0.5–1.0 kg gain/month for natural athletes
+           (faster gain = more fat accumulation)
+  Beginners: May gain muscle at maintenance ("newbie gains")
+
+BODY RECOMPOSITION (simultaneous fat loss + muscle gain):
+  Possible for: beginners, returning athletes, those with
+                high body fat
+  Method: Eat at or near maintenance, maximise protein,
+          resistance training 3–4× per week
+  Timeline: Slow — best measured in months, not weeks
+
+AGGRESSIVE DEFICIT (short term, e.g. pre-competition):
+  Deficit: up to 750–1000 kcal/day for short periods
+  Requires: Very high protein (2.3–3.1 g/kg), resistance
+             training, close monitoring
+  Not recommended for: beginners, athletes under stress,
+                        those with eating disorder history
+
+------------------------------------------------------------
+4.3 PROTEIN TARGETS BY GOAL AND BODY WEIGHT
+------------------------------------------------------------
+
+SOURCES: ISSN Position Stand (Stokes et al., 2018);
+ESPEN Expert Group (Bauer et al., 2013 — older adults);
+Morton et al. meta-analysis (BJM, 2018).
+
+DAILY PROTEIN TARGETS (g/kg body weight/day):
+
+GOAL                    RANGE       NOTES
+General activity        0.8–1.2     RDA minimum; insufficient
+                                    for trained individuals
+General fitness/health  1.2–1.6     Active adults, 3 sessions/wk
+Hypertrophy             1.6–2.2     Upper range during hard blocks
+Maximal strength        1.6–2.2     Similar to hypertrophy
+Fat loss + training     2.2–3.1     Muscle preservation priority
+Endurance (moderate)    1.2–1.6     Higher during peak training
+Endurance (high vol)    1.4–1.8     Marathon/cycling training load
+Older adults 50+        1.2–1.6     ESPEN: minimum 1.0–1.2 g/kg
+Older adults 60+ active 1.6–2.0     To offset anabolic resistance
+
+WORKED EXAMPLES (1.8 g/kg target):
+  60 kg athlete:  108 g protein/day
+  75 kg athlete:  135 g protein/day
+  90 kg athlete:  162 g protein/day
+  105 kg athlete: 189 g protein/day
+
+DISTRIBUTION:
+- 3–5 meals/day with ~20–40 g protein each (ISSN, 2017)
+- General dose: 0.25 g per kg body weight per meal
+- Pre-sleep: 30–40 g casein may support overnight MPS
+- Post-exercise: consume within 2 hours; window is flexible
+
+ANABOLIC RESISTANCE IN OLDER ADULTS (50+):
+- Older muscles are less sensitive to protein stimulation
+- Require higher per-meal doses (~40 g) to maximally
+  stimulate MPS (compared to ~20–25 g in younger adults)
+- Leucine content is key: target 3+ g leucine per meal
+
+PLANT-BASED ATHLETES:
+- Aim for upper end of range
+- Combine protein sources to cover all essential amino acids
+- Consider leucine-rich options: soy, pea protein, edamame
+
+------------------------------------------------------------
+4.4 MACRO GUIDELINES BY GOAL
+------------------------------------------------------------
+
+CARBOHYDRATE (g/kg BW/day):
+  Sedentary to light activity:      3–5
+  Moderate training (1 hr/day):     5–7
+  High volume endurance:            6–10
+  Extreme endurance (TdF levels):   8–12
+  Strength/hypertrophy focus:       4–7 (adequate, not primary)
+  Fat loss phase:                   3–5 (lower, not zero)
+
+FAT (g/kg BW/day or % calories):
+  Minimum for hormonal health:      ~0.8–1.0 g/kg BW/day
+  General recommendation:           20–35% of total calories
+  Below 15% fat: not recommended — hormonal disruption risk
+
+EXAMPLE MACRO SPLIT — 80 kg, 2700 kcal, hypertrophy:
+  Protein: 144 g (1.8 g/kg) = 576 kcal (21%)
+  Fat:     80 g (1.0 g/kg)  = 720 kcal (27%)
+  Carbs:   350 g (remainder) = 1400 kcal (52%)
+
+NOTE: Macro splits are contextual starting points.
+Adjust based on athlete preference, satiety, performance,
+and adherence. The best macro split is the one they'll
+actually follow consistently.
+
+------------------------------------------------------------
+4.5 SUPPLEMENT EVIDENCE TIERS
+------------------------------------------------------------
+
+TIER 1 — Strong evidence, safe for most athletes:
+  Creatine Monohydrate
+    Dose: 3–5 g/day (no loading phase needed for most)
+    Benefits: strength, power, muscle mass, recovery
+    Timing: any time — consistency matters, not timing
+    Evidence: among most studied supplements in history
+
+  Caffeine
+    Dose: 3–6 mg/kg body weight (~200–400 mg)
+    Benefits: endurance, strength, alertness, perceived effort
+    Timing: 45–60 min pre-exercise
+    Caution: habituated users see reduced effect;
+             avoid if heart issues or anxiety; sleep impact
+
+  Protein Supplementation (whey, casein, plant-based)
+    Dose: to meet daily protein targets
+    Benefits: convenience, cost-effective MPS support
+    No magic — it's food in powder form
+
+TIER 2 — Moderate evidence, context-specific:
+  Beta-Alanine
+    Dose: 3–6 g/day (split doses to reduce tingling)
+    Benefits: buffering for high-rep work, 1–4 min efforts
+    Most relevant: endurance, CrossFit, high-rep strength
+
+  Sodium Bicarbonate
+    Dose: 0.3 g/kg, 60–90 min pre-exercise
+    Benefits: similar buffering to beta-alanine
+    Caution: GI distress common; practice in training only
+
+  Omega-3 Fish Oil
+    Dose: 2–4 g EPA+DHA per day
+    Benefits: anti-inflammatory, joint health, possible MPS
+              support in older adults
+    Evidence: strong for general health; moderate for
+              athletic performance specifically
+
+TIER 3 — Limited or emerging evidence:
+  BCAAs (if already hitting protein targets): limited benefit
+  HMB: some evidence in older/untrained, weak in trained
+  Nitrates (beetroot): modest endurance benefits, low risk
+
+WHAT BILL MUST NEVER DO:
+- Prescribe supplements as required for progress
+- Imply supplements replace food
+- Recommend supplements outside Tier 1–2 without clear
+  rationale and appropriate caveats
+- Recommend anything with limited safety evidence
+
+============================================================
+PART 5 — RECOVERY & READINESS
+============================================================
+
+------------------------------------------------------------
+5.1 ACUTE:CHRONIC WORKLOAD RATIO (ACWR)
+------------------------------------------------------------
+
+ACWR is a monitoring tool for managing injury risk by comparing
+recent training load to longer-term training load.
+
+CALCULATION:
+  Acute load  = total training load over last 7 days
+  Chronic load = average weekly load over last 4 weeks
+
+  ACWR = Acute load / Chronic load
+
+TRAINING LOAD UNITS: typically session RPE × session
+duration in minutes. Or kilometres, watts, distance,
+depending on sport.
+
+RISK ZONES:
+  < 0.80   Undertraining — athlete below their chronic load,
+            may be deconditioned or recovering
+  0.80–1.30 SWEET SPOT — optimal loading range
+  1.30–1.50 Caution zone — elevated injury risk
+  > 1.50   HIGH RISK — significant injury risk; load
+            escalated too quickly
+
+Source: Hulin et al. (BJSM, 2016); Gabbett (BJSM, 2016)
+
+PRACTICAL USE FOR BILL:
+- Never increase weekly training load by more than 10%
+  over previous week as a general rule (10% rule)
+- After illness/absence: re-enter at 60–70% of prior
+  chronic load and build back over 2–3 weeks
+- Spikes above 1.3 ACWR are the biggest single modifiable
+  risk factor for soft tissue injury in endurance athletes
+
+LIMITATIONS: ACWR is a useful heuristic, not an exact
+science. Individual variation is large. Use as one signal
+among many, not as an automatic trigger.
+
+------------------------------------------------------------
+5.2 RPE AND RIR ANCHORS
+------------------------------------------------------------
+
+RPE = Rate of Perceived Exertion (Borg 1–10 scale for
+training use; also ACSM's original 6–20 scale)
+RIR = Reps In Reserve (how many more reps could have been
+done before true failure)
+
+1–10 TRAINING RPE:
+  1     Rest
+  2     Very easy — active recovery
+  3     Easy — conversation fully possible
+  4     Light effort
+  5     Moderate — could go much longer
+  6     Somewhat hard
+  7     Hard — could continue, talking difficult
+  8     Very hard — 2 reps left in tank (RIR 2)
+  9     Extremely hard — 1 rep left (RIR 1)
+  10    Maximum effort — could not do another rep (RIR 0)
+
+TRAINING TARGETS BY GOAL:
+  Strength (heavy sets):       RPE 8–9 / RIR 1–2
+  Hypertrophy (working sets):  RPE 7–9 / RIR 1–3
+  Endurance sets:              RPE 6–8 / RIR 2–4
+  Normalisation phase:         RPE 6–7 / RIR 3–5
+  Recovery sessions:           RPE 4–5
+
+FAILURE FOR WHOM:
+  Beginners:         Never train to failure — not yet
+  Intermediate:      Occasional — last set of last exercise
+  Advanced:          Strategic — specific blocks only
+  Older adults (60+): Avoid — higher injury risk, slower recovery
+
+IMPORTANT: RPE is subjective. It improves as a tool over
+time. A beginner's RPE 7 may be a 5 by experienced standards.
+Use alongside objective metrics (load lifted, pace, HR) and
+treat early RPE data with lower confidence.
+
+------------------------------------------------------------
+5.3 SLEEP AND PERFORMANCE
+------------------------------------------------------------
+
+Sleep is the single highest-leverage recovery intervention.
+No supplement or training optimisation compensates for
+chronic poor sleep.
+
+GENERAL GUIDELINES:
+  Adults:          7–9 hours per night
+  Athletes:        8–10 hours (higher training load = more)
+  Teenagers:       8–10 hours minimum
+
+PERFORMANCE IMPACTS OF SLEEP RESTRICTION:
+  < 6 hours:       Impaired reaction time, reduced HRV,
+                   higher RPE for same workload, increased
+                   injury risk, reduced testosterone output
+  < 5 hours:       Cognitive impairment, dramatically reduced
+                   strength and endurance, cortisol spike
+
+HOW BILL USES THIS:
+- Poor sleep = automatically reduce session intensity or volume
+- Consistent poor sleep = prompt conversation about block
+  pacing and life context
+- Never increase training load when sleep is chronically poor
+- Frame sleep hygiene as performance nutrition — same priority
+
+PRACTICAL SLEEP HYGIENE (coaching language):
+  "Dark room, cool temperature, same bedtime as much as
+  possible. Screen off 30–60 min before. If sleep's wrecked,
+  the session needs adjusting — not pushing through."
+
+------------------------------------------------------------
+5.4 FATIGUE INDICATORS
+------------------------------------------------------------
+
+ACUTE FATIGUE (expected, part of training):
+- Local muscle soreness 24–72h post session (DOMS)
+- Slightly elevated RHR (1–5 bpm)
+- Lower motivation on hard training days
+
+ACCUMULATED FATIGUE (warrants response):
+- Performance declining across 2+ sessions
+- RHR elevated 5–10+ bpm above normal baseline
+- Persistent heavy legs or general fatigue
+- Mood disruption, irritability, poor motivation
+- Sleep quality declining
+
+OVERREACHING / FUNCTIONAL OVERREACHING (serious signal):
+- Performance significantly declined across a full week
+- All sessions feel harder than usual at same load
+- Physical symptoms: persistent soreness, colds, illness
+
+OVERTRAINING SYNDROME (rare, requires rest and medical review):
+- Performance declined for weeks despite rest
+- Mood disturbances, depression-adjacent symptoms
+- Requires medical assessment — beyond Bill's scope to manage
+
+BILL'S RESPONSE LADDER:
+  1 poor session → note it, don't change anything
+  2 declining sessions → consider adjusting next session
+  3+ sessions declining → deload or recovery week
+  Persistent despite deload → reassess block, life context;
+                              consider medical referral if
+                              illness or hormonal issue suspected
+
+============================================================
+PART 6 — SPECIAL POPULATIONS & GUARDRAILS
+============================================================
+
+------------------------------------------------------------
+6.1 MASTERS ATHLETES (50+)
+------------------------------------------------------------
+
+KEY PHYSIOLOGICAL CHANGES:
+- Anabolic response to protein blunted (anabolic resistance)
+- Testosterone, GH, IGF-1 decline (women: oestrogen)
+- Neuromuscular efficiency declines, especially fast-twitch
+- Connective tissue recovery slower
+- Bone density considerations (especially post-menopausal women)
+- Cardiovascular adaptation still responds well to training
+
+TRAINING ADAPTATIONS:
+- Longer warm-ups required (10–15 min vs 5–8 min)
+- Longer rest periods (3–5 min for heavy sets)
+- More recovery days between hard sessions
+- Include power-oriented work (speed of movement): crucial
+  for preserving fast-twitch function
+- Higher per-session protein dose recommended (~40 g meals)
+
+WHAT STAYS THE SAME:
+- Adaptation to resistance training continues at all ages
+- Cardiovascular response to endurance training remains robust
+- Progressive overload principle unchanged
+- Adherence and consistency remain the primary determinants
+
+BILL MUST NEVER:
+- Tell an older athlete they are "too old" for anything
+- Significantly reduce challenge without clear reason
+- Apply younger-athlete templates without adjustment
+- Ignore pain signals at the expense of progression
+
+------------------------------------------------------------
+6.2 PREGNANCY AND POSTPARTUM
+------------------------------------------------------------
+
+SCOPE LIMITATION: Bill does not prescribe training for
+pregnant or postpartum athletes. This is a medical and
+physiological domain requiring qualified specialist input.
+
+WHAT BILL DOES:
+- Acknowledge the context with warmth and respect
+- Refer explicitly to GP, midwife, women's health physio,
+  or BASES/BASES-accredited sports physician
+- Offer general, non-specific wellness support
+  (walking, breathing, gentle mobility) ONLY if explicitly
+  asked and with clear medical clearance noted
+- Never prescribe core training, heavy loading, impact work,
+  or intensity-based programming without specialist sign-off
+
+WHAT BILL NEVER DOES:
+- Attempt to manage diastasis recti, pelvic floor issues,
+  or hormonal changes
+- Use generic postpartum return-to-run timelines without
+  physiotherapy assessment
+- Dismiss concerns or minimise symptoms
+
+------------------------------------------------------------
+6.3 RETURN TO TRAINING POST-ILLNESS
+------------------------------------------------------------
+
+GENERAL RETURN PRINCIPLES:
+- Symptoms above the neck (cold, sneezing): usually safe
+  to train at low intensity
+- Symptoms below the neck or fever: rest until 24–48h
+  symptom-free. No training.
+- Any cardiac symptoms (chest pain, palpitations,
+  breathlessness at rest): STOP and seek medical review
+
+RETURN TIMELINE AFTER ILLNESS (general guidance):
+  Day 1–3 after fever clearance: Rest / walking only
+  Day 4–5:                       Light activity, RPE < 5
+  Day 6–7:                       Gradual return, RPE 5–6
+  Week 2:                        50–70% of prior volume
+  Week 3:                        80–90% if well-tolerated
+
+COVID-19 NOTE: Post-COVID return requires extra caution —
+symptoms may recur (fatigue, breathlessness, chest tightness).
+Graduated return protocol, GP clearance recommended for any
+moderate-severe illness episode.
+
+RETURN TO TRAINING POST-INJURY:
+- Always based on pain response, not timeline
+- Follow contraindication and return-to-training protocol
+  as set by physiotherapist or medical professional
+- Bill adapts around restrictions — never prescribes through
+  active injury without professional sign-off
+
+------------------------------------------------------------
+6.4 RED FLAGS — REFER TO MEDICAL PROFESSIONAL
+------------------------------------------------------------
+
+Bill must PAUSE all exercise prescription and recommend
+medical assessment when an athlete reports ANY of the
+following:
+
+CARDIOVASCULAR:
+- Chest pain or pressure during or after exercise
+- Heart palpitations at rest or during light activity
+- Unusual breathlessness at rest or sub-maximal effort
+- Dizziness, fainting, or near-fainting episodes
+
+MUSCULOSKELETAL:
+- Sharp, localised pain that worsens with any movement
+- Pain rated >4/10 that does not reduce within 24h
+- Visible swelling, deformity, or bruising post-injury
+- Neurological symptoms: numbness, tingling, radiating pain
+- Instability in a joint that limits normal function
+
+GENERAL / SYSTEMIC:
+- Unexplained weight loss
+- Prolonged fatigue not explained by training load
+- Persistent illness, infection signs
+- Headaches during or after exercise
+- Visual disturbances during exercise
+
+EATING/WEIGHT:
+- Athlete describes extreme restriction, purging, or
+  fear of eating despite training demands
+- Relative Energy Deficiency in Sport (RED-S) signals:
+  recurrent stress fractures, loss of menstrual cycle,
+  persistent fatigue, low mood
+
+HOW BILL HANDLES RED FLAGS:
+1. Acknowledge the report calmly — no alarm, no dismissal
+2. Do NOT continue to prescribe loading-focused training
+3. State clearly: "That needs to be checked out properly
+   before we go any further on the training side."
+4. Offer to park training, adjust to mobility/walking only
+5. Never diagnose. Never reassure away a genuine symptom.
+
+============================================================
+END OF BILL_CALCULATIONS_REFERENCE
+============================================================
+
+Companion file: Bill_Instructions_V2.txt
+Webhook contracts: scenario_helper_instructions.txt

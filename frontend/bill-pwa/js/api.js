@@ -1,0 +1,155 @@
+// Bill D'Bettabody - API Client
+// Handles all backend communication
+// Currently uses mock data, easy to swap for real API
+
+const API_CONFIG = {
+  // Switch this to your backend URL when ready
+  BASE_URL: 'http://localhost:5000',
+  USE_MOCK_DATA: false, // Set to true to force mock data
+  TIMEOUT: 30000
+};
+
+class BillAPI {
+  constructor() {
+    this.baseUrl = API_CONFIG.BASE_URL;
+    this.useMock = API_CONFIG.USE_MOCK_DATA;
+  }
+
+  // Helper: Make API request
+  async request(endpoint, options = {}) {
+    // Use mock data if enabled
+    if (this.useMock) {
+      return this.mockRequest(endpoint, options);
+    }
+
+    const url = `${this.baseUrl}${endpoint}`;
+    const config = {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+      }
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      if (!response.ok) {
+        let body = '';
+        try { body = await response.text(); } catch (_) {}
+        const err = new Error(`API Error: ${response.status} ${response.statusText}`);
+        err.responseBody = body;
+        throw err;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[API] Request failed:', error);
+      throw error;
+    }
+  }
+
+  // Mock request handler
+  async mockRequest(endpoint, options = {}) {
+    console.log('[API] Mock request:', endpoint, options.method || 'GET');
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Get mock data
+    const data = getMockData(endpoint);
+    
+    if (!data) {
+      throw new Error(`Mock data not found for: ${endpoint}`);
+    }
+
+    return data;
+  }
+
+  // Session endpoints
+  async getDashboard(billSessionId) {
+    return this.request(`/dashboard?session_id=${encodeURIComponent(billSessionId)}`);
+  }
+
+  async getSessionDetail(sessionId, billSessionId) {
+    return this.request(
+      `/session/${encodeURIComponent(sessionId)}?session_id=${encodeURIComponent(billSessionId)}`
+    );
+  }
+
+  async logStep(sessionId, stepData) {
+    return this.request(`/sessions/${sessionId}/log-step`, {
+      method: 'POST',
+      body: JSON.stringify(stepData)
+    });
+  }
+
+  async addExtraExercise(sessionId, exerciseData) {
+    return this.request(`/sessions/${sessionId}/add-exercise`, {
+      method: 'POST',
+      body: JSON.stringify(exerciseData)
+    });
+  }
+
+  async completeSession(sessionId, completionData) {
+    return this.request(`/session/${encodeURIComponent(sessionId)}/complete`, {
+      method: 'POST',
+      body: JSON.stringify(completionData)
+    });
+  }
+
+  // Profile & nutrition
+  async getProfile(billSessionId) {
+    return this.request(`/profile?session_id=${encodeURIComponent(billSessionId)}`);
+  }
+
+  async getDailyNutrition() {
+    return this.request('/nutrition/daily');
+  }
+
+  // Progress & history
+  async getProgress(billSessionId) {
+    return this.request(`/progress?session_id=${encodeURIComponent(billSessionId)}`);
+  }
+
+  async getWeek(billSessionId) {
+    return this.request(`/week?session_id=${encodeURIComponent(billSessionId)}`);
+  }
+
+  // Exercise bests
+  async getBests() {
+    return this.request('/bests');
+  }
+
+  // Exercise library
+  async searchExercises(query) {
+    return this.request(`/exercises/search?q=${encodeURIComponent(query)}`);
+  }
+
+  async getExerciseDetail(exerciseName) {
+    return this.request(`/exercises/${encodeURIComponent(exerciseName)}`);
+  }
+
+  // Chat
+  async chat(message, sessionId) {
+    return this.request('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message, session_id: sessionId })
+    });
+  }
+
+  // Initialize session
+  async initialize(clientId = null) {
+    return this.request('/initialize', {
+      method: 'POST',
+      body: JSON.stringify({ client_id: clientId })
+    });
+  }
+
+  async getRestDaySummary(billSessionId) {
+    return this.request(`/sessions/rest-day-summary?session_id=${encodeURIComponent(billSessionId)}`);
+  }
+}
+
+// Create global API instance
+const api = new BillAPI();

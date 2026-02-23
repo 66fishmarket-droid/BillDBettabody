@@ -1,0 +1,139 @@
+============================================================
+SCENARIO: Bill - Injury to Client Load (Webhook)
+CANONICAL SOURCE: Make Blueprint JSON (Bill - Injury to Client Load webhook blueprint.json)
+WEBHOOK URL: https://hook.eu2.make.com/8z02z38fdsrmqk06x3v5k56sdu2wroty
+WEBHOOK PURPOSE:
+On-demand sync of active contraindications from Contraindications_Temp and
+Contraindications_Chronic into the Clients sheet for a specific client.
+Call this immediately after any Add Injury or Add Chronic Condition webhook
+to ensure the Clients sheet reflects current contraindication state without
+waiting for the overnight scheduled run.
+
+-----------------------------
+WHEN BILL MUST CALL THIS
+-----------------------------
+Bill MUST call this webhook once after completing ALL contraindication writes
+in a session. Specifically:
+- After Add Injury (one or more calls)
+- After Add Chronic Condition (one or more calls)
+- After Update Injury Status (if resolving an injury)
+
+Write ALL contraindications first, THEN call this once at the end.
+Do NOT call once per contraindication write — one call at the end is enough.
+
+-----------------------------
+SCENARIO FLOW (MODULE SUMMARY)
+-----------------------------
+Module 16: Webhook trigger — expects client_id
+Module 2:  filterRows — Search Clients sheet column A for client_id (limit 1)
+Module 6:  filterRows — Search Contraindications_Temp where:
+             column A (client_id) = client_id from module 2
+             column F (status) = "active" (case-insensitive)
+Module 8:  TextAggregator — Aggregate active injuries
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → date_reported | type | description | expected_duration | notes
+             Row separator: ; (semicolon)
+Module 10: filterRows — Search Contraindications_Chronic where:
+             column B (client_id) = client_id from module 2
+             column J (status) = "active"
+             FILTER gate: injuries aggregator output must not equal blank template
+Module 12: TextAggregator — Aggregate active chronic conditions
+             if(__IMTLENGTH__ = 0) → emptystring
+             else → condition | severity | affected_system | contraindicated_movements | notes
+             Row separator: ; (semicolon)
+Module 14: updateRow — Update Clients sheet
+             column 30 (AE): chronic_contraindications = {{12.text}}
+             column 31 (AF): injuries = {{8.text}}
+             row: {{2.__ROW_NUMBER__}}
+             FILTER gate: chronic aggregator output must not equal blank template
+Module 19: WebhookRespond — Return sync result
+
+-----------------------------
+SHEETS USED
+-----------------------------
+- Clients (read row number, write columns AE + AF)
+- Contraindications_Temp (read active injury rows)
+- Contraindications_Chronic (read active chronic rows)
+
+-----------------------------
+COLUMN MAPPING (CONTRAINDICATIONS_TEMP)
+-----------------------------
+A: client_id
+B: date_reported
+C: type
+D: description
+E: expected_duration
+F: status
+G: notes (note: column F is status filter, G is notes — aggregator uses col 6 = G)
+H: date_resolved
+
+Aggregator output format per injury:
+date_reported | type | description | expected_duration | notes
+
+-----------------------------
+COLUMN MAPPING (CONTRAINDICATIONS_CHRONIC)
+-----------------------------
+A: record_id
+B: client_id
+C: condition
+D: severity
+E: affected_system
+F: contraindicated_movements
+G: notes
+H: date_added
+I: last_reviewed
+J: status
+
+Aggregator output format per condition:
+condition | severity | affected_system | contraindicated_movements | notes
+
+-----------------------------
+EMPTY HANDLING
+-----------------------------
+Both aggregators use an if(__IMTLENGTH__ = 0) conditional:
+- Zero active records → emptystring written to cell (clears it correctly)
+- One or more records → pipe-separated summary written to cell
+- Additional filter gates on modules 10 and 14 prevent blank template strings
+  from being written if the if() conditional doesn't fire correctly
+
+-----------------------------
+INPUT CONTRACT (JSON BODY)
+-----------------------------
+Flat JSON object. One key only:
+- client_id (string) REQUIRED
+
+Data structure defined on webhook (Make): client_id (Text, not required)
+
+-----------------------------
+OUTPUT CONTRACT (JSON RESPONSE)
+-----------------------------
+{
+  "status": "ok",
+  "action": "contraindications_synced",
+  "client_id": "<echoed from input>",
+  "injuries_updated": "<aggregated injury text or empty string>",
+  "chronic_updated": "<aggregated chronic text or empty string>",
+  "timestamp": "<ISO datetime>"
+}
+
+Bill should read injuries_updated and chronic_updated from the response
+and use them as working context for the remainder of the session — no need
+to reload full client context just to see the updated contraindications.
+
+-----------------------------
+KNOWN-GOOD TEST PAYLOAD
+-----------------------------
+{
+  "client_id": "cli_001"
+}
+
+Expected response (with one active injury, no chronic conditions):
+{
+  "status": "ok",
+  "action": "contraindications_synced",
+  "client_id": "cli_001",
+  "injuries_updated": "2026-02-19 | injury | Right knee strain (mild), sore on stairs and under load | 7-14 days | Avoid deep knee flexion, monitor for swelling",
+  "chronic_updated": "",
+  "timestamp": "2026-02-19T11:51:25+00:00"
+}
+============================================================

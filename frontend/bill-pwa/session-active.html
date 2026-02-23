@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#8b4513">
+
+  <title>Active Session - Bill D'Bettabody</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/app.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="container">
+
+      <header class="mb-4">
+        <div class="flex items-center justify-between">
+          <button class="btn btn-secondary" id="back-btn">← Back</button>
+          <button class="btn btn-secondary" id="glossary-btn" style="font-size:0.8125rem;padding:0.5rem 0.875rem">📖 Terms</button>
+          <button class="btn btn-secondary" id="ask-bill-btn">💬 Ask Bill</button>
+        </div>
+      </header>
+
+      <!-- Glossary panel (hidden by default) -->
+      <div class="glossary-panel card mb-3" id="glossary-panel" hidden>
+        <h3 class="card-title mb-3">Training Terms</h3>
+        <dl class="glossary-list">
+          <dt>RPE</dt>
+          <dd>Rate of Perceived Exertion — a 1–10 scale of effort. 10 = absolute maximum. RPE 8 means roughly 2 reps left in the tank. Use it to gauge each set.</dd>
+
+          <dt>Tempo</dt>
+          <dd>Written as 4 numbers e.g. <strong>3-1-1-0</strong>: (1) seconds to lower the weight, (2) pause at the bottom, (3) seconds to lift, (4) pause at the top. Zero means no deliberate pause.</dd>
+
+          <dt>Loading Pattern</dt>
+          <dd><strong>Straight sets</strong> — same weight every set. <strong>Ramping</strong> — increase weight each set up to a peak load. <strong>Wave</strong> — weight increases then resets.</dd>
+
+          <dt>Reps Pattern</dt>
+          <dd>Target reps listed per set e.g. <strong>8, 8, 6, 4</strong>. As weight increases across a ramping scheme, reps typically decrease.</dd>
+
+          <dt>RPE Pattern</dt>
+          <dd>Target RPE listed per set e.g. <strong>7, 8, 9, 10</strong>. Tells you how hard each individual set should feel, not just the session overall.</dd>
+
+          <dt>Rest</dt>
+          <dd>Time between sets. Longer rest (180s+) is for heavy compound lifts. Shorter rest (60–90s) builds metabolic stress. Stick to the prescribed time — it's part of the training stimulus.</dd>
+        </dl>
+      </div>
+
+      <div class="card mb-3">
+        <h1 class="text-2xl font-bold mb-1" id="session-title">Active Session</h1>
+        <p class="text-muted" id="session-subtitle"></p>
+      </div>
+
+      <div id="steps-container">
+        <!-- Steps rendered here -->
+      </div>
+
+      <div class="card mb-4">
+        <h3 class="font-semibold mb-2">Session Feedback</h3>
+        <label class="block text-sm text-muted mb-1" for="session-rpe">Overall RPE (1-10)</label>
+        <input id="session-rpe" type="number" min="1" max="10" inputmode="numeric"
+               class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white mb-3" />
+
+        <label class="block text-sm text-muted mb-1" for="session-notes">Notes</label>
+        <textarea id="session-notes" rows="3"
+                  class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white"></textarea>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-large mb-4" id="complete-session-btn">
+        Complete Session
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Exercise info modal -->
+  <div class="ex-modal-overlay" id="ex-modal" hidden>
+    <div class="ex-modal-box">
+      <div class="ex-modal-header">
+        <strong id="ex-modal-title"></strong>
+        <button class="ex-modal-close" id="ex-modal-close">✕</button>
+      </div>
+      <div class="ex-modal-body" id="ex-modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/session-active.js"></script>
+</body>
+</html>
