@@ -108,10 +108,17 @@ class Dashboard {
     }
 
     // Today's session card
+    const nextSession = this.dashboard && this.dashboard.next_session;
+    const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD local
+    const sessionIsToday = nextSession && nextSession.session_date === todayStr;
+
     if (this.completedSummary) {
       this.renderSessionComplete(this.completedSummary);
-    } else if (this.dashboard && this.dashboard.next_session) {
+    } else if (sessionIsToday) {
       this.renderSession(this.dashboard);
+    } else if (nextSession) {
+      // Today is a rest day — show rest day message + upcoming session preview
+      this.renderRestDay(nextSession);
     } else {
       this.renderNoSession();
     }
@@ -255,6 +262,42 @@ class Dashboard {
       startBtn.textContent = '📈 View Your Progress';
       startBtn.style.display = 'block';
     }
+  }
+
+  renderRestDay(nextSession) {
+    const cardTitle = document.querySelector('#session-card .card-title');
+    if (cardTitle) cardTitle.textContent = 'Rest Day';
+
+    const focusEl = document.getElementById('session-focus');
+    if (focusEl) focusEl.textContent = 'Recovery & preparation';
+
+    // Format the upcoming session date nicely
+    const nextDate = nextSession.session_date
+      ? new Date(nextSession.session_date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })
+      : '';
+
+    const detailsEl = document.getElementById('session-details');
+    if (detailsEl) {
+      detailsEl.innerHTML = `
+        <div style="text-align:center;padding:0.75rem 0 0.5rem;">
+          <div style="font-size:2rem;margin-bottom:0.4rem;">🛌</div>
+          <p style="font-weight:600;color:#f5f5f5;">Today is a rest day.</p>
+          <p style="font-size:0.875rem;color:#b0b0b0;margin-top:0.25rem;line-height:1.5;">
+            Recovery is where the gains happen. Rest up, stay hydrated, and come back ready.
+          </p>
+        </div>
+        ${nextSession ? `
+        <div style="margin-top:1rem;padding:0.75rem;background:rgba(210,105,30,0.1);border-radius:8px;border-left:3px solid var(--bill-primary);">
+          <p style="font-size:0.75rem;color:#b0b0b0;margin-bottom:0.2rem;text-transform:uppercase;letter-spacing:0.5px;">Coming up</p>
+          <p style="font-size:0.95rem;font-weight:600;color:#f5f5f5;">${nextSession.focus || 'Training Session'}</p>
+          <p style="font-size:0.8rem;color:#b0b0b0;margin-top:0.15rem;">${nextDate}</p>
+        </div>` : ''}
+      `;
+    }
+
+    // Hide start button on rest days
+    const startBtn = document.getElementById('start-session-btn');
+    if (startBtn) startBtn.style.display = 'none';
   }
 
   renderNoSession() {
