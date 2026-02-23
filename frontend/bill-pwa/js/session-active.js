@@ -94,9 +94,12 @@ class SessionActive {
         </div>
 
         <div class="step-actions-row">
-          <button class="add-set-btn" data-step="${idx}" ${setCount >= 10 ? 'disabled' : ''}>
-            + Add Set
-          </button>
+          <div>
+            <button class="add-set-btn" data-step="${idx}" ${setCount >= 10 ? 'disabled' : ''}>
+              + Add Set
+            </button>
+            <div class="add-set-hint">add warm-up or extra sets</div>
+          </div>
           <div class="metric-selector">
             <label>Unit:</label>
             <select class="exercise-metric-select" data-step="${idx}">
@@ -118,11 +121,11 @@ class SessionActive {
     return `
       <div class="set-row" data-set-num="${setNum}">
         <span class="set-num">${setNum}</span>
-        <input class="set-input" type="number" min="0" inputmode="numeric"
+        <input class="set-input" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
                data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps" placeholder="—">
-        <input class="set-input" type="number" min="0" step="0.5" inputmode="decimal"
+        <input class="set-input" type="number" min="0" step="0.5" inputmode="decimal" pattern="[0-9.]*"
                data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="—">
-        <input class="set-input" type="number" min="1" max="10" inputmode="numeric"
+        <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
                data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
       </div>
     `;
@@ -177,7 +180,7 @@ class SessionActive {
     const restTempo = [];
     if (parseInt(step.rest_seconds, 10) > 0) restTempo.push(`Rest: ${step.rest_seconds}s`);
     if (step.tempo_pattern) {
-      restTempo.push(`Tempo: ${this.esc(step.tempo_pattern)} <span class="tempo-guide">(down · pause · up · pause)</span>`);
+      restTempo.push(`Tempo: ${this.formatPattern(step.tempo_pattern)} <span class="tempo-guide">(down · pause · up · pause)</span>`);
     }
     if (restTempo.length) lines.push(restTempo.join('  •  '));
 
@@ -189,9 +192,9 @@ class SessionActive {
       lines.push(p.join('  •  '));
     }
 
-    if (step.reps_pattern)          lines.push(`Reps: ${this.esc(step.reps_pattern)}`);
-    if (step.rpe_pattern)           lines.push(`RPE target: ${this.esc(step.rpe_pattern)}`);
-    if (step.tempo_per_set_pattern) lines.push(`Tempo per set: ${this.esc(step.tempo_per_set_pattern)}`);
+    if (step.reps_pattern)          lines.push(`Reps: ${this.formatPattern(step.reps_pattern)}`);
+    if (step.rpe_pattern)           lines.push(`RPE target: ${this.formatPattern(step.rpe_pattern)}`);
+    if (step.tempo_per_set_pattern) lines.push(`Tempo per set: ${this.formatPattern(step.tempo_per_set_pattern)}`);
     if (step.pattern_notes)         lines.push(`<em>${this.esc(step.pattern_notes)}</em>`);
 
     return this.wrapPrescription(lines, step.notes_coach);
@@ -212,7 +215,7 @@ class SessionActive {
 
     if (parseInt(step.rest_seconds, 10) > 0) lines.push(`Rest: ${step.rest_seconds}s`);
     if (step.tempo_pattern) {
-      lines.push(`Tempo: ${this.esc(step.tempo_pattern)} <span class="tempo-guide">(down · pause · up · pause)</span>`);
+      lines.push(`Tempo: ${this.formatPattern(step.tempo_pattern)} <span class="tempo-guide">(down · pause · up · pause)</span>`);
     }
 
     return this.wrapPrescription(lines, step.notes_coach);
@@ -301,16 +304,31 @@ class SessionActive {
     const key     = (step.metric_key || '').toLowerCase();
     const context = (step.metric_context_key || '').toLowerCase();
     const name    = (step.exercise_name || '').toLowerCase();
+    const family  = (step.metric_family_default || '').toLowerCase();
 
+    // Library join provides metric_family_default — use it first as the most reliable signal
+    if (family === 'strength')          return 'kg';
+    if (family === 'distance')          return 'm';
+    if (family === 'duration' || family === 'time') return 'min';
+    if (family === 'power')             return 'w';
+
+    // Fall back to metric_key / context hints from Plans_Steps
     if (key.includes('kg') || key.includes('load') || context.includes('load')) return 'kg';
     if (key.includes('lb'))  return 'lb';
     if (key.includes('km'))  return 'km';
-    if (key.includes('sec') || key.includes('time') || context.includes('time'))     return 'sec';
+    if (key.includes('sec') || key.includes('time') || context.includes('time')) return 'sec';
     if (key.includes('min')) return 'min';
-    if (key.includes('w') || key.includes('power') || context.includes('power'))     return 'w';
+    if (key.includes('w') || key.includes('power') || context.includes('power')) return 'w';
     if (key.includes('cal')) return 'cal';
     if (key.includes('m') || key.includes('distance') || context.includes('distance')) return 'm';
-    if (name.includes('run') || name.includes('row') || name.includes('bike') || name.includes('swim')) return 'm';
+
+    // Name-based cardio detection — exclude strength movements that contain cardio words
+    // ('row' in Barbell Bent-Over Row, etc.)
+    const isCardio = name.includes('run') || name.includes('swim') || name.includes('bike')
+      || (name.includes('row') && !name.includes('barbell') && !name.includes('dumbbell')
+          && !name.includes('cable') && !name.includes('bent'));
+    if (isCardio) return 'm';
+
     return 'kg';
   }
 
@@ -340,6 +358,17 @@ class SessionActive {
     const d = document.createElement('div');
     d.appendChild(document.createTextNode(String(str)));
     return d.innerHTML;
+  }
+
+  // Format compact digit-only patterns (e.g. "2010" → "2 · 0 · 1 · 0")
+  // Used for tempo, reps_pattern, rpe_pattern — single digits strung together.
+  formatPattern(str) {
+    if (!str) return '';
+    const s = String(str).trim();
+    if (/^\d+$/.test(s) && s.length > 1) {
+      return s.split('').join(' · ');
+    }
+    return this.esc(s);
   }
 
   // ─── Events ───────────────────────────────────────────────────────────────

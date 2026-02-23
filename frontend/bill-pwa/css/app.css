@@ -401,7 +401,7 @@ p {
 }
 
 .sets-header {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--bill-text-muted);
@@ -469,6 +469,12 @@ p {
 .add-set-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.add-set-hint {
+  font-size: 0.7rem;
+  color: var(--bill-text-muted);
+  margin-top: 3px;
 }
 
 .metric-selector {
