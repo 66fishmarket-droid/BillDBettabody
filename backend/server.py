@@ -80,7 +80,7 @@ def initialize():
     """
     try:
         data = request.json or {}
-        client_id = data.get('client_id', '').strip()
+        client_id = str(data.get('client_id') or '').strip()
         
         # CASE 1: No client_id provided (stranger)
         if not client_id:

@@ -115,8 +115,8 @@
       newUserBtn.textContent = 'Starting chat...';
 
       try {
-        // Initialize a stranger session (no client_id → Bill knows nothing yet)
-        const init = await api.initialize(null);
+        // Initialize a stranger session (empty client_id → Bill knows nothing yet)
+        const init = await api.initialize('');
         if (!init || !init.session_id) throw new Error('Session creation failed');
 
         app.saveSession({
