@@ -4,7 +4,7 @@
 
 const API_CONFIG = {
   // Switch this to your backend URL when ready
-  BASE_URL: 'http://localhost:5000',
+  BASE_URL: 'https://billdbettabody-production.up.railway.app',
   USE_MOCK_DATA: false, // Set to true to force mock data
   TIMEOUT: 30000
 };
