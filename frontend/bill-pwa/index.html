@@ -51,22 +51,6 @@
           </button>
         </div>
 
-        <!-- New user panel (hidden by default) -->
-        <div id="new-user-panel" style="display:none;text-align:left;">
-          <h3 style="font-size:1.05rem;font-weight:700;color:var(--bill-accent);margin-bottom:0.75rem;">Getting Started with Bill</h3>
-          <p style="font-size:0.9rem;color:#c0c0c0;line-height:1.6;margin-bottom:0.75rem;">
-            Bill D'Bettabody is a personalised AI coaching service. To get started, your coach will set up your profile and give you a Client ID.
-          </p>
-          <ol style="font-size:0.875rem;color:#b0b0b0;line-height:1.8;padding-left:1.25rem;margin-bottom:1rem;">
-            <li>Reach out to your coach to register</li>
-            <li>Your coach sets up your training profile with Bill</li>
-            <li>You receive your personal Client ID</li>
-            <li>Enter it above and you're off</li>
-          </ol>
-          <button class="btn btn-secondary btn-block" id="back-to-login-btn">
-            ← I already have a Client ID
-          </button>
-        </div>
       </div>
 
     </div>
@@ -76,29 +60,16 @@
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script>
-    const enterBtn      = document.getElementById('enter-btn');
-    const clientInput   = document.getElementById('client-id-input');
-    const newUserBtn    = document.getElementById('new-user-btn');
-    const backBtn       = document.getElementById('back-to-login-btn');
-    const loginPanel    = document.getElementById('login-panel');
-    const newUserPanel  = document.getElementById('new-user-panel');
+    const enterBtn    = document.getElementById('enter-btn');
+    const clientInput = document.getElementById('client-id-input');
+    const newUserBtn  = document.getElementById('new-user-btn');
 
     // If session already exists, skip login
     if (app.sessionId) {
       window.location.href = '/dashboard.html';
     }
 
-    // Toggle panels
-    newUserBtn.addEventListener('click', () => {
-      loginPanel.style.display   = 'none';
-      newUserPanel.style.display = 'block';
-    });
-
-    backBtn.addEventListener('click', () => {
-      newUserPanel.style.display = 'none';
-      loginPanel.style.display   = 'block';
-    });
-
+    // ── Existing client login ────────────────────────────────────────────────
     async function doLogin() {
       const clientId = clientInput.value.trim();
       if (!clientId) {
@@ -136,6 +107,33 @@
     enterBtn.addEventListener('click', doLogin);
     clientInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') doLogin();
+    });
+
+    // ── New user — jump straight into chat with Bill ─────────────────────────
+    newUserBtn.addEventListener('click', async () => {
+      newUserBtn.disabled = true;
+      newUserBtn.textContent = 'Starting chat...';
+
+      try {
+        // Initialize a stranger session (no client_id → Bill knows nothing yet)
+        const init = await api.initialize(null);
+        if (!init || !init.session_id) throw new Error('Session creation failed');
+
+        app.saveSession({
+          session_id: init.session_id,
+          client_id: ''   // no client_id for discovery session
+        });
+
+        // Signal to chat.js that it should auto-trigger Bill's intro
+        localStorage.setItem('bill_new_user_intro', 'true');
+
+        window.location.href = '/chat.html';
+      } catch (error) {
+        console.error('[New User] Failed:', error);
+        newUserBtn.disabled = false;
+        newUserBtn.textContent = 'New here? Get Started';
+        alert('Could not connect. Is the backend running?');
+      }
     });
   </script>
 </body>

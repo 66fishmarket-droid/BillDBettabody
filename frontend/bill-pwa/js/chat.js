@@ -26,13 +26,59 @@ class Chat {
 
     this.setupEventListeners();
 
-    // Show Bill's greeting as first message
-    const greeting = localStorage.getItem('bill_greeting')
-      || "Right then. What do you need?";
-    this.addMessage('bill', greeting);
+    // New user discovery — auto-trigger Bill's intro instead of static greeting
+    const isNewUser = localStorage.getItem('bill_new_user_intro') === 'true';
+    if (isNewUser) {
+      localStorage.removeItem('bill_new_user_intro');
+      await this.triggerNewUserIntro();
+    } else {
+      // Existing user — show pre-generated greeting
+      const greeting = localStorage.getItem('bill_greeting')
+        || "Right then. What do you need?";
+      this.addMessage('bill', greeting);
+    }
 
-    // Focus input
     this.inputEl.focus();
+  }
+
+  async triggerNewUserIntro() {
+    // Send a silent trigger to the API — don't show it as a user message.
+    // Bill opens the conversation explaining who he is and how to get started.
+    this.isLoading = true;
+    this.sendBtn.disabled = true;
+    this.inputEl.disabled = true;
+    this.setStatus('Connecting...', 'var(--bill-warning)');
+    this.showTyping();
+
+    const trigger = [
+      '[CONTEXT: New user discovery session. No client profile exists.',
+      'The user tapped "New here? Get Started" on the login screen',
+      'and has been connected directly to you without a Client ID.]',
+      '',
+      'Hi Bill — I\'m completely new here. Can you tell me who you are,',
+      'what you do as a coach, what this app offers, and how I\'d go',
+      'about getting properly set up with you?',
+    ].join(' ');
+
+    try {
+      const result = await api.chat(trigger, app.sessionId);
+      this.hideTyping();
+      this.setStatus('Online', 'var(--bill-success)');
+      if (result && result.response) {
+        this.addMessage('bill', result.response);
+      } else {
+        this.addMessage('bill', "Right then — I'm Bill D'Bettabody. Something went a bit sideways just now, but fire away.");
+      }
+    } catch (err) {
+      console.error('[Chat] New user intro failed:', err);
+      this.hideTyping();
+      this.setStatus('Online', 'var(--bill-success)');
+      this.addMessage('bill', "Right then. I'm Bill. Tell me what you're after and we'll take it from there.");
+    } finally {
+      this.isLoading = false;
+      this.sendBtn.disabled = false;
+      this.inputEl.disabled = false;
+    }
   }
 
   setupEventListeners() {
