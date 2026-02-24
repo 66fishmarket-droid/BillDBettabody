@@ -99,6 +99,7 @@ def update_steps_actuals(step_updates, status='completed', completed_timestamp=N
 
     allowed_fields = [
         'notes_athlete', 'status', 'completed_timestamp',
+        'metric_key', 'metric_context_key',
         'actual_set1_reps',  'actual_set2_reps',  'actual_set3_reps',
         'actual_set4_reps',  'actual_set5_reps',  'actual_set6_reps',
         'actual_set7_reps',  'actual_set8_reps',  'actual_set9_reps',

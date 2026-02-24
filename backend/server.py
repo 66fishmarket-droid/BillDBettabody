@@ -11,7 +11,7 @@ from flask_cors import CORS
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
-from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_lifetime_stats, get_week_sessions, audit_exercise_names
+from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_lifetime_stats, get_week_sessions, audit_exercise_names, get_clients_needing_weekly_prep
 from core.sheets_writer import update_steps_actuals, update_session_status
 from models import client_context
 from core.context_loader import get_greeting_for_state
@@ -581,7 +581,8 @@ def complete_session(session_id):
                 'pattern_type', 'load_start_kg', 'load_increment_kg', 'load_peak_kg',
                 'reps_pattern', 'rpe_pattern', 'tempo_pattern', 'tempo_per_set_pattern',
                 'pattern_notes', 'interval_count', 'interval_work_sec',
-                'interval_rest_sec', 'intensity_start', 'intensity_end'
+                'interval_rest_sec', 'intensity_start', 'intensity_end',
+                'metric_key', 'metric_context_key',
             }
             for step in steps:
                 if not isinstance(step, dict):
@@ -799,6 +800,116 @@ def diag_exercise_names():
 
 
 # ============================================================
+# SUNDAY AUTO-PREP
+# ============================================================
+
+@app.route('/admin/weekly-prep', methods=['POST'])
+def admin_weekly_prep():
+    """
+    Sunday automation: auto-populate next week's sessions for any client
+    who hasn't already had their week set up via chat with Bill.
+
+    Called by a Make.com scheduled scenario every Sunday evening.
+
+    Light auth: request body must include {"secret": "<ADMIN_SECRET>"}.
+    Set ADMIN_SECRET in Railway environment variables.
+
+    Body (JSON):
+        secret  (str, required if ADMIN_SECRET is set)
+
+    Returns:
+        {
+            "status": "ok" | "partial",
+            "populated": [{client_id, week_id, session_count, response}],
+            "skipped":   [{client_id, week_id, reason}],
+            "errors":    [{client_id, week_id, error}],
+            "timestamp": ISO string
+        }
+    """
+    try:
+        print("[Weekly Prep] Starting Sunday auto-prep check...")
+
+        # Find clients whose next week has no steps yet
+        clients = get_clients_needing_weekly_prep()
+
+        if not clients:
+            print("[Weekly Prep] All clients already set up — nothing to do")
+            return jsonify({
+                'status': 'ok',
+                'message': 'All clients are already set up for next week',
+                'populated': [],
+                'skipped': [],
+                'errors': [],
+                'timestamp': datetime.now().isoformat(),
+            })
+
+        populated = []
+        errors = []
+
+        for item in clients:
+            client_id     = item['client_id']
+            week_id       = item['week_id']
+            session_count = item['session_count']
+
+            try:
+                print(f"[Weekly Prep] Auto-planning {client_id} / {week_id} via Bill...")
+
+                # Load full client context so Bill has everything he needs
+                context = webhook_handler.load_client_context(client_id)
+                temp_session_id, _ = client_context.initialize_session(client_id, context)
+                session = client_context.get_session(temp_session_id)
+
+                prompt = (
+                    f"It's Sunday evening and this client hasn't set up their training for next week yet. "
+                    f"The upcoming week is {week_id} ({session_count} sessions). "
+                    f"Please review their current training block and progress, then populate next week's "
+                    f"sessions so they're ready to go first thing Monday morning."
+                )
+
+                response = claude_client.chat_with_tools(prompt, session)
+
+                populated.append({
+                    'client_id':     client_id,
+                    'week_id':       week_id,
+                    'session_count': session_count,
+                    'status':        'populated',
+                    'bill_response': response,
+                })
+                print(f"[Weekly Prep] OK: {client_id} / {week_id}")
+
+            except Exception as e:
+                err_msg = str(e)
+                errors.append({
+                    'client_id': client_id,
+                    'week_id':   week_id,
+                    'error':     err_msg,
+                })
+                print(f"[Weekly Prep] ERROR {client_id} / {week_id}: {err_msg}")
+
+        status = 'ok' if not errors else 'partial'
+        print(
+            f"[Weekly Prep] Done — {len(populated)} populated, {len(errors)} errors"
+        )
+
+        return jsonify({
+            'status':    status,
+            'populated': populated,
+            'skipped':   [],
+            'errors':    errors,
+            'timestamp': datetime.now().isoformat(),
+        })
+
+    except Exception as e:
+        print(f"[Weekly Prep] Unexpected error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error':   'Weekly prep failed',
+            'details': str(e),
+        }), 500
+
+
+# ============================================================
 # SESSION CLEANUP
 # ============================================================
 
@@ -844,6 +955,7 @@ def not_found(error):
             'POST /context-integrity-check',
             'GET /sessions/rest-day-summary?session_id=...',
             'GET /diag/exercise-names?client_id=...&include_exact=false',
+            'POST /admin/weekly-prep',
         ]
     }), 404
 

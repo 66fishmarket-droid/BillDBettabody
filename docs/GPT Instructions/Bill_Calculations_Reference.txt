@@ -150,14 +150,19 @@ LOWER BODY
   Leg Press 1RM        → Back Squat ~55–65%
 
 UPPER BODY — PUSH
-  Barbell Bench 1RM    → DB Bench ~45–50% per dumbbell
+  Barbell Bench 1RM    → DB Bench ~90–100% combined (2 × 45–50%)
   Barbell Bench 1RM    → Push-up (BW) ~65–70% of BW (~0.65BW)
-  Barbell OHP 1RM      → DB OHP ~45% per dumbbell
+  Barbell OHP 1RM      → DB OHP ~90% combined (2 × 45%)
 
 UPPER BODY — PULL
   Chin-up (BW)         → Lat Pulldown ~BW equivalent + 10–15%
-  Barbell Row 1RM      → DB Row ~50% per dumbbell
+  Barbell Row 1RM      → DB Row ~50% (single dumbbell — unilateral)
   Deadlift 1RM         → Barbell Row ~65–70%
+
+NOTE: DB load_kg is always the TOTAL combined weight for bilateral
+exercises (both dumbbells moving at once). For unilateral DB
+exercises (one arm at a time), load_kg is the single dumbbell.
+This keeps barbell ↔ dumbbell substitution arithmetic-free.
 
 CONFIDENCE NOTES:
 - Same bilateral compound → compound: moderate confidence
@@ -423,6 +428,57 @@ RESTING HEART RATE REFERENCE:
   Active adult:         55–65 bpm
   Sedentary adult:      65–75 bpm
   Elevated (possible concern): 90+ bpm at rest consistently
+
+------------------------------------------------------------
+3.2a HEART RATE ZONE BPM TABLES BY AGE AND SEX
+------------------------------------------------------------
+
+Pre-computed from established HRmax formulae:
+  Male:   Tanaka (2001)  208 – (0.7 × age)
+  Female: Gulati (2010)  206 – (0.88 × age)
+
+Zones use METHOD A (%HRmax) as the baseline. When resting
+HR is known, recalculate via Karvonen (Section 3.2) — zones
+will shift upward for fit athletes with low resting HR.
+
+These are ESTIMATES (SD ±10 bpm). For precision work use
+a field-tested HRmax and apply the formulae directly.
+
+MALE — 5-ZONE BPM RANGES (%HRmax)
+Age  HRmax  Z1 (50-60%)  Z2 (60-70%)  Z3 (70-80%)  Z4 (80-90%)  Z5 (90-100%)
+20   194    97–116       116–136      136–155      155–175      175–194
+30   187    94–112       112–131      131–150      150–168      168–187
+40   180    90–108       108–126      126–144      144–162      162–180
+50   173    87–104       104–121      121–138      138–156      156–173
+60   166    83–100       100–116      116–133      133–149      149–166
+70   159    80–95        95–111       111–127      127–143      143–159
+
+FEMALE — 5-ZONE BPM RANGES (%HRmax)
+Age  HRmax  Z1 (50-60%)  Z2 (60-70%)  Z3 (70-80%)  Z4 (80-90%)  Z5 (90-100%)
+20   188    94–113       113–132      132–150      150–169      169–188
+30   180    90–108       108–126      126–144      144–162      162–180
+40   171    86–103       103–120      120–137      137–154      154–171
+50   162    81–97        97–113       113–130      130–146      146–162
+60   153    77–92        92–107       107–122      122–138      138–153
+70   144    72–86        86–101       101–115      115–130      130–144
+
+KEY IMPLICATION:
+Zone 4 for a 30-year-old male: 150–168 bpm
+Zone 4 for a 70-year-old male: 127–143 bpm
+A 145 bpm run that feels like a hard Zone 4 for a 30-year-old
+is already Zone 5 for a 70-year-old. Never prescribe fixed
+BPM targets without age-adjusting. Always derive from the
+athlete's own HRmax — estimated or tested.
+
+SPORT-SPECIFIC NOTE FOR RUNNERS:
+Cycling HR typically runs 5–15 bpm lower than running HR at
+the same effort, due to reduced muscle mass engaged and lack
+of gravitational load on the upper body. Do not carry running
+zones directly into cycling prescription.
+
+MEDICATION CAVEAT (repeated from 3.1):
+Beta-blockers suppress HR response significantly. Do not use
+HR targets for athletes on cardiac medications — use RPE only.
 
 ------------------------------------------------------------
 3.3 VO2MAX ESTIMATION
