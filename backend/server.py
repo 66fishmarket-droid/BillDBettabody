@@ -7,6 +7,7 @@ import os
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
@@ -809,95 +810,51 @@ def admin_weekly_prep():
     Sunday automation: auto-populate next week's sessions for any client
     who hasn't already had their week set up via chat with Bill.
 
-    Called by a Make.com scheduled scenario every Sunday evening.
-
-    Light auth: request body must include {"secret": "<ADMIN_SECRET>"}.
-    Set ADMIN_SECRET in Railway environment variables.
+    Called by a Make.com scheduled scenario every Sunday or triggered manually.
 
     Body (JSON):
-        secret  (str, required if ADMIN_SECRET is set)
+        client_id (str, optional) — scope to a single client
 
     Returns:
         {
             "status": "ok" | "partial",
-            "populated": [{client_id, week_id, session_count, response}],
-            "skipped":   [{client_id, week_id, reason}],
+            "populated": [{client_id, week_id, session_count, bill_response}],
+            "skipped":   [{client_id, reason}],
             "errors":    [{client_id, week_id, error}],
             "timestamp": ISO string
         }
     """
     try:
-        print("[Weekly Prep] Starting Sunday auto-prep check...")
+        data = request.get_json(silent=True) or {}
+        specific_client_id = data.get('client_id', '').strip() or None
 
-        # Find clients whose next week has no steps yet
-        clients = get_clients_needing_weekly_prep()
+        result = _run_weekly_prep(specific_client_id)
 
-        if not clients:
-            print("[Weekly Prep] All clients already set up — nothing to do")
-            return jsonify({
-                'status': 'ok',
-                'message': 'All clients are already set up for next week',
-                'populated': [],
-                'skipped': [],
-                'errors': [],
-                'timestamp': datetime.now().isoformat(),
-            })
+        populated = result['populated']
+        skipped   = result['skipped']
+        errors    = result['errors']
 
-        populated = []
-        errors = []
+        # Build an informational message and, if a specific client came back empty,
+        # record them as explicitly skipped (steps already exist).
+        if specific_client_id and not populated and not errors:
+            skipped = [{'client_id': specific_client_id, 'reason': 'steps already exist'}]
+            msg = f'{specific_client_id} is already set up for next week'
+        elif not populated and not errors:
+            msg = 'All clients are already set up for next week'
+        else:
+            msg = None
 
-        for item in clients:
-            client_id     = item['client_id']
-            week_id       = item['week_id']
-            session_count = item['session_count']
-
-            try:
-                print(f"[Weekly Prep] Auto-planning {client_id} / {week_id} via Bill...")
-
-                # Load full client context so Bill has everything he needs
-                context = webhook_handler.load_client_context(client_id)
-                temp_session_id, _ = client_context.initialize_session(client_id, context)
-                session = client_context.get_session(temp_session_id)
-
-                prompt = (
-                    f"It's Sunday evening and this client hasn't set up their training for next week yet. "
-                    f"The upcoming week is {week_id} ({session_count} sessions). "
-                    f"Please review their current training block and progress, then populate next week's "
-                    f"sessions so they're ready to go first thing Monday morning."
-                )
-
-                response = claude_client.chat_with_tools(prompt, session)
-
-                populated.append({
-                    'client_id':     client_id,
-                    'week_id':       week_id,
-                    'session_count': session_count,
-                    'status':        'populated',
-                    'bill_response': response,
-                })
-                print(f"[Weekly Prep] OK: {client_id} / {week_id}")
-
-            except Exception as e:
-                err_msg = str(e)
-                errors.append({
-                    'client_id': client_id,
-                    'week_id':   week_id,
-                    'error':     err_msg,
-                })
-                print(f"[Weekly Prep] ERROR {client_id} / {week_id}: {err_msg}")
-
-        status = 'ok' if not errors else 'partial'
-        print(
-            f"[Weekly Prep] Done — {len(populated)} populated, {len(errors)} errors"
-        )
-
-        return jsonify({
-            'status':    status,
+        response_body = {
+            'status':    'ok' if not errors else 'partial',
             'populated': populated,
-            'skipped':   [],
+            'skipped':   skipped,
             'errors':    errors,
             'timestamp': datetime.now().isoformat(),
-        })
+        }
+        if msg:
+            response_body['message'] = msg
+
+        return jsonify(response_body)
 
     except Exception as e:
         print(f"[Weekly Prep] Unexpected error: {str(e)}")
@@ -966,6 +923,97 @@ def internal_error(error):
         'error': 'Internal server error',
         'message': 'Something went wrong on our end'
     }), 500
+
+
+# ============================================================
+# WEEKLY PREP — SHARED LOGIC + SCHEDULER
+# ============================================================
+
+def _run_weekly_prep(specific_client_id=None):
+    """
+    Core weekly prep logic — called by both the endpoint and the scheduler.
+
+    Finds clients whose next training week has no steps yet, loads their
+    full context, and asks Bill to populate the week via chat_with_tools.
+
+    Args:
+        specific_client_id: if provided, only process this client.
+    """
+    print(f"[Weekly Prep] Running — client={specific_client_id or 'all'}")
+
+    all_needing = get_clients_needing_weekly_prep()
+
+    if specific_client_id:
+        clients = [c for c in all_needing if c['client_id'] == specific_client_id]
+    else:
+        clients = all_needing
+
+    if not clients:
+        print("[Weekly Prep] All clients already set up — nothing to do")
+        return {'populated': [], 'skipped': [], 'errors': []}
+
+    populated = []
+    errors = []
+
+    for item in clients:
+        cid           = item['client_id']
+        week_id       = item['week_id']
+        session_count = item['session_count']
+
+        try:
+            print(f"[Weekly Prep] Auto-planning {cid} / {week_id} via Bill...")
+
+            context = webhook_handler.load_client_context(cid)
+            temp_session_id, _ = client_context.initialize_session(cid, context)
+            session = client_context.get_session(temp_session_id)
+
+            prompt = (
+                f"It's late Sunday night and this client hasn't set up their training for next week. "
+                f"The upcoming week is {week_id} ({session_count} sessions). "
+                f"Please review their current training block and progress, then populate next week's "
+                f"sessions automatically so everything is ready for them first thing Monday morning. "
+                f"Proceed on the assumption that there are no new injuries unless you can see active "
+                f"contraindications in the loaded context — in which case account for them as normal."
+            )
+
+            response = claude_client.chat_with_tools(prompt, session)
+
+            populated.append({
+                'client_id':     cid,
+                'week_id':       week_id,
+                'session_count': session_count,
+                'status':        'populated',
+                'bill_response': response,
+            })
+            print(f"[Weekly Prep] OK: {cid} / {week_id}")
+
+        except Exception as e:
+            err_msg = str(e)
+            errors.append({'client_id': cid, 'week_id': week_id, 'error': err_msg})
+            print(f"[Weekly Prep] ERROR {cid} / {week_id}: {err_msg}")
+
+    return {'populated': populated, 'skipped': [], 'errors': errors}
+
+
+def _scheduled_weekly_prep():
+    """Scheduler entry point — Sunday 23:00. Wraps _run_weekly_prep with top-level error guard."""
+    try:
+        print("[Scheduler] Sunday auto-prep job starting...")
+        result = _run_weekly_prep()
+        print(
+            f"[Scheduler] Done — "
+            f"{len(result['populated'])} populated, "
+            f"{len(result['errors'])} errors"
+        )
+    except Exception as e:
+        print(f"[Scheduler] Auto-prep job failed: {e}")
+
+
+# Start scheduler (runs in background thread within the Railway process)
+_scheduler = BackgroundScheduler(timezone='UTC')
+_scheduler.add_job(_scheduled_weekly_prep, 'cron', day_of_week='sun', hour=23, minute=0)
+_scheduler.start()
+print("[Scheduler] Weekly prep job scheduled — Sundays 23:00 UTC")
 
 
 # ============================================================
