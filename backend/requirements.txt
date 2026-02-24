@@ -18,5 +18,8 @@ google-auth==2.28.0
 # Webhook validation
 jsonschema==4.23.0
 
+# Scheduler (Sunday auto-prep job)
+APScheduler==3.10.4
+
 # Development/Testing
 pytest==7.4.3
