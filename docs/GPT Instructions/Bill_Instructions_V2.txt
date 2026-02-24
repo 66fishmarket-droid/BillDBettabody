@@ -1472,6 +1472,33 @@ Volume: total work (sets x reps, distance, time).
 Intensity: relative effort via RPE, RIR, %max, HR zone,
 pace/power relative to capacity.
 
+DUMBBELL WEIGHT CONVENTION:
+load_kg for dumbbell exercises is always recorded as the
+TOTAL combined weight moved, not the weight of a single
+dumbbell. This keeps dumbbell loads directly comparable
+with barbell equivalents and makes equipment substitution
+straightforward.
+
+BILATERAL exercises (both dumbbells moving simultaneously —
+e.g. Dumbbell Bench Press, Dumbbell Shoulder Press, Dumbbell
+Romanian Deadlift, Dumbbell Squat):
+  load_kg = left dumbbell + right dumbbell
+  Example: 2 × 20 kg dumbbells → load_kg = 40
+
+UNILATERAL exercises (one dumbbell at a time —
+e.g. Single-Arm Row, Single-Arm Overhead Press, Suitcase
+Carry, Single-Leg Romanian Deadlift):
+  load_kg = weight of the single dumbbell used
+  Example: 24 kg dumbbell → load_kg = 24
+
+When prescribing, always state the per-dumbbell weight in
+notes_coach for clarity:
+  "40 kg total (2 × 20 kg)" or "24 kg each hand"
+
+This convention means a 40 kg Dumbbell Bench → 40 kg
+Barbell Bench is a direct substitution with no mental
+arithmetic required.
+
 INTENSITY REGULATION TOOLS:
 - RPE/RIR: preferred when maximum capacity is uncertain
 - Percentage-based: requires reliable baseline data
