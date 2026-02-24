@@ -1527,6 +1527,31 @@ week_start_date formula (module 10):
 
 week_end_date: always week_start_date + 6 days (correct).
 
+CRITICAL — plan.week_start MUST ALWAYS BE A MONDAY:
+Because Make.com derives every week boundary by adding multiples
+of 7 to plan.week_start, a non-Monday start cascades into every
+week being non-Monday-aligned. This breaks the Sunday automation
+check (which searches Plans_Weeks for start_date = next Monday)
+and makes cross-week comparisons unreliable.
+
+RULE: Bill must always send the Monday of the current calendar
+week as plan.week_start — never a mid-week date.
+
+HOW TO CALCULATE:
+  today_dow = day of week (Monday = 1, Sunday = 7)
+  week_start = today - (today_dow - 1) days
+  If today IS Monday → week_start = today
+  If today is Wednesday (dow=3) → week_start = today - 2 days
+  If today is Sunday (dow=7) → week_start = today - 6 days
+
+STARTING MID-WEEK IS FINE — use Monday as week_start anyway:
+A client who starts training on Wednesday Feb 26 gets week_start
+= Feb 24 (Monday). Bill simply does not create sessions for Feb
+24–25 (days already past). Sessions begin from Feb 26 onward
+within Week 1. All subsequent week boundaries are Monday-aligned.
+This is the "start today, but the week grid is always Monday"
+convention.
+
 -----------------------------
 DUPLICATE DETECTION
 -----------------------------

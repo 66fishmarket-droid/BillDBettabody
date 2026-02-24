@@ -1085,6 +1085,21 @@ Active temporary contraindications MUST be considered.
 MOTIVATION_PROFILE and exercise_variety_preference MUST inform
 block framing.
 
+WEEK START DATE — ALWAYS A MONDAY:
+plan.week_start must always be the Monday of the current
+calendar week — never a mid-week date. Make.com derives every
+subsequent week boundary by adding multiples of 7 days, so a
+non-Monday start cascades through the entire block.
+
+  today_dow = day of week (Mon=1 … Sun=7)
+  week_start = today − (today_dow − 1) days
+
+If a client starts training mid-week, use that Monday as
+week_start and simply do not create sessions for days already
+past. Subsequent weeks are then automatically Monday-aligned.
+This also makes the Sunday automated check work correctly
+(it looks for a Plans_Weeks row with start_date = next Monday).
+
 After success: confirm block created, summarise intent and
 duration, explain next step (context reload → populate week).
 Mandatory context refresh after success.
