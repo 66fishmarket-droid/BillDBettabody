@@ -1179,6 +1179,104 @@ def get_lifetime_stats(client_id):
 
 
 # ============================================================
+# WEEKLY PREP CHECK
+# ============================================================
+
+def get_clients_needing_weekly_prep():
+    """
+    Find (client_id, week_id) pairs where the next upcoming training week
+    has sessions but no Plans_Steps rows yet — i.e. populate_training_week
+    has not been called for that week.
+
+    Called by the Sunday automation endpoint (/admin/weekly-prep) to determine
+    which clients need their week auto-populated.
+
+    Logic:
+      1. Find all upcoming sessions (date >= tomorrow, non-terminal status)
+      2. For each client, anchor on their earliest upcoming week_id
+      3. Collect all session_ids in that week
+      4. Check Plans_Steps for those session_ids
+      5. Return clients where no steps exist yet
+
+    Returns:
+        list[dict]: Each item: {client_id, week_id, session_count}
+                    Empty list if all clients are already set up.
+    """
+    try:
+        tomorrow = (datetime.utcnow() + timedelta(days=1)).strftime('%Y-%m-%d')
+        terminal = {'completed', 'skipped', 'cancelled'}
+
+        sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
+        all_sessions = sessions_ws.get_all_records()
+
+        # Upcoming non-terminal sessions
+        upcoming = [
+            s for s in all_sessions
+            if str(s.get('session_date', '')) >= tomorrow
+            and _effective_session_status(s) not in terminal
+        ]
+
+        # For each client: find the earliest upcoming week_id, collect its session_ids
+        # Sort ascending so the first session we hit per client is their nearest upcoming one
+        upcoming.sort(key=lambda s: str(s.get('session_date', '')))
+
+        client_week = {}  # client_id → {week_id: str, session_ids: list}
+        for s in upcoming:
+            client_id = str(s.get('client_id', '') or '').strip()
+            week_id   = str(s.get('week_id',   '') or '').strip()
+            session_id = str(s.get('session_id', '') or '').strip()
+            if not client_id or not week_id or not session_id:
+                continue
+            if client_id not in client_week:
+                # First (nearest) upcoming week for this client
+                client_week[client_id] = {'week_id': week_id, 'session_ids': []}
+            if client_week[client_id]['week_id'] == week_id:
+                client_week[client_id]['session_ids'].append(session_id)
+
+        if not client_week:
+            logger.info("[Sheets] Weekly prep check: no upcoming sessions found")
+            return []
+
+        # Load all Plans_Steps session_ids in one pass
+        steps_ws = _get_worksheet(SHEET_NAMES['plans_steps'])
+        all_steps = steps_ws.get_all_records()
+        sessions_with_steps = {
+            str(s.get('session_id', ''))
+            for s in all_steps
+            if s.get('session_id')
+        }
+
+        needing_prep = []
+        for client_id, info in client_week.items():
+            week_id     = info['week_id']
+            session_ids = info['session_ids']
+            has_steps   = any(sid in sessions_with_steps for sid in session_ids)
+
+            if has_steps:
+                logger.info(
+                    f"[Sheets] Weekly prep: {client_id} / {week_id} already has steps — skipping"
+                )
+            else:
+                logger.info(
+                    f"[Sheets] Weekly prep: {client_id} / {week_id} "
+                    f"needs population ({len(session_ids)} sessions)"
+                )
+                needing_prep.append({
+                    'client_id':     client_id,
+                    'week_id':       week_id,
+                    'session_count': len(session_ids),
+                })
+
+        return needing_prep
+
+    except RuntimeError:
+        raise
+    except Exception as e:
+        logger.error(f"[Sheets] Error in get_clients_needing_weekly_prep: {e}")
+        raise
+
+
+# ============================================================
 # EXERCISE NAME AUDIT
 # ============================================================
 

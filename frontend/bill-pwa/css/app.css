@@ -968,6 +968,28 @@ p {
   background: var(--bill-primary-dark);
 }
 
+.chat-bottom-back-btn {
+  width: 46px;
+  height: 46px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: var(--bill-text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.chat-bottom-back-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--bill-text-light);
+}
+
 .chat-send-btn:active {
   transform: scale(0.93);
 }
