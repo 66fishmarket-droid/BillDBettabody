@@ -125,6 +125,8 @@ def cmd_append(filepath):
 
     appended = 0
     skipped  = 0
+    rows_to_write = []
+
     for ex in new_exercises:
         name = str(ex.get('exercise_name', '')).strip()
         if name.lower() in existing_names:
@@ -144,10 +146,14 @@ def cmd_append(filepath):
             else:
                 row.append(str(ex.get(col, '') or ''))
 
-        ws.append_row(row, value_input_option='USER_ENTERED')
-        print(f"  ADDED: {name}")
+        rows_to_write.append(row)
+        print(f"  QUEUED: {name}")
         existing_names.add(name.lower())
         appended += 1
+
+    # Write all rows in a single API call to avoid gspread table-detection drift
+    if rows_to_write:
+        ws.append_rows(rows_to_write, value_input_option='USER_ENTERED')
 
     print(f"\nDone — {appended} added, {skipped} skipped (already existed).")
 
