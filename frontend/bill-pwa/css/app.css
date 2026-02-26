@@ -753,6 +753,53 @@ p {
   margin: 0;
 }
 
+/* ─── Video Carousel ──────────────────────────────────────── */
+.video-carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.vid-nav-btn {
+  background: none;
+  border: 1px solid var(--bill-primary);
+  color: var(--bill-primary-light);
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.vid-nav-btn:hover {
+  background: rgba(210, 105, 30, 0.15);
+}
+
+.vid-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.vid-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(210, 105, 30, 0.3);
+  transition: background 0.2s;
+}
+
+.vid-dot.active {
+  background: var(--bill-primary);
+}
+
 /* ============================================
    Chat UI
    ============================================ */

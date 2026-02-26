@@ -346,6 +346,18 @@ class SessionActive {
 
     const sections = [];
 
+    // Video embed / carousel
+    const urls = (step.video_urls && step.video_urls.length) ? step.video_urls
+               : (step.video_url ? [step.video_url] : []);
+    if (urls.length > 1) {
+      sections.push(this._renderVideoCarousel(urls));
+    } else if (urls.length === 1) {
+      const embedUrl = this._youtubeEmbedUrl(urls[0]);
+      if (embedUrl) {
+        sections.push(`<div class="ex-modal-section"><div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div></div>`);
+      }
+    }
+
     if (step.equipment) {
       sections.push(`<div class="ex-modal-section"><h4>Equipment</h4><p>${this.esc(step.equipment)}</p></div>`);
     }
@@ -439,6 +451,31 @@ class SessionActive {
     return d.innerHTML;
   }
 
+  _youtubeEmbedUrl(url) {
+    if (!url) return null;
+    const match = String(url).match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return match ? `https://www.youtube.com/embed/${match[1]}` : null;
+  }
+
+  _renderVideoCarousel(urls) {
+    const embedUrl = this._youtubeEmbedUrl(urls[0]);
+    const firstVideo = embedUrl
+      ? `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+      : `<p><a href="${this.esc(urls[0])}" target="_blank" rel="noopener" style="color:var(--bill-primary-light);">▶ Watch Video</a></p>`;
+    const dots = urls.map((_, i) => `<span class="vid-dot${i === 0 ? ' active' : ''}"></span>`).join('');
+    return `
+      <div class="ex-modal-section">
+        <div class="video-carousel" data-urls='${JSON.stringify(urls).replace(/'/g, '&#39;')}' data-index="0">
+          <div class="video-wrap">${firstVideo}</div>
+          <div class="video-carousel-nav">
+            <button class="vid-nav-btn" data-vid-nav="prev">&#8249;</button>
+            <div class="vid-dots">${dots}</div>
+            <button class="vid-nav-btn" data-vid-nav="next">&#8250;</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
   // Format patterns for display with · separators, agnostic of input format.
   // "2010"     → "2 · 0 · 1 · 0"  (compact digits — each char is one value)
   // "2-0-1-0"  → "2 · 0 · 1 · 0"  (hyphen-separated)
@@ -499,6 +536,28 @@ class SessionActive {
     document.getElementById('ex-modal-close').addEventListener('click', () => this.closeExerciseModal());
     document.getElementById('ex-modal').addEventListener('click', e => {
       if (e.target === e.currentTarget) this.closeExerciseModal();
+    });
+
+    // Video carousel navigation (delegated)
+    document.getElementById('ex-modal-body').addEventListener('click', e => {
+      const btn = e.target.closest('[data-vid-nav]');
+      if (!btn) return;
+      const carousel = btn.closest('.video-carousel');
+      if (!carousel) return;
+      const urls = JSON.parse(carousel.dataset.urls);
+      let idx = parseInt(carousel.dataset.index, 10);
+      idx = btn.dataset.vidNav === 'prev'
+        ? (idx - 1 + urls.length) % urls.length
+        : (idx + 1) % urls.length;
+      carousel.dataset.index = idx;
+      const embedUrl = this._youtubeEmbedUrl(urls[idx]);
+      const wrap = carousel.querySelector('.video-wrap');
+      if (embedUrl) {
+        wrap.innerHTML = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+      } else {
+        wrap.innerHTML = `<p><a href="${this.esc(urls[idx])}" target="_blank" rel="noopener" style="color:var(--bill-primary-light);">▶ Watch Video</a></p>`;
+      }
+      carousel.querySelectorAll('.vid-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
     });
 
     // Steps container: Add Set + metric change + details modal (event delegation)

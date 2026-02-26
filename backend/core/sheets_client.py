@@ -755,6 +755,12 @@ def get_session_detail(client_id, session_id):
                             # Only fill if not already set on the step
                             if not step.get(field):
                                 step[field] = lib_entry.get(field, '')
+                        # Parse multi-URL video_url (newline-separated in Google Sheets)
+                        raw_urls = step.get('video_url', '') or ''
+                        video_urls = [u.strip() for u in raw_urls.splitlines() if u.strip()]
+                        step['video_urls'] = video_urls
+                        if video_urls:
+                            step['video_url'] = video_urls[0]  # first URL for backward compat
                         joined += 1
 
                 logger.info(
