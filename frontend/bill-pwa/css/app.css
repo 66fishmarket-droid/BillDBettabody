@@ -753,6 +753,113 @@ p {
   margin: 0;
 }
 
+/* ─── Help Button ────────────────────────────────────────── */
+.help-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--bill-primary);
+  background: none;
+  color: var(--bill-primary-light);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.help-btn:hover {
+  background: rgba(210, 105, 30, 0.12);
+}
+
+/* ─── Help Modal FAQ Accordion ───────────────────────────── */
+.help-faq-list {
+  padding-top: 0;
+}
+
+.help-faq-item {
+  border-bottom: 1px solid rgba(210, 105, 30, 0.15);
+}
+
+.help-faq-item:last-child {
+  border-bottom: none;
+}
+
+.help-faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--bill-text-light);
+  font-size: 0.9375rem;
+  font-family: var(--font-body);
+  padding: var(--space-md) 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+  line-height: 1.4;
+}
+
+.help-faq-q:hover {
+  color: var(--bill-accent);
+}
+
+.help-faq-chevron {
+  color: var(--bill-primary-light);
+  font-size: 1.375rem;
+  line-height: 1;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.help-faq-item.open .help-faq-chevron {
+  transform: rotate(90deg);
+}
+
+.help-faq-a {
+  display: none;
+  padding-bottom: var(--space-md);
+}
+
+.help-faq-item.open .help-faq-a {
+  display: block;
+}
+
+.help-faq-a p {
+  font-size: 0.875rem;
+  color: var(--bill-text-muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ─── Help Modal Footer ──────────────────────────────────── */
+.help-modal-footer {
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid rgba(210, 105, 30, 0.2);
+  flex-shrink: 0;
+}
+
+.help-ask-bill-btn {
+  display: block;
+  text-align: center;
+  background: var(--bill-primary);
+  color: #fff;
+  padding: 0.65rem var(--space-lg);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: var(--font-body);
+}
+
+.help-ask-bill-btn:hover {
+  opacity: 0.9;
+}
+
 /* ─── Video Carousel ──────────────────────────────────────── */
 .video-carousel-nav {
   display: flex;

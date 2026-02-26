@@ -30,10 +30,11 @@
         <p class="text-center text-muted" id="today-date"></p>
       </header>
 
-      <!-- Talk to Bill Button -->
-      <button class="btn btn-secondary btn-block mb-3" id="chat-btn">
-        💬 Talk to Bill
-      </button>
+      <!-- Talk to Bill + Help -->
+      <div class="flex items-center gap-2 mb-3">
+        <button class="btn btn-secondary flex-1" id="chat-btn">💬 Talk to Bill</button>
+        <button class="help-btn" onclick="helpModal.open('dashboard')" aria-label="How to use this page">?</button>
+      </div>
 
       <!-- Client Summary Card -->
       <div class="card mb-3">
@@ -107,5 +108,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/dashboard.js"></script>
+  <script src="/js/help-content.js"></script>
+  <script src="/js/help-modal.js"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@
         <div class="flex items-center justify-between">
           <button class="btn btn-secondary" id="back-btn">← Back</button>
           <h1 style="font-size:1.25rem;margin:0;">This Week</h1>
-          <div style="width:80px"></div>
+          <button class="help-btn" onclick="helpModal.open('week')" aria-label="How to use this page">?</button>
         </div>
         <p class="text-muted text-center mt-2" id="week-subtitle" style="font-size:0.875rem;"></p>
       </header>
@@ -41,5 +41,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/week.js"></script>
+  <script src="/js/help-content.js"></script>
+  <script src="/js/help-modal.js"></script>
 </body>
 </html>
