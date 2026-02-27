@@ -19,7 +19,7 @@
         <div class="flex items-center justify-between">
           <button class="btn btn-secondary" id="back-btn">← Back</button>
           <h1 style="font-size:1.25rem;margin:0;">Your Progress</h1>
-          <div style="width:80px"></div><!-- spacer -->
+          <button class="help-btn" onclick="helpModal.open('progress')" aria-label="How to use this page">?</button>
         </div>
       </header>
 
@@ -48,5 +48,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/progress.js"></script>
+  <script src="/js/help-content.js"></script>
+  <script src="/js/help-modal.js"></script>
 </body>
 </html>

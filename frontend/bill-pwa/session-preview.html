@@ -19,7 +19,10 @@
       <header class="mb-4">
         <div class="flex items-center justify-between">
           <button class="btn btn-secondary" id="back-btn">← Back</button>
-          <button class="btn btn-secondary" id="ask-bill-btn">💬 Ask Bill</button>
+          <div class="flex items-center gap-2">
+            <button class="help-btn" onclick="helpModal.open('session-preview')" aria-label="How to use this page">?</button>
+            <button class="btn btn-secondary" id="ask-bill-btn">💬 Ask Bill</button>
+          </div>
         </div>
       </header>
 
@@ -122,5 +125,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/session-preview.js"></script>
+  <script src="/js/help-content.js"></script>
+  <script src="/js/help-modal.js"></script>
 </body>
 </html>

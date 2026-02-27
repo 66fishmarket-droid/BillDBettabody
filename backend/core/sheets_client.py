@@ -37,7 +37,7 @@ SHEET_NAMES = {
     'plans_steps':        'Plans_Steps',
     'exercise_library':   'Exercises_Library',
     'plans_blocks':       'Plans_Blocks',
-    'metric_definitions': 'Metric_definitions',
+    'metric_definitions': 'Metric_Definitions',
     'exercise_metric_map':'Exercise_Metric_Map',
 }
 
@@ -755,6 +755,12 @@ def get_session_detail(client_id, session_id):
                             # Only fill if not already set on the step
                             if not step.get(field):
                                 step[field] = lib_entry.get(field, '')
+                        # Parse multi-URL video_url (newline-separated in Google Sheets)
+                        raw_urls = step.get('video_url', '') or ''
+                        video_urls = [u.strip() for u in raw_urls.splitlines() if u.strip()]
+                        step['video_urls'] = video_urls
+                        if video_urls:
+                            step['video_url'] = video_urls[0]  # first URL for backward compat
                         joined += 1
 
                 logger.info(
@@ -789,20 +795,36 @@ def get_session_detail(client_id, session_id):
                         family_to_metric_key[family] = key
 
                 # Build exercise_name → {metric_key, context_key} from Exercise_Metric_Map
-                # Sorted by priority ascending so priority=1 wins; one entry per exercise name.
-                emm_ws   = _get_worksheet(SHEET_NAMES['exercise_metric_map'])
-                emm_rows = sorted(
-                    [r for r in emm_ws.get_all_records()
-                     if str(r.get('enabled', '')).strip().upper() == 'TRUE'],
-                    key=lambda r: int(r.get('priority', 999) or 999)
-                )
+                # metric_key: always taken from priority=1 entry.
+                # metric_context_key: only auto-assigned for exercises with a SINGLE
+                #   enabled entry (strength exercises with one canonical context, e.g.
+                #   squat_barbell). For exercises with multiple entries (cardio exercises
+                #   with distance variants — running_5k, running_10k, etc.) we leave it
+                #   blank so the explicitly-set value on Plans_Steps is preserved.
+                #   Bill writes the correct context_key (e.g. "5k") when calling
+                #   populate_training_week for a specific time-trial step. General
+                #   steady-state cardio steps intentionally have no context_key.
+                emm_ws  = _get_worksheet(SHEET_NAMES['exercise_metric_map'])
+                emm_all = [r for r in emm_ws.get_all_records()
+                           if str(r.get('enabled', '')).strip().upper() == 'TRUE']
+
+                # Count enabled rows per exercise to detect multi-context exercises
+                emm_counts = {}
+                for row in emm_all:
+                    n = str(row.get('exercise_name', '') or '').strip().lower()
+                    if n:
+                        emm_counts[n] = emm_counts.get(n, 0) + 1
+
+                emm_rows = sorted(emm_all, key=lambda r: int(r.get('priority', 999) or 999))
                 exercise_to_metric = {}
                 for row in emm_rows:
                     name = str(row.get('exercise_name', '') or '').strip().lower()
                     if name and name not in exercise_to_metric:
+                        multi_context = emm_counts.get(name, 1) > 1
                         exercise_to_metric[name] = {
-                            'metric_key':         str(row.get('metric_key',   '') or '').strip(),
-                            'metric_context_key':  str(row.get('context_key',  '') or '').strip(),
+                            'metric_key':        str(row.get('metric_key',  '') or '').strip(),
+                            # Leave blank for multi-context (cardio) exercises
+                            'metric_context_key': '' if multi_context else str(row.get('context_key', '') or '').strip(),
                         }
 
                 # Apply to each step

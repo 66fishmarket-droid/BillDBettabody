@@ -191,20 +191,26 @@ class SessionPreview {
 
     const sections = [];
 
-    // YouTube embed or plain link
-    const embedUrl = this._youtubeEmbedUrl(step.video_url);
-    if (embedUrl) {
-      sections.push(`
-        <div class="ex-modal-section">
-          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;">
-            <iframe src="${embedUrl}"
-              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen></iframe>
-          </div>
-        </div>`);
-    } else if (step.video_url) {
-      sections.push(`<div class="ex-modal-section"><h4>Video</h4><p><a href="${this.esc(step.video_url)}" target="_blank" rel="noopener" style="color:var(--bill-primary-light);">▶ Watch Video</a></p></div>`);
+    // YouTube embed or plain link — supports multiple URLs (newline-separated in Sheets)
+    const urls = (step.video_urls && step.video_urls.length) ? step.video_urls
+               : (step.video_url ? [step.video_url] : []);
+    if (urls.length > 1) {
+      sections.push(this._renderVideoCarousel(urls));
+    } else if (urls.length === 1) {
+      const embedUrl = this._youtubeEmbedUrl(urls[0]);
+      if (embedUrl) {
+        sections.push(`
+          <div class="ex-modal-section">
+            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;">
+              <iframe src="${embedUrl}"
+                style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+            </div>
+          </div>`);
+      } else {
+        sections.push(`<div class="ex-modal-section"><h4>Video</h4><p><a href="${this.esc(urls[0])}" target="_blank" rel="noopener" style="color:var(--bill-primary-light);">▶ Watch Video</a></p></div>`);
+      }
     }
 
     // Prescription — always show
@@ -255,6 +261,25 @@ class SessionPreview {
     return match ? `https://www.youtube.com/embed/${match[1]}` : null;
   }
 
+  _renderVideoCarousel(urls) {
+    const embedUrl = this._youtubeEmbedUrl(urls[0]);
+    const firstVideo = embedUrl
+      ? `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`
+      : `<p><a href="${this.esc(urls[0])}" target="_blank" rel="noopener" style="color:var(--bill-primary-light);">▶ Watch Video</a></p>`;
+    const dots = urls.map((_, i) => `<span class="vid-dot${i === 0 ? ' active' : ''}"></span>`).join('');
+    return `
+      <div class="ex-modal-section">
+        <div class="video-carousel" data-urls='${JSON.stringify(urls).replace(/'/g, '&#39;')}' data-index="0">
+          <div class="video-wrap">${firstVideo}</div>
+          <div class="video-carousel-nav">
+            <button class="vid-nav-btn" data-vid-nav="prev">&#8249;</button>
+            <div class="vid-dots">${dots}</div>
+            <button class="vid-nav-btn" data-vid-nav="next">&#8250;</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
   esc(str) {
     if (!str) return '';
     return String(str)
@@ -289,6 +314,28 @@ class SessionPreview {
     document.getElementById('ex-modal-close').addEventListener('click', () => this.closeExerciseModal());
     document.getElementById('ex-modal').addEventListener('click', e => {
       if (e.target === document.getElementById('ex-modal')) this.closeExerciseModal();
+    });
+
+    // Video carousel navigation (delegated)
+    document.getElementById('ex-modal-body').addEventListener('click', e => {
+      const btn = e.target.closest('[data-vid-nav]');
+      if (!btn) return;
+      const carousel = btn.closest('.video-carousel');
+      if (!carousel) return;
+      const urls = JSON.parse(carousel.dataset.urls);
+      let idx = parseInt(carousel.dataset.index, 10);
+      idx = btn.dataset.vidNav === 'prev'
+        ? (idx - 1 + urls.length) % urls.length
+        : (idx + 1) % urls.length;
+      carousel.dataset.index = idx;
+      const embedUrl = this._youtubeEmbedUrl(urls[idx]);
+      const wrap = carousel.querySelector('.video-wrap');
+      if (embedUrl) {
+        wrap.innerHTML = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
+      } else {
+        wrap.innerHTML = `<p><a href="${this.esc(urls[idx])}" target="_blank" rel="noopener" style="color:var(--bill-primary-light);">▶ Watch Video</a></p>`;
+      }
+      carousel.querySelectorAll('.vid-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
     });
   }
 
