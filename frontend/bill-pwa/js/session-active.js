@@ -155,15 +155,14 @@ class SessionActive {
   }
 
   renderInfoButtons(step, idx) {
-    const hasVideo   = !!step.video_url;
+    const hasVideo   = !!(step.video_url || (step.video_urls && step.video_urls.length));
     const hasDetails = !!(step.exercise_description_long || step.safety_notes || step.common_mistakes
                           || step.regression || step.progression || step.equipment);
     if (!hasVideo && !hasDetails) return '';
 
     return `
       <div class="exercise-info-btns">
-        ${hasVideo   ? `<a href="${this.esc(step.video_url)}" target="_blank" rel="noopener" class="exercise-info-btn">▶ Watch</a>` : ''}
-        ${hasDetails ? `<button class="exercise-info-btn details-btn" data-step="${idx}">📖 Details</button>` : ''}
+        <button class="exercise-info-btn details-btn" data-step="${idx}">📋 Extra Details</button>
       </div>
     `;
   }
