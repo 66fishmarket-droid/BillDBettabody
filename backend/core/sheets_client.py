@@ -37,7 +37,7 @@ SHEET_NAMES = {
     'plans_steps':        'Plans_Steps',
     'exercise_library':   'Exercises_Library',
     'plans_blocks':       'Plans_Blocks',
-    'metric_definitions': 'Metric_definitions',
+    'metric_definitions': 'Metric_Definitions',
     'exercise_metric_map':'Exercise_Metric_Map',
 }
 
