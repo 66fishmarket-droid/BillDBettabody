@@ -621,9 +621,10 @@ class SessionActive {
 
       const update = { step_id: step.step_id };
 
-      // Include metric keys so Plans_Steps is complete for Exercise Bests matching
+      // Include metric keys + direction so Plans_Steps is self-contained for Exercise Bests matching
       if (step.metric_key)         update.metric_key         = step.metric_key;
       if (step.metric_context_key) update.metric_context_key = step.metric_context_key;
+      if (step.better_direction)   update.better_direction   = step.better_direction;
 
       const metricSelect = card.querySelector('.exercise-metric-select');
       const metric       = metricSelect ? metricSelect.value : null;

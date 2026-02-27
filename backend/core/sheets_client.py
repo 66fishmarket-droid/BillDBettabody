@@ -783,16 +783,20 @@ def get_session_detail(client_id, session_id):
         # ----------------------------------------------------------
         if session_steps:
             try:
-                # Build metric_family → metric_key from Metric_definitions
-                family_to_metric_key = {}
+                # Build metric_family → metric_key and metric_key → better_direction
+                # from Metric_definitions in a single pass.
+                family_to_metric_key      = {}
+                metric_key_to_better_dir  = {}
                 md_ws = _get_worksheet(SHEET_NAMES['metric_definitions'])
                 for row in md_ws.get_all_records():
-                    if str(row.get('is_default_for_family', '')).strip().upper() != 'TRUE':
-                        continue
-                    family = str(row.get('metric_family', '') or '').strip().lower()
-                    key    = str(row.get('metric_key',    '') or '').strip()
-                    if family and key and family not in family_to_metric_key:
-                        family_to_metric_key[family] = key
+                    key    = str(row.get('metric_key',        '') or '').strip()
+                    family = str(row.get('metric_family',     '') or '').strip().lower()
+                    bdir   = str(row.get('better_direction',  '') or '').strip().lower() or 'higher'
+                    if key:
+                        metric_key_to_better_dir[key] = bdir
+                    if str(row.get('is_default_for_family', '')).strip().upper() == 'TRUE':
+                        if family and key and family not in family_to_metric_key:
+                            family_to_metric_key[family] = key
 
                 # Build exercise_name → {metric_key, context_key} from Exercise_Metric_Map
                 # metric_key: always taken from priority=1 entry.
@@ -845,6 +849,10 @@ def get_session_detail(client_id, session_id):
                     # metric_context_key: Exercise_Metric_Map only
                     if not step.get('metric_context_key') and emm_entry:
                         step['metric_context_key'] = emm_entry['metric_context_key']
+
+                    # better_direction: resolved from Metric_Definitions via metric_key
+                    if not step.get('better_direction') and step.get('metric_key'):
+                        step['better_direction'] = metric_key_to_better_dir.get(step['metric_key'], 'higher')
 
                     if step.get('metric_key'):
                         metric_joined += 1
