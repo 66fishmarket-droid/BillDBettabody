@@ -176,7 +176,7 @@ class SessionActive {
     if (sets > 0) {
       let line = `${sets} ${sets === 1 ? 'set' : 'sets'}`;
       if (step.reps)                    line += ` × ${step.reps} reps`;
-      if (parseFloat(step.load_kg) > 0) line += ` @ ${step.load_kg}kg`;
+      if (parseFloat(step.load_kg) > 0) line += ` @ ${this.formatLoad(step.load_kg, step)}`;
       lines.push(line);
     }
 
@@ -189,9 +189,9 @@ class SessionActive {
 
     if (step.pattern_type) {
       const p = [`Pattern: ${this.esc(step.pattern_type)}`];
-      if (parseFloat(step.load_start_kg) > 0)    p.push(`Start: ${step.load_start_kg}kg`);
+      if (parseFloat(step.load_start_kg) > 0)    p.push(`Start: ${this.formatLoad(step.load_start_kg, step)}`);
       if (parseFloat(step.load_increment_kg) > 0) p.push(`+${step.load_increment_kg}kg/set`);
-      if (parseFloat(step.load_peak_kg) > 0)      p.push(`Peak: ${step.load_peak_kg}kg`);
+      if (parseFloat(step.load_peak_kg) > 0)      p.push(`Peak: ${this.formatLoad(step.load_peak_kg, step)}`);
       lines.push(p.join('  •  '));
     }
 
@@ -210,7 +210,7 @@ class SessionActive {
     if (sets > 0) {
       let line = `${sets} ${sets === 1 ? 'set' : 'sets'}`;
       if (step.reps)                    line += ` × ${step.reps} reps`;
-      if (parseFloat(step.load_kg) > 0) line += ` @ ${step.load_kg}kg`;
+      if (parseFloat(step.load_kg) > 0) line += ` @ ${this.formatLoad(step.load_kg, step)}`;
       lines.push(line);
     } else if (step.duration_value) {
       lines.push(`${step.duration_value} ${this.esc(step.duration_type) || 'min'}`);
@@ -441,6 +441,21 @@ class SessionActive {
     ].map(o =>
       `<option value="${o.value}" ${o.value === defaultMetric ? 'selected' : ''}>${o.label}</option>`
     ).join('');
+  }
+
+  isDualDumbbell(step) {
+    return String(step.special_flags || '').toLowerCase().includes('dual_dumbbell');
+  }
+
+  // Returns "30kg (15kg per dumbbell)" for dual-dumbbell exercises, "30kg" otherwise.
+  formatLoad(kg, step) {
+    const total = parseFloat(kg);
+    if (!total) return '';
+    if (this.isDualDumbbell(step)) {
+      const perSide = total % 2 === 0 ? total / 2 : (total / 2).toFixed(1);
+      return `${total}kg (${perSide}kg per dumbbell)`;
+    }
+    return `${total}kg`;
   }
 
   esc(str) {

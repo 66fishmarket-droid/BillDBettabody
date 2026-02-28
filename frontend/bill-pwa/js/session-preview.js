@@ -157,7 +157,7 @@ class SessionPreview {
     }
 
     if (step.load_kg) {
-      parts.push(`${step.load_kg}kg`);
+      parts.push(this.formatLoad(step.load_kg, step));
     }
 
     if (step.target_value && !String(step.target_value).includes('undefined')) {
@@ -216,7 +216,7 @@ class SessionPreview {
     // Prescription — always show
     const prescParts = [];
     if (step.sets && step.reps) prescParts.push(`${step.sets} sets × ${step.reps} reps`);
-    if (step.load_kg)           prescParts.push(`Load: ${step.load_kg} kg`);
+    if (step.load_kg)           prescParts.push(`Load: ${this.formatLoad(step.load_kg, step)}`);
     if (step.tempo_pattern)     prescParts.push(`Tempo: ${step.tempo_pattern}`);
     if (step.rest_seconds)      prescParts.push(`Rest: ${step.rest_seconds}s`);
     if (step.notes_coach)       prescParts.push(`Coach: ${step.notes_coach}`);
@@ -278,6 +278,20 @@ class SessionPreview {
           </div>
         </div>
       </div>`;
+  }
+
+  isDualDumbbell(step) {
+    return String(step.special_flags || '').toLowerCase().includes('dual_dumbbell');
+  }
+
+  formatLoad(kg, step) {
+    const total = parseFloat(kg);
+    if (!total) return '';
+    if (this.isDualDumbbell(step)) {
+      const perSide = total % 2 === 0 ? total / 2 : (total / 2).toFixed(1);
+      return `${total}kg (${perSide}kg per dumbbell)`;
+    }
+    return `${total}kg`;
   }
 
   esc(str) {
