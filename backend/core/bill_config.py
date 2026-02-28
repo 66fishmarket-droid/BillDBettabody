@@ -93,7 +93,8 @@ READ_WEBHOOKS = [
 
 # Developer-only webhooks (require authentication)
 DEVELOPER_ONLY_WEBHOOKS = [
-    'issue_log_updater',
+    # issue_log_updater intentionally NOT listed here — users should be able
+    # to raise feature requests and report problems through Bill in chat.
 ]
 
 
