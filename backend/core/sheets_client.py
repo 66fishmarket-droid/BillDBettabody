@@ -702,7 +702,7 @@ def get_session_detail(client_id, session_id):
         _LIB_FIELDS = (
             'video_url', 'exercise_description_short', 'exercise_description_long',
             'coaching_cues_short', 'equipment', 'safety_notes', 'common_mistakes',
-            'regression', 'progression', 'metric_family_default',
+            'regression', 'progression', 'metric_family_default', 'special_flags',
         )
 
         if session_steps:
