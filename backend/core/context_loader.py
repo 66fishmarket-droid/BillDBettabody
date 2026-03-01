@@ -26,6 +26,10 @@ Cache invalidation: Different operation types create separate caches.
 import os
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+import requests
+from timezonefinder import TimezoneFinder
+
+_tf = TimezoneFinder()
 from config import Config
 from core.bill_config import OperatingMode, ClientState
 
@@ -264,6 +268,56 @@ def load_bill_instructions(mode, client_state, operation_type='chat'):
     return "\n".join(instructions_parts)
 
 
+def _resolve_timezone(home_location, session):
+    """
+    Infer IANA timezone from a free-text home_location (e.g. "Manchester" or
+    "Sydney, Australia") using Nominatim geocoding + timezonefinder.
+
+    Result is cached in session['_resolved_timezone'] so geocoding only
+    happens once per session.
+
+    Returns a ZoneInfo object, falling back to UTC on any failure.
+    """
+    # Return cached result if available
+    cached = session.get('_resolved_timezone')
+    if cached:
+        try:
+            return ZoneInfo(cached)
+        except ZoneInfoNotFoundError:
+            pass
+
+    if not home_location:
+        return timezone.utc
+
+    try:
+        resp = requests.get(
+            'https://nominatim.openstreetmap.org/search',
+            params={'q': home_location, 'format': 'json', 'limit': 1},
+            headers={'User-Agent': 'BillDBettabody/1.0'},
+            timeout=5,
+        )
+        results = resp.json()
+        if not results:
+            print(f"[Context Loader] Nominatim: no results for '{home_location}' — using UTC")
+            return timezone.utc
+
+        lat = float(results[0]['lat'])
+        lon = float(results[0]['lon'])
+        iana_tz = _tf.timezone_at(lat=lat, lng=lon)
+
+        if not iana_tz:
+            print(f"[Context Loader] timezonefinder: no timezone at ({lat},{lon}) — using UTC")
+            return timezone.utc
+
+        print(f"[Context Loader] Resolved '{home_location}' -> {iana_tz}")
+        session['_resolved_timezone'] = iana_tz
+        return ZoneInfo(iana_tz)
+
+    except Exception as e:
+        print(f"[Context Loader] Timezone resolution failed for '{home_location}': {e} — using UTC")
+        return timezone.utc
+
+
 def build_client_context_text(session):
     """
     Build client context section as text for Claude's system prompt.
@@ -295,17 +349,14 @@ def build_client_context_text(session):
 
     # CRITICAL: Always inject today's date so Bill calculates session_dates correctly.
     # Without this, Bill uses stale/hallucinated dates when calling populate_training_week.
-    # Use the client's local timezone — UTC causes off-by-one errors for non-UTC clients.
-    client_tz_str = context.get('client_profile', {}).get('timezone', '')
-    try:
-        client_tz = ZoneInfo(client_tz_str) if client_tz_str else timezone.utc
-    except ZoneInfoNotFoundError:
-        print(f"[Context Loader] WARNING: Unknown timezone '{client_tz_str}' — falling back to UTC")
-        client_tz = timezone.utc
+    # Infer timezone from home_location (e.g. "Manchester") — more reliable than a stored
+    # timezone string, and avoids UTC off-by-one errors for non-UTC clients.
+    home_location = context.get('client_profile', {}).get('home_location', '')
+    client_tz = _resolve_timezone(home_location, session)
     now_local = datetime.now(tz=client_tz)
     today_str = now_local.strftime('%Y-%m-%d')
     day_name = now_local.strftime('%A')  # e.g. "Sunday"
-    tz_label = client_tz_str if client_tz_str else 'UTC'
+    tz_label = session.get('_resolved_timezone', 'UTC')
     parts.append("=" * 60)
     parts.append(f"TODAY'S DATE: {today_str} ({day_name}) [{tz_label}]  ← USE THIS FOR ALL DATE CALCULATIONS")
     parts.append("All session_date values you generate must be >= this date unless explicitly editing historical data.")
