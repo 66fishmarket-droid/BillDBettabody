@@ -21,5 +21,9 @@ jsonschema==4.23.0
 # Scheduler (Sunday auto-prep job)
 APScheduler==3.10.4
 
+# Timezone resolution from home_location
+timezonefinder==8.2.1
+tzdata==2025.3  # IANA timezone database (required on Windows; harmless on Linux/Mac)
+
 # Development/Testing
 pytest==7.4.3
