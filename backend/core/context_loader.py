@@ -24,7 +24,8 @@ Cache invalidation: Different operation types create separate caches.
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from config import Config
 from core.bill_config import OperatingMode, ClientState
 
@@ -294,9 +295,19 @@ def build_client_context_text(session):
 
     # CRITICAL: Always inject today's date so Bill calculates session_dates correctly.
     # Without this, Bill uses stale/hallucinated dates when calling populate_training_week.
-    today_str = datetime.utcnow().strftime('%Y-%m-%d')
+    # Use the client's local timezone — UTC causes off-by-one errors for non-UTC clients.
+    client_tz_str = context.get('client_profile', {}).get('timezone', '')
+    try:
+        client_tz = ZoneInfo(client_tz_str) if client_tz_str else timezone.utc
+    except ZoneInfoNotFoundError:
+        print(f"[Context Loader] WARNING: Unknown timezone '{client_tz_str}' — falling back to UTC")
+        client_tz = timezone.utc
+    now_local = datetime.now(tz=client_tz)
+    today_str = now_local.strftime('%Y-%m-%d')
+    day_name = now_local.strftime('%A')  # e.g. "Sunday"
+    tz_label = client_tz_str if client_tz_str else 'UTC'
     parts.append("=" * 60)
-    parts.append(f"TODAY'S DATE: {today_str}  ← USE THIS FOR ALL DATE CALCULATIONS")
+    parts.append(f"TODAY'S DATE: {today_str} ({day_name}) [{tz_label}]  ← USE THIS FOR ALL DATE CALCULATIONS")
     parts.append("All session_date values you generate must be >= this date unless explicitly editing historical data.")
     parts.append("=" * 60)
     parts.append("CURRENT CLIENT CONTEXT")
