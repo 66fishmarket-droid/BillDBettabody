@@ -1233,9 +1233,9 @@ def get_clients_needing_weekly_prep():
                     Empty list if all clients are already set up.
     """
     try:
-        # Anchor to the start of the current ISO week (Monday) so that:
-        #  - mid-week manual triggers include this week's sessions
-        #  - last week's already-populated sessions are excluded
+        # Anchor to this Monday so last week's completed sessions are excluded.
+        # Also include sessions with a blank session_date — these are always
+        # unpopulated (Bill fills in the date as part of populate_training_week).
         today = datetime.utcnow()
         this_monday = (today - timedelta(days=today.weekday())).strftime('%Y-%m-%d')
         terminal = {'completed', 'skipped', 'cancelled'}
@@ -1243,11 +1243,14 @@ def get_clients_needing_weekly_prep():
         sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
         all_sessions = sessions_ws.get_all_records()
 
-        # Non-terminal sessions from this Monday onwards
+        # Non-terminal sessions from this week onwards, plus any with no date yet
         upcoming = [
             s for s in all_sessions
-            if str(s.get('session_date', '')) >= this_monday
-            and _effective_session_status(s) not in terminal
+            if _effective_session_status(s) not in terminal
+            and (
+                not str(s.get('session_date', '') or '').strip()
+                or str(s.get('session_date', '')) >= this_monday
+            )
         ]
 
         # For each client: find the earliest upcoming week_id, collect its session_ids
