@@ -32,6 +32,79 @@ class SessionActive {
     this.bindEvents();
   }
 
+  // ─── Pattern set builder ──────────────────────────────────────────────────
+
+  // Computes per-set {load, reps, rpe} from pattern fields.
+  // Returns an array with length == step.sets, ready for renderSetRow.
+  buildPatternSets(step) {
+    const pt        = (step.pattern_type || '').toUpperCase();
+    const loadStart = parseFloat(step.load_start_kg)    || 0;
+    const loadInc   = parseFloat(step.load_increment_kg) || 0;
+    const loadPeak  = parseFloat(step.load_peak_kg)     || 0;
+    const baseLoad  = parseFloat(step.load_kg)          || 0;
+    const n         = Math.max(parseInt(step.sets, 10) || 1, 1);
+    const baseReps  = step.reps  ? String(step.reps)  : '';
+    const baseRpe   = step.target_value ? String(step.target_value) : '';
+
+    const repsArr = step.reps_pattern ? step.reps_pattern.split(',').map(s => s.trim()) : [];
+    const rpeArr  = step.rpe_pattern  ? step.rpe_pattern.split(',').map(s => s.trim()) : [];
+    const getReps = i => repsArr[i] || baseReps;
+    const getRpe  = i => rpeArr[i]  || baseRpe;
+
+    const sets = [];
+
+    if (!pt || pt === 'STRENGTH_FLAT') {
+      const load = loadStart || baseLoad;
+      for (let i = 0; i < n; i++)
+        sets.push({ load, reps: getReps(i), rpe: getRpe(i) });
+
+    } else if (pt === 'STRENGTH_RAMP_TO_TARGET' || pt === 'STRENGTH_WARMUP_PLUS_FLAT_WORK') {
+      let load = loadStart || baseLoad;
+      for (let i = 0; i < n; i++) {
+        sets.push({ load: loadPeak ? Math.min(load, loadPeak) : load, reps: getReps(i), rpe: getRpe(i) });
+        if (loadInc && (!loadPeak || load < loadPeak)) load += loadInc;
+      }
+
+    } else if (pt === 'STRENGTH_TOP_SET_BACKOFF') {
+      let load = loadStart || baseLoad;
+      for (let i = 0; i < n; i++) {
+        sets.push({ load, reps: getReps(i), rpe: getRpe(i) });
+        if (loadPeak && load < loadPeak) load = Math.min(load + loadInc, loadPeak);
+      }
+
+    } else if (pt === 'STRENGTH_REVERSE_PYRAMID') {
+      let load = loadStart || loadPeak || baseLoad;
+      for (let i = 0; i < n; i++) {
+        sets.push({ load: Math.max(0, load), reps: getReps(i), rpe: getRpe(i) });
+        load -= Math.abs(loadInc);
+      }
+
+    } else if (pt === 'STRENGTH_LINEAR_PYRAMID') {
+      const mid = Math.ceil(n / 2);
+      let load = loadStart || baseLoad;
+      for (let i = 0; i < n; i++) {
+        sets.push({ load: Math.max(0, load), reps: getReps(i), rpe: getRpe(i) });
+        if (i < mid - 1) load += Math.abs(loadInc);
+        else              load -= Math.abs(loadInc);
+      }
+
+    } else if (pt === 'STRENGTH_DROP_SET') {
+      let load = loadStart || loadPeak || baseLoad;
+      for (let i = 0; i < n; i++) {
+        sets.push({ load: Math.max(0, load), reps: getReps(i), rpe: getRpe(i) });
+        load -= Math.abs(loadInc);
+      }
+
+    } else {
+      // Any other pattern — flat with base values
+      const load = loadStart || baseLoad;
+      for (let i = 0; i < n; i++)
+        sets.push({ load, reps: getReps(i), rpe: getRpe(i) });
+    }
+
+    return sets;
+  }
+
   // ─── Step classification ──────────────────────────────────────────────────
 
   // Main-segment exercises that get per-set/per-round logging
@@ -116,7 +189,7 @@ class SessionActive {
         </div>
 
         <div class="sets-rows" id="sets-rows-${idx}">
-          ${Array.from({ length: setCount }, (_, i) => this.renderSetRow(idx, i + 1, inputMode, recommendedLoad)).join('')}
+          ${this.buildPatternSets(step).map((ps, i) => this.renderSetRow(idx, i + 1, inputMode, recommendedLoad, ps)).join('')}
         </div>
 
         ${this.renderRestTimer(step, idx)}
@@ -126,7 +199,7 @@ class SessionActive {
             <button class="add-set-btn" data-step="${idx}" ${setCount >= 10 ? 'disabled' : ''}>
               + Add Set
             </button>
-            <div class="add-set-hint">add warm-up or extra sets</div>
+            <div class="add-set-hint">add extra sets</div>
           </div>
           ${inputMode === 'reps_load_rpe' ? `
           <div class="metric-selector">
@@ -146,7 +219,9 @@ class SessionActive {
     `;
   }
 
-  renderSetRow(stepIdx, setNum, mode, recommendedLoad) {
+  // prescribed = {load, reps, rpe} — per-set values from buildPatternSets().
+  // load is pre-filled as a value; reps/rpe shown as placeholders (athlete enters actuals).
+  renderSetRow(stepIdx, setNum, mode, recommendedLoad, prescribed = {}) {
     const m = mode || 'reps_load_rpe';
 
     if (m === 'time_rpe') {
@@ -156,7 +231,8 @@ class SessionActive {
           <input class="set-input" type="text" inputmode="decimal"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="mm:ss">
           <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
-                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
+                 placeholder="${prescribed.rpe || '—'}">
         </div>`;
     }
 
@@ -167,7 +243,8 @@ class SessionActive {
           <input class="set-input" type="number" min="0" step="1" inputmode="decimal" pattern="[0-9.]*"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="—">
           <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
-                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
+                 placeholder="${prescribed.rpe || '—'}">
         </div>`;
     }
 
@@ -176,23 +253,29 @@ class SessionActive {
         <div class="set-row grid-3col" data-set-num="${setNum}">
           <span class="set-num">${setNum}</span>
           <input class="set-input" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
-                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps" placeholder="—">
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps"
+                 placeholder="${prescribed.reps || '—'}">
           <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
-                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
+                 placeholder="${prescribed.rpe || '—'}">
         </div>`;
     }
 
-    // Default: reps_load_rpe — pre-fill load input with recommendation if available
-    const prefill = recommendedLoad ? ` value="${recommendedLoad}"` : '';
+    // reps_load_rpe — prescribed load pre-filled as value; reps/rpe as placeholders
+    const loadVal = prescribed.load || recommendedLoad || null;
+    const loadAttr = loadVal ? ` value="${loadVal}"` : '';
     return `
       <div class="set-row" data-set-num="${setNum}">
         <span class="set-num">${setNum}</span>
         <input class="set-input" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
-               data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps" placeholder="—">
+               data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps"
+               placeholder="${prescribed.reps || '—'}">
         <input class="set-input" type="number" min="0" step="0.5" inputmode="decimal" pattern="[0-9.]*"
-               data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="—"${prefill}>
+               data-step="${stepIdx}" data-set="${setNum}" data-field-type="value"
+               placeholder="—"${loadAttr}>
         <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
-               data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
+               data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
+               placeholder="${prescribed.rpe || '—'}">
       </div>`;
   }
 
