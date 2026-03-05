@@ -1233,16 +1233,18 @@ def get_clients_needing_weekly_prep():
                     Empty list if all clients are already set up.
     """
     try:
-        tomorrow = (datetime.utcnow() + timedelta(days=1)).strftime('%Y-%m-%d')
+        # Look back 7 days so current-week sessions are included even when
+        # running mid-week (e.g. manual trigger on Thursday for a Mon-started week).
+        window_start = (datetime.utcnow() - timedelta(days=7)).strftime('%Y-%m-%d')
         terminal = {'completed', 'skipped', 'cancelled'}
 
         sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
         all_sessions = sessions_ws.get_all_records()
 
-        # Upcoming non-terminal sessions
+        # Non-terminal sessions within the rolling window
         upcoming = [
             s for s in all_sessions
-            if str(s.get('session_date', '')) >= tomorrow
+            if str(s.get('session_date', '')) >= window_start
             and _effective_session_status(s) not in terminal
         ]
 
@@ -1452,5 +1454,47 @@ def audit_exercise_names(client_id=None):
         f"{result['summary']['fuzzy_matches']} fuzzy, "
         f"{result['summary']['no_matches']} unmatched"
     )
+
+
+# ============================================================
+# GARMIN WORKOUT SUPPORT
+# ============================================================
+
+def get_exercises_garmin_mapping(exercise_names: list) -> dict:
+    """Look up garmin_exercise_name for a list of exercise names.
+
+    Only returns entries where garmin_mapping_confidence is 'exact' or 'close'.
+    Used by the /session/<id>/workout.fit endpoint to translate exercise names
+    into FIT-compatible Garmin strings before calling exercise_mapper.lookup_exercise().
+
+    Args:
+        exercise_names: List of exercise_name strings from Plans_Steps.
+
+    Returns:
+        {exercise_name: garmin_exercise_name_string}
+    """
+    if not exercise_names:
+        return {}
+
+    try:
+        ws = _get_worksheet(SHEET_NAMES['exercise_library'])
+        rows = ws.get_all_records()
+
+        name_set = {str(n).strip().lower() for n in exercise_names if n}
+        mapping = {}
+        for row in rows:
+            name = str(row.get('exercise_name', '') or '').strip()
+            if not name or name.lower() not in name_set:
+                continue
+            confidence  = str(row.get('garmin_mapping_confidence', '') or '').lower().strip()
+            garmin_name = str(row.get('garmin_exercise_name', '') or '').strip()
+            if confidence in ('exact', 'close') and garmin_name:
+                mapping[name] = garmin_name
+
+        return mapping
+
+    except Exception as e:
+        logger.warning(f"[Sheets] get_exercises_garmin_mapping failed: {e}")
+        return {}
 
     return result
