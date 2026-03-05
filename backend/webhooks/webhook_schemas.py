@@ -40,7 +40,7 @@ POPULATE_TRAINING_WEEK_SCHEMA = {
                     "session_id": {"type": "string", "minLength": 1},
                     "session_summary": {
                         "type": "string",
-                        "minLength": 10,
+                        "minLength": 50,
                         "maxLength": 500,
                         "description": "2-3 sentence plain-language session intent from Bill"
                     },
@@ -71,7 +71,10 @@ POPULATE_TRAINING_WEEK_SCHEMA = {
                                     "type": "string",
                                     "enum": ["warmup", "main", "cooldown"]
                                 },
-                                "step_type": {"type": "string"},
+                                "step_type": {
+                                    "type": "string",
+                                    "description": "e.g. strength, cardio, mobility, skill, feeder_set, pulse_raise, activation. 'feeder_set' is required for all warm-up sets preceding compound working sets."
+                                },
                                 "duration_type": {"type": "string"},
                                 "duration_value": {"type": ["integer", "number"]},
                                 "target_type": {"type": "string"},
@@ -110,7 +113,7 @@ SESSION_UPDATE_SCHEMA = {
                 "supplements": {"type": "string"},
                 "notes": {"type": "string"},
                 "session_status": {"type": "string"},
-                "session_summary": {"type": "string", "maxLength": 500}
+                "session_summary": {"type": "string", "minLength": 50, "maxLength": 500}
             },
             "additionalProperties": False
         },
@@ -435,3 +438,35 @@ CRITICAL_FIELDS = {
         ('contraindicated_movements', 'root', 'Movements to avoid or modify')
     ],
 }
+
+
+# ============================================================
+# BUSINESS RULES
+# ============================================================
+# These rules are enforced programmatically in webhook_validator.py
+# and cannot be expressed in JSON Schema alone.
+#
+# HARD ERRORS (reject payload):
+#   - notes_athlete non-empty in Bill-authored populate_training_week payload
+#   - First compound main step (load_kg > 20) has no preceding feeder_set step
+#     for the same exercise_name
+#
+# WARNINGS (log, do not reject):
+#   - notes_coach empty or absent on a main segment step
+#   - No machine warmup step (pulse_raise) when estimated_duration_minutes >= 35
+#   - feeder_set step has no load_kg and no rpe target_type
+#
+# VALID step_type VALUES (informational — not schema-enforced):
+#   Warmup:   pulse_raise, mobility, activation
+#   Main:     strength, cardio, feeder_set, straight_sets, amrap, intervals,
+#             progressive_load, wave_load, circuit, skill
+#   Cooldown: mobility, breathing, steady_state
+#
+# notes_athlete in Bill-authored payloads:
+#   MUST be sent as empty string "" only. Any non-empty value is a hard error.
+#   This applies unconditionally to populate_training_week.
+#   For session_update: notes_athlete may be non-empty only when explicitly
+#   relaying athlete-entered feedback from the PWA session logger.
+
+COMPOUND_LOAD_THRESHOLD_KG = 20  # Steps with load_kg above this require feeder sets
+SESSION_DURATION_MACHINE_WARMUP_THRESHOLD = 35  # Minutes

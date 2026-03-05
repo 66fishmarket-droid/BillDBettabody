@@ -435,6 +435,12 @@ p {
   margin-bottom: 6px;
 }
 
+/* 3-column variant: bodyweight (reps+RPE), time-based, distance-based */
+.sets-header.grid-3col,
+.set-row.grid-3col {
+  grid-template-columns: 28px 1fr 56px;
+}
+
 .sets-header {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -673,6 +679,94 @@ p {
   background: rgba(210, 105, 30, 0.1);
   border-color: var(--bill-primary);
   color: var(--bill-primary);
+}
+
+/* Details toggle button (inline panel trigger) */
+.details-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: none;
+  border: 1px solid rgba(210, 105, 30, 0.4);
+  border-radius: 6px;
+  color: var(--bill-primary-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: var(--space-sm);
+}
+
+.details-toggle-btn:hover {
+  background: rgba(210, 105, 30, 0.1);
+  border-color: var(--bill-primary);
+}
+
+/* Inline details panel */
+.step-details-panel {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(210, 105, 30, 0.2);
+  border-radius: 8px;
+  padding: var(--space-md);
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.details-section {
+  margin-bottom: var(--space-md);
+}
+
+.details-section:last-child {
+  margin-bottom: 0;
+}
+
+.details-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bill-primary-light);
+  margin-bottom: var(--space-xs);
+}
+
+.details-section p {
+  font-size: 0.9375rem;
+  color: var(--bill-text-light);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.details-section a {
+  color: var(--bill-primary-light);
+  text-decoration: underline;
+}
+
+.details-empty {
+  color: var(--bill-text-muted);
+  font-size: 0.875rem;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Weight recommendation display */
+.rec-load {
+  color: var(--bill-accent);
+  font-weight: 600;
+}
+
+.rec-note {
+  color: var(--bill-text-muted);
+  font-size: 0.8125rem;
+}
+
+.rec-no-data {
+  color: var(--bill-text-muted);
+  font-size: 0.875rem;
+  font-style: italic;
 }
 
 /* Exercise info modal */
