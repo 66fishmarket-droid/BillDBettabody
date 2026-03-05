@@ -1233,18 +1233,20 @@ def get_clients_needing_weekly_prep():
                     Empty list if all clients are already set up.
     """
     try:
-        # Look back 7 days so current-week sessions are included even when
-        # running mid-week (e.g. manual trigger on Thursday for a Mon-started week).
-        window_start = (datetime.utcnow() - timedelta(days=7)).strftime('%Y-%m-%d')
+        # Anchor to the start of the current ISO week (Monday) so that:
+        #  - mid-week manual triggers include this week's sessions
+        #  - last week's already-populated sessions are excluded
+        today = datetime.utcnow()
+        this_monday = (today - timedelta(days=today.weekday())).strftime('%Y-%m-%d')
         terminal = {'completed', 'skipped', 'cancelled'}
 
         sessions_ws = _get_worksheet(SHEET_NAMES['plans_sessions'])
         all_sessions = sessions_ws.get_all_records()
 
-        # Non-terminal sessions within the rolling window
+        # Non-terminal sessions from this Monday onwards
         upcoming = [
             s for s in all_sessions
-            if str(s.get('session_date', '')) >= window_start
+            if str(s.get('session_date', '')) >= this_monday
             and _effective_session_status(s) not in terminal
         ]
 
