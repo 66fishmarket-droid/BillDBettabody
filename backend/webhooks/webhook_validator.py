@@ -107,15 +107,10 @@ def check_business_rules(webhook_name, payload):
 
     Rules for populate_training_week:
     - notes_athlete must be empty string in all steps (hard error)
-    - First compound main step (load_kg > threshold) must have a preceding
-      feeder_set step for the same exercise_name (hard error)
-    - notes_coach empty on main segment steps (warning)
     - No machine warmup step when session duration >= 35 min (warning)
 
     Rules for session_update:
-    - notes_athlete must not contain Bill-authored content; any non-empty
-      notes_athlete is flagged as a warning (cannot enforce hard stop since
-      relaying athlete feedback is legitimate here)
+    - notes_athlete must not contain Bill-authored content (warning)
     """
     if webhook_name == 'populate_training_week':
         return _check_populate_training_week(payload)
@@ -133,15 +128,12 @@ def _check_populate_training_week(payload):
         duration = session.get('estimated_duration_minutes', 0) or 0
         session_id = session.get('session_id', 'unknown')
 
-        exercises_with_feeder = set()
-        exercises_seen_as_main = set()
         has_machine_warmup = False
 
         for step in sorted(steps, key=lambda s: s.get('step_order', 0)):
             segment = step.get('segment_type', '')
             step_type = step.get('step_type', '')
             exercise = step.get('exercise_name', '')
-            load_kg = step.get('load_kg') or 0
             notes_athlete = step.get('notes_athlete', '')
 
             # HARD ERROR: notes_athlete must be empty in Bill-authored payloads
@@ -157,36 +149,6 @@ def _check_populate_training_week(payload):
             # Track machine warmup presence
             if segment == 'warmup' and step_type == 'pulse_raise':
                 has_machine_warmup = True
-
-            # Track feeder sets in main segment
-            if segment == 'main' and step_type == 'feeder_set' and exercise:
-                exercises_with_feeder.add(exercise)
-
-            # HARD ERROR: first compound main working set must have a preceding feeder set
-            if (
-                segment == 'main'
-                and step_type != 'feeder_set'
-                and load_kg > COMPOUND_LOAD_THRESHOLD_KG
-                and exercise
-                and exercise not in exercises_seen_as_main
-            ):
-                exercises_seen_as_main.add(exercise)
-                if exercise not in exercises_with_feeder:
-                    return False, (
-                        f"BUSINESS RULE VIOLATION: Working set for '{exercise}' "
-                        f"(step_order {step.get('step_order')}, load_kg {load_kg}, "
-                        f"session {session_id}) has no preceding feeder_set steps. "
-                        "Add ramp sets before the working sets using "
-                        "step_type: 'feeder_set'. See Progressive Loading Doctrine."
-                    )
-
-            # WARNING: notes_coach empty on main step
-            if segment == 'main' and not step.get('notes_coach'):
-                logger.warning(
-                    "notes_coach is empty for main step '%s' "
-                    "(step_order %s, session %s) — coaching value reduced",
-                    exercise, step.get('step_order'), session_id
-                )
 
         # WARNING: no machine warmup for sessions >= threshold
         if duration >= SESSION_DURATION_MACHINE_WARMUP_THRESHOLD and not has_machine_warmup:

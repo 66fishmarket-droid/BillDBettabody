@@ -73,7 +73,7 @@ POPULATE_TRAINING_WEEK_SCHEMA = {
                                 },
                                 "step_type": {
                                     "type": "string",
-                                    "description": "e.g. strength, cardio, mobility, skill, feeder_set, pulse_raise, activation. 'feeder_set' is required for all warm-up sets preceding compound working sets."
+                                    "description": "e.g. strength, cardio, mobility, skill, pulse_raise, activation. Use pattern fields (pattern_type, load_start_kg etc.) to define set structure rather than separate feeder_set rows."
                                 },
                                 "duration_type": {"type": "string"},
                                 "duration_value": {"type": ["integer", "number"]},
@@ -85,7 +85,21 @@ POPULATE_TRAINING_WEEK_SCHEMA = {
                                 "load_kg": {"type": "number"},
                                 "rest_seconds": {"type": "integer"},
                                 "notes_coach": {"type": "string"},
-                                "notes_athlete": {"type": "string"}
+                                "notes_athlete": {"type": "string"},
+                                "pattern_type": {"type": "string"},
+                                "load_start_kg": {"type": "number"},
+                                "load_increment_kg": {"type": "number"},
+                                "load_peak_kg": {"type": "number"},
+                                "reps_pattern": {"type": "string"},
+                                "rpe_pattern": {"type": "string"},
+                                "tempo_pattern": {"type": "string"},
+                                "tempo_per_set_pattern": {"type": "string"},
+                                "pattern_notes": {"type": "string"},
+                                "interval_count": {"type": "integer"},
+                                "interval_work_sec": {"type": "integer"},
+                                "interval_rest_sec": {"type": "integer"},
+                                "intensity_start": {"type": "string"},
+                                "intensity_end": {"type": "string"}
                             }
                         }
                     }
