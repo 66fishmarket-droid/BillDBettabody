@@ -4,6 +4,7 @@ Main Flask API integrating Claude, Make.com, and Bill's canonical rules
 """
 
 import os
+import threading
 from datetime import datetime
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
@@ -896,58 +897,34 @@ def admin_weekly_prep():
     Sunday automation: auto-populate next week's sessions for any client
     who hasn't already had their week set up via chat with Bill.
 
-    Called by a Make.com scheduled scenario every Sunday or triggered manually.
+    Returns 202 immediately and runs prep in a background thread so that
+    Make.com doesn't time out waiting for Claude to finish generating plans.
 
     Body (JSON):
         client_id (str, optional) — scope to a single client
-
-    Returns:
-        {
-            "status": "ok" | "partial",
-            "populated": [{client_id, week_id, session_count, bill_response}],
-            "skipped":   [{client_id, reason}],
-            "errors":    [{client_id, week_id, error}],
-            "timestamp": ISO string
-        }
     """
     try:
         data = request.get_json(silent=True) or {}
         specific_client_id = data.get('client_id', '').strip() or None
 
-        result = _run_weekly_prep(specific_client_id)
+        thread = threading.Thread(
+            target=_run_weekly_prep,
+            args=(specific_client_id,),
+            daemon=True,
+        )
+        thread.start()
 
-        populated = result['populated']
-        skipped   = result['skipped']
-        errors    = result['errors']
-
-        # Build an informational message and, if a specific client came back empty,
-        # record them as explicitly skipped (steps already exist).
-        if specific_client_id and not populated and not errors:
-            skipped = [{'client_id': specific_client_id, 'reason': 'steps already exist'}]
-            msg = f'{specific_client_id} is already set up for next week'
-        elif not populated and not errors:
-            msg = 'All clients are already set up for next week'
-        else:
-            msg = None
-
-        response_body = {
-            'status':    'ok' if not errors else 'partial',
-            'populated': populated,
-            'skipped':   skipped,
-            'errors':    errors,
+        return jsonify({
+            'status':    'accepted',
+            'message':   'Weekly prep started in background — check Railway logs for results',
+            'client_id': specific_client_id or 'all',
             'timestamp': datetime.now().isoformat(),
-        }
-        if msg:
-            response_body['message'] = msg
-
-        return jsonify(response_body)
+        }), 202
 
     except Exception as e:
-        print(f"[Weekly Prep] Unexpected error: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        print(f"[Weekly Prep] Failed to start background thread: {str(e)}")
         return jsonify({
-            'error':   'Weekly prep failed',
+            'error':   'Weekly prep failed to start',
             'details': str(e),
         }), 500
 
