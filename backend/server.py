@@ -5,14 +5,14 @@ Main Flask API integrating Claude, Make.com, and Bill's canonical rules
 
 import os
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from config import get_config, Config
 from core.bill_config import OperatingMode, ClientState
 from core import claude_client
-from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_lifetime_stats, get_week_sessions, audit_exercise_names, get_clients_needing_weekly_prep
+from core.sheets_client import get_dashboard_data, get_session_detail, get_progress_data, get_lifetime_stats, get_week_sessions, audit_exercise_names, get_clients_needing_weekly_prep, get_exercises_garmin_mapping
 from core.sheets_writer import update_steps_actuals, update_session_status
 from models import client_context
 from core.context_loader import get_greeting_for_state
@@ -528,6 +528,20 @@ def get_session(session_id):
         if not data.get('session'):
             return jsonify({'error': 'Session not found'}), 404
 
+        # Enrich steps with weight recommendations (non-fatal if fails)
+        if data.get('steps'):
+            try:
+                from core.weight_recommender import enrich_steps_with_recommendations
+                client_profile = {}
+                if bill_session:
+                    ctx = bill_session.get('context', {}) or {}
+                    client_profile = ctx.get('client_profile', {}) or {}
+                enrich_steps_with_recommendations(
+                    data['steps'], data.get('exercise_bests', []), client_profile
+                )
+            except Exception as _wre:
+                print(f"[Session Detail] Weight recommender failed (non-fatal): {_wre}")
+
         return jsonify(data)
 
     except RuntimeError as e:
@@ -543,6 +557,76 @@ def get_session(session_id):
             'error': 'Failed to load session detail',
             'details': str(e)
         }), 500
+
+
+@app.route('/session/<target_session_id>/workout.fit', methods=['GET'])
+def download_workout_fit(target_session_id):
+    """
+    Generate and download a Garmin FIT workout file for a session.
+
+    Query params:
+        session_id: Bill session id (from /initialize) — used to resolve client_id
+        client_id (optional): direct client_id override
+
+    Response:
+        application/octet-stream .fit file download
+
+    Tracking tags embedded in the file:
+        workout.wkt_description  = "SID:{target_session_id}"
+        workout_step.notes       = "STID:{step_id}"  (last set of each exercise)
+    """
+    from garmin.workout_builder import build_workout_fit
+    from garmin.exercise_mapper import lookup_exercise
+
+    try:
+        client_id = request.args.get('client_id')
+        bill_client_id, bill_session, bill_error = _resolve_client_id_from_bill_session()
+        if bill_error:
+            return bill_error
+
+        if not client_id:
+            client_id = bill_client_id
+
+        if not client_id:
+            return jsonify({'error': 'Missing client_id or Bill session_id'}), 400
+
+        # Load session + steps
+        data = get_session_detail(client_id, target_session_id)
+
+        if not data.get('session'):
+            return jsonify({'error': 'Session not found'}), 404
+
+        steps = data.get('steps', [])
+
+        # Resolve garmin_exercise_name strings from the exercise library,
+        # then convert to numeric (category, name) pairs via exercise_mapper.
+        exercise_names = [
+            s['exercise_name'] for s in steps if s.get('exercise_name')
+        ]
+        raw_mappings = get_exercises_garmin_mapping(exercise_names)
+        garmin_mappings = {
+            name: lookup_exercise(garmin_name)
+            for name, garmin_name in raw_mappings.items()
+        }
+
+        fit_bytes = build_workout_fit(data['session'], steps, garmin_mappings)
+        filename  = f"workout_{target_session_id}.fit"
+
+        print(f"[Workout FIT] Generated {len(fit_bytes)} bytes for session {target_session_id}")
+
+        return Response(
+            fit_bytes,
+            mimetype='application/octet-stream',
+            headers={'Content-Disposition': f'attachment; filename="{filename}"'},
+        )
+
+    except RuntimeError as e:
+        print(f"[Workout FIT] Config error: {e}")
+        return jsonify({'error': 'Google Sheets connection failed', 'details': str(e)}), 503
+
+    except Exception as e:
+        print(f"[Workout FIT] Error: {e}")
+        return jsonify({'error': 'Failed to generate workout file', 'details': str(e)}), 500
 
 
 @app.route('/session/<session_id>/complete', methods=['POST'])
@@ -584,6 +668,8 @@ def complete_session(session_id):
                 'pattern_notes', 'interval_count', 'interval_work_sec',
                 'interval_rest_sec', 'intensity_start', 'intensity_end',
                 'metric_key', 'metric_context_key',
+                'recommended_load_kg', 'recommendation_source',
+                'load_deviation_pct', 'load_deviation_direction', 'flag_for_bill',
             }
             for step in steps:
                 if not isinstance(step, dict):

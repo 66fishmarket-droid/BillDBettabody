@@ -9,8 +9,14 @@ This module prevents Bill (Claude) from sending malformed payloads by:
 4. Providing clear error messages for Claude to self-correct
 """
 
+import logging
 from jsonschema import validate, ValidationError, Draft7Validator
-from webhooks.webhook_schemas import WEBHOOK_SCHEMAS, CRITICAL_FIELDS
+from webhooks.webhook_schemas import (
+    WEBHOOK_SCHEMAS, CRITICAL_FIELDS,
+    COMPOUND_LOAD_THRESHOLD_KG, SESSION_DURATION_MACHINE_WARMUP_THRESHOLD
+)
+
+logger = logging.getLogger(__name__)
 
 
 def validate_webhook_payload(webhook_name, payload):
@@ -39,15 +45,20 @@ def validate_webhook_payload(webhook_name, payload):
     try:
         # Validate against JSON schema
         validate(instance=payload, schema=schema)
-        
+
         # Additional critical field checks
         if webhook_name in CRITICAL_FIELDS:
             for field_name, location, description in CRITICAL_FIELDS[webhook_name]:
                 if not check_critical_field(payload, field_name, location):
                     return False, f"CRITICAL FIELD MISSING: '{field_name}' in {location}. {description}"
-        
+
+        # Business rule checks (hard errors + warnings)
+        is_valid, business_error = check_business_rules(webhook_name, payload)
+        if not is_valid:
+            return False, business_error
+
         return True, None
-        
+
     except ValidationError as e:
         # Format validation error for Claude to understand
         error_msg = format_validation_error(e, webhook_name)
@@ -87,6 +98,128 @@ def check_critical_field(payload, field_name, location):
         return field_name in payload and payload[field_name]
 
 
+def check_business_rules(webhook_name, payload):
+    """
+    Enforce business rules that cannot be expressed in JSON Schema.
+
+    Hard errors return (False, error_message) and block the payload.
+    Warnings are logged but return (True, None).
+
+    Rules for populate_training_week:
+    - notes_athlete must be empty string in all steps (hard error)
+    - First compound main step (load_kg > threshold) must have a preceding
+      feeder_set step for the same exercise_name (hard error)
+    - notes_coach empty on main segment steps (warning)
+    - No machine warmup step when session duration >= 35 min (warning)
+
+    Rules for session_update:
+    - notes_athlete must not contain Bill-authored content; any non-empty
+      notes_athlete is flagged as a warning (cannot enforce hard stop since
+      relaying athlete feedback is legitimate here)
+    """
+    if webhook_name == 'populate_training_week':
+        return _check_populate_training_week(payload)
+
+    if webhook_name == 'session_update':
+        return _check_session_update(payload)
+
+    return True, None
+
+
+def _check_populate_training_week(payload):
+    """Business rule checks for populate_training_week payloads."""
+    for session in payload.get('sessions', []):
+        steps = session.get('steps', [])
+        duration = session.get('estimated_duration_minutes', 0) or 0
+        session_id = session.get('session_id', 'unknown')
+
+        exercises_with_feeder = set()
+        exercises_seen_as_main = set()
+        has_machine_warmup = False
+
+        for step in sorted(steps, key=lambda s: s.get('step_order', 0)):
+            segment = step.get('segment_type', '')
+            step_type = step.get('step_type', '')
+            exercise = step.get('exercise_name', '')
+            load_kg = step.get('load_kg') or 0
+            notes_athlete = step.get('notes_athlete', '')
+
+            # HARD ERROR: notes_athlete must be empty in Bill-authored payloads
+            if notes_athlete:
+                return False, (
+                    "BUSINESS RULE VIOLATION: notes_athlete must be empty string "
+                    f"in Bill-authored payloads. Found non-empty value on step "
+                    f"'{exercise}' (step_order {step.get('step_order')}, "
+                    f"session {session_id}). "
+                    "notes_athlete is exclusively the athlete's field."
+                )
+
+            # Track machine warmup presence
+            if segment == 'warmup' and step_type == 'pulse_raise':
+                has_machine_warmup = True
+
+            # Track feeder sets in main segment
+            if segment == 'main' and step_type == 'feeder_set' and exercise:
+                exercises_with_feeder.add(exercise)
+
+            # HARD ERROR: first compound main working set must have a preceding feeder set
+            if (
+                segment == 'main'
+                and step_type != 'feeder_set'
+                and load_kg > COMPOUND_LOAD_THRESHOLD_KG
+                and exercise
+                and exercise not in exercises_seen_as_main
+            ):
+                exercises_seen_as_main.add(exercise)
+                if exercise not in exercises_with_feeder:
+                    return False, (
+                        f"BUSINESS RULE VIOLATION: Working set for '{exercise}' "
+                        f"(step_order {step.get('step_order')}, load_kg {load_kg}, "
+                        f"session {session_id}) has no preceding feeder_set steps. "
+                        "Add ramp sets before the working sets using "
+                        "step_type: 'feeder_set'. See Progressive Loading Doctrine."
+                    )
+
+            # WARNING: notes_coach empty on main step
+            if segment == 'main' and not step.get('notes_coach'):
+                logger.warning(
+                    "notes_coach is empty for main step '%s' "
+                    "(step_order %s, session %s) — coaching value reduced",
+                    exercise, step.get('step_order'), session_id
+                )
+
+        # WARNING: no machine warmup for sessions >= threshold
+        if duration >= SESSION_DURATION_MACHINE_WARMUP_THRESHOLD and not has_machine_warmup:
+            logger.warning(
+                "No machine warmup step (step_type: pulse_raise) found in session "
+                "'%s' (estimated_duration_minutes: %s). Verify equipment availability "
+                "or add exemption reason to session_summary.",
+                session_id, duration
+            )
+
+    return True, None
+
+
+def _check_session_update(payload):
+    """Business rule checks for session_update payloads."""
+    # session_update uses steps_upsert at root level, not sessions[].steps
+    for step in payload.get('steps_upsert', []):
+        notes_athlete = step.get('notes_athlete', '')
+        exercise = step.get('exercise_name', step.get('step_id', 'unknown'))
+
+        # WARNING: non-empty notes_athlete in a step update may indicate Bill
+        # has authored content that should only come from the athlete
+        if notes_athlete:
+            logger.warning(
+                "notes_athlete is non-empty on step '%s' in session_update. "
+                "Ensure this content originated from the athlete via the PWA "
+                "session logger — Bill must never author notes_athlete content.",
+                exercise
+            )
+
+    return True, None
+
+
 def format_validation_error(error, webhook_name):
     """
     Format jsonschema ValidationError into Claude-readable message
@@ -116,7 +249,7 @@ HOW TO FIX:
 1. Check the Scenario Helper Instructions for '{webhook_name}'
 2. Ensure all REQUIRED fields are present
 3. Verify data types match the schema
-4. For session_summary: Must be 10-500 characters, plain language
+4. For session_summary: Must be 50-500 characters, plain language
 
 Example valid structure for this webhook:
 {get_example_payload(webhook_name)}

@@ -1012,8 +1012,7 @@ BILL BEHAVIOURAL RULES
   come from the active week loaded via Load Client Context, never invented
 - Never invent plan_id, block_id, week_id — always from loaded context
 - session_summary is UI-CRITICAL — treat a missing one as a blocker,
-  not an optional field
-- notes_athlete MUST always be sent as empty string — never write to it
+  not an optional field. Minimum 50 characters.
 - Do not send step_id, session_id, week_id, block_id, client_id inside
   step objects — Make handles all of these from the session row lookup
 - If pattern_type is assigned, all required pattern fields for that type
@@ -1021,6 +1020,43 @@ BILL BEHAVIOURAL RULES
   blank
 - metric_context_key should only be sent for specific distance/time trial
   steps — not for general training steps
+
+WARMUP ENFORCEMENT:
+- For sessions >= 35 min at gym/machine-available location: FIRST warmup
+  step MUST be a cardio machine step (exercise_name: "Warmup - Treadmill",
+  "Warmup - Bike", or "Warmup - Elliptical") with step_type: pulse_raise.
+  No exceptions outside documented exemptions.
+- Warmup sequence is non-negotiable: Machine -> Dynamic Prep -> Activation
+  (where Activation conditions apply). This order cannot be reversed.
+- Run the pre-flight checklist before sending: machine step at step_order 1,
+  duration_value 5-10, target_type rpe target_value "3-4", Dynamic Prep
+  follows. If any check fails: do not send. Correct first.
+
+FEEDER SET REQUIREMENT:
+- For the first compound strength step targeting any muscle group in a
+  main segment (load_kg > 20): MUST include feeder_set steps immediately
+  before the working sets with the same exercise_name.
+- step_type MUST be "feeder_set" — feeder sets are explicit step rows,
+  never embedded in notes only.
+- Standard protocol: 2 feeder sets (hypertrophy/general fitness),
+  3 feeder sets (maximal strength, >= 85% estimated 1RM).
+- Load: feeder 1 at 45% of working weight, feeder 2 at 67%, feeder 3
+  at 82%. Round to nearest 2.5 kg. RPE-based if working weight unknown.
+- Second exercise for same muscle group: one optional feeder set (required
+  for beginners, judgement call for intermediate and above).
+
+NOTES_COACH — MANDATORY:
+- notes_coach is MANDATORY for all main segment steps. Empty notes_coach
+  on a main step is a coaching error.
+- Depth scales to client detail_level_preference and experience level.
+  See Section 4.7 of Bill_Instructions_V2.txt for depth rules.
+- For loading patterns and progressive schemes: notes_coach MUST explain
+  the pattern intent and what the client should expect to feel.
+
+NOTES_ATHLETE — ABSOLUTE:
+- notes_athlete MUST be sent as empty string "" in all steps of this
+  payload. Any non-empty value is a hard validation error that will
+  reject the payload. No exceptions. This is Bill's field, never.
 
 -----------------------------
 KNOWN-GOOD TEST PAYLOAD
@@ -1208,11 +1244,29 @@ BILL BEHAVIOURAL RULES
   session_updates — these are never overwritten
 - Check sessions_updated and steps_updated in the response —
   a value of 0 means nothing was written; treat as an error
-- notes_athlete should only be sent when explicitly relaying
-  athlete-entered feedback; never author notes_athlete content
 - Pattern field rules from Populate Training Week apply equally
   here — if pattern_type is sent, all required pattern fields
   for that type must also be sent
+
+NOTES_ATHLETE — ABSOLUTE:
+- Bill MUST NOT author content in notes_athlete under any
+  circumstances. This includes encouragement, feedback,
+  summaries, or placeholder text.
+- notes_athlete may only be sent in steps_upsert when explicitly
+  relaying athlete-entered feedback from the PWA session logger
+  (i.e. the athlete's own words, not Bill's interpretation).
+- If Bill has no athlete notes to relay: omit notes_athlete
+  entirely from the step object. Never send an empty string as
+  a placeholder when updating — omit the field instead.
+- Writing to notes_athlete is a hard validation error in
+  populate_training_week. In session_update it is a coaching
+  integrity violation.
+
+FEEDER SETS IN UPDATES:
+- When adding or correcting prescription via session_update,
+  feeder set rules from Populate Training Week apply equally.
+  If adding a working set for an exercise, ensure feeder set
+  steps are included in the same steps_upsert array.
 
 -----------------------------
 KNOWN-GOOD TEST PAYLOAD

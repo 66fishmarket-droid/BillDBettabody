@@ -44,6 +44,17 @@ class SessionActive {
     return parseInt(step.interval_count, 10) > 0 || parseInt(step.interval_work_sec, 10) > 0;
   }
 
+  // Returns input mode for a main-segment step.
+  // feeder_set always reps_load_rpe; intervals handled separately in renderWeightedStep.
+  getInputMode(step) {
+    if (step.step_type === 'feeder_set') return 'reps_load_rpe';
+    const hasLoad = parseFloat(step.load_kg) > 0 || parseFloat(step.load_start_kg) > 0;
+    if (step.duration_type === 'time' || step.step_type === 'hold') return 'time_rpe';
+    if (step.duration_type === 'distance') return 'distance_rpe';
+    if (!hasLoad && parseInt(step.reps, 10) > 0) return 'reps_rpe';
+    return 'reps_load_rpe';
+  }
+
   // ─── Header ───────────────────────────────────────────────────────────────
 
   renderHeader() {
@@ -67,14 +78,30 @@ class SessionActive {
   }
 
   renderWeightedStep(step, idx) {
-    const isInterval  = this.isIntervalStep(step);
-    const setCount    = this.stepSetCounts[idx];
-    const metric      = this.getDefaultMetric(step);
-    const valueLabel  = this.getValueLabel(metric);
-    const repsHeader  = isInterval ? 'Round' : 'Reps';
-    const prescription = isInterval
+    const isInterval     = this.isIntervalStep(step);
+    const inputMode      = isInterval ? 'reps_load_rpe' : this.getInputMode(step);
+    const setCount       = this.stepSetCounts[idx];
+    const metric         = this.getDefaultMetric(step);
+    const valueLabel     = this.getValueLabel(metric);
+    const repsHeader     = isInterval ? 'Round' : 'Reps';
+    const recommendedLoad = parseFloat(step.recommended_load_kg) || null;
+    const prescription   = isInterval
       ? this.buildIntervalPrescription(step)
       : this.buildWeightedPrescription(step);
+
+    // Column headers depend on input mode
+    let headerHtml;
+    if (inputMode === 'time_rpe') {
+      headerHtml = `<span></span><span>Time</span><span>RPE</span>`;
+    } else if (inputMode === 'distance_rpe') {
+      headerHtml = `<span></span><span>Distance</span><span>RPE</span>`;
+    } else if (inputMode === 'reps_rpe') {
+      headerHtml = `<span></span><span>${repsHeader}</span><span>RPE</span>`;
+    } else {
+      headerHtml = `<span></span><span>${repsHeader}</span><span class="value-label-header">${valueLabel}</span><span>RPE</span>`;
+    }
+
+    const headerClass = (inputMode === 'reps_load_rpe') ? 'sets-header' : 'sets-header grid-3col';
 
     return `
       <div class="card mb-3 exercise-step-card" data-step-idx="${idx}">
@@ -84,15 +111,12 @@ class SessionActive {
         ${prescription}
         <div class="step-divider"></div>
 
-        <div class="sets-header">
-          <span></span>
-          <span>${repsHeader}</span>
-          <span class="value-label-header">${valueLabel}</span>
-          <span>RPE</span>
+        <div class="${headerClass}">
+          ${headerHtml}
         </div>
 
         <div class="sets-rows" id="sets-rows-${idx}">
-          ${Array.from({ length: setCount }, (_, i) => this.renderSetRow(idx, i + 1)).join('')}
+          ${Array.from({ length: setCount }, (_, i) => this.renderSetRow(idx, i + 1, inputMode, recommendedLoad)).join('')}
         </div>
 
         ${this.renderRestTimer(step, idx)}
@@ -104,12 +128,13 @@ class SessionActive {
             </button>
             <div class="add-set-hint">add warm-up or extra sets</div>
           </div>
+          ${inputMode === 'reps_load_rpe' ? `
           <div class="metric-selector">
             <label>Unit:</label>
             <select class="exercise-metric-select" data-step="${idx}">
               ${this.metricOptions(metric)}
             </select>
-          </div>
+          </div>` : ''}
         </div>
 
         ${this.renderInfoButtons(step, idx)}
@@ -121,18 +146,54 @@ class SessionActive {
     `;
   }
 
-  renderSetRow(stepIdx, setNum) {
+  renderSetRow(stepIdx, setNum, mode, recommendedLoad) {
+    const m = mode || 'reps_load_rpe';
+
+    if (m === 'time_rpe') {
+      return `
+        <div class="set-row grid-3col" data-set-num="${setNum}">
+          <span class="set-num">${setNum}</span>
+          <input class="set-input" type="text" inputmode="decimal"
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="mm:ss">
+          <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
+        </div>`;
+    }
+
+    if (m === 'distance_rpe') {
+      return `
+        <div class="set-row grid-3col" data-set-num="${setNum}">
+          <span class="set-num">${setNum}</span>
+          <input class="set-input" type="number" min="0" step="1" inputmode="decimal" pattern="[0-9.]*"
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="—">
+          <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
+        </div>`;
+    }
+
+    if (m === 'reps_rpe') {
+      return `
+        <div class="set-row grid-3col" data-set-num="${setNum}">
+          <span class="set-num">${setNum}</span>
+          <input class="set-input" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps" placeholder="—">
+          <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
+                 data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
+        </div>`;
+    }
+
+    // Default: reps_load_rpe — pre-fill load input with recommendation if available
+    const prefill = recommendedLoad ? ` value="${recommendedLoad}"` : '';
     return `
       <div class="set-row" data-set-num="${setNum}">
         <span class="set-num">${setNum}</span>
         <input class="set-input" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
                data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps" placeholder="—">
         <input class="set-input" type="number" min="0" step="0.5" inputmode="decimal" pattern="[0-9.]*"
-               data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="—">
+               data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="—"${prefill}>
         <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
                data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe" placeholder="—">
-      </div>
-    `;
+      </div>`;
   }
 
   renderSimpleStep(step, idx) {
@@ -154,16 +215,78 @@ class SessionActive {
     `;
   }
 
-  renderInfoButtons(step, idx) {
-    const hasVideo   = !!(step.video_url || (step.video_urls && step.video_urls.length));
-    const hasDetails = !!(step.exercise_description_long || step.safety_notes || step.common_mistakes
-                          || step.regression || step.progression || step.equipment);
-    if (!hasVideo && !hasDetails) return '';
+  // Toggle the inline details panel for a step. Closes all others first.
+  toggleDetailsPanel(stepIdx, btn) {
+    const panel = document.getElementById(`details-panel-${stepIdx}`);
+    if (!panel) return;
+    const isOpen = !panel.hidden;
 
+    // Close all open panels
+    document.querySelectorAll('.step-details-panel').forEach(p => {
+      p.hidden = true;
+    });
+    document.querySelectorAll('.details-toggle-btn').forEach(b => {
+      b.textContent = 'Details ▼';
+    });
+
+    // Toggle this one
+    if (!isOpen) {
+      panel.hidden = false;
+      if (btn) btn.textContent = 'Details ▲';
+    }
+  }
+
+  // Build the inline details panel content for a step.
+  renderDetailsPanel(step, idx) {
+    const sections = [];
+
+    if (step.notes_coach) {
+      sections.push(`<div class="details-section">
+        <div class="details-label">Coach Notes</div>
+        <p>${this.esc(step.notes_coach)}</p>
+      </div>`);
+    }
+    if (step.coaching_cues_short) {
+      sections.push(`<div class="details-section">
+        <div class="details-label">Key Cues</div>
+        <p>${this.esc(step.coaching_cues_short)}</p>
+      </div>`);
+    }
+    if (step.exercise_description_long) {
+      sections.push(`<div class="details-section">
+        <div class="details-label">How to do it</div>
+        <p>${this.esc(step.exercise_description_long)}</p>
+      </div>`);
+    }
+    if (step.safety_notes) {
+      sections.push(`<div class="details-section">
+        <div class="details-label">Safety</div>
+        <p>${this.esc(step.safety_notes)}</p>
+      </div>`);
+    }
+    const urls = (step.video_urls && step.video_urls.length)
+      ? step.video_urls
+      : (step.video_url ? [step.video_url] : []);
+    if (urls.length) {
+      const links = urls.map(u =>
+        `<a href="${this.esc(u)}" target="_blank" rel="noopener">▶ Watch video</a>`
+      ).join('&ensp;');
+      sections.push(`<div class="details-section">${links}</div>`);
+    }
+
+    const body = sections.length
+      ? sections.join('')
+      : '<p class="details-empty">No coaching notes for this exercise yet.</p>';
+
+    return `<div class="step-details-panel" id="details-panel-${idx}" hidden>${body}</div>`;
+  }
+
+  renderInfoButtons(step, idx) {
     return `
       <div class="exercise-info-btns">
-        <button class="exercise-info-btn details-btn" data-step="${idx}">📋 Extra Details</button>
+        <button class="details-toggle-btn" data-step="${idx}">Details ▼</button>
       </div>
+      ${this.renderDetailsPanel(step, idx)}
     `;
   }
 
@@ -199,6 +322,19 @@ class SessionActive {
     if (step.rpe_pattern)           lines.push(`RPE target: ${this.formatPattern(step.rpe_pattern)}`);
     if (step.tempo_per_set_pattern) lines.push(`Tempo per set: ${this.formatPattern(step.tempo_per_set_pattern)}`);
     if (step.pattern_notes)         lines.push(`<em>${this.esc(step.pattern_notes)}</em>`);
+
+    // Weight recommendation
+    const recLoad   = parseFloat(step.recommended_load_kg);
+    const recSource = step.recommendation_source;
+    const recNote   = step.recommendation_note;
+    if (recSource === 'no_data' && !parseFloat(step.load_kg)) {
+      lines.push(`<span class="rec-no-data">No recommendation — set your own weight</span>`);
+    } else if (recLoad > 0 && recSource && recSource !== 'prescribed') {
+      lines.push(
+        `<span class="rec-load">Recommended: ${this.formatLoad(recLoad, step)}</span>` +
+        (recNote ? `  <span class="rec-note">${this.esc(recNote)}</span>` : '')
+      );
+    }
 
     return this.wrapPrescription(lines, step.notes_coach);
   }
@@ -581,8 +717,8 @@ class SessionActive {
       if (e.target.classList.contains('add-set-btn') && !e.target.disabled) {
         this.addSet(Number(e.target.dataset.step));
       }
-      if (e.target.classList.contains('details-btn')) {
-        this.showExerciseInfo(Number(e.target.dataset.step));
+      if (e.target.classList.contains('details-toggle-btn')) {
+        this.toggleDetailsPanel(Number(e.target.dataset.step), e.target);
       }
       if (e.target.classList.contains('rest-timer-btn')) {
         const stepIdx = Number(e.target.dataset.step);
@@ -616,7 +752,12 @@ class SessionActive {
     this.stepSetCounts[stepIdx] = newCount;
 
     const rowsEl = document.getElementById(`sets-rows-${stepIdx}`);
-    if (rowsEl) rowsEl.insertAdjacentHTML('beforeend', this.renderSetRow(stepIdx, newCount));
+    if (rowsEl) {
+      const step = this.steps[stepIdx];
+      const mode = step ? this.getInputMode(step) : 'reps_load_rpe';
+      const recLoad = step ? parseFloat(step.recommended_load_kg) || null : null;
+      rowsEl.insertAdjacentHTML('beforeend', this.renderSetRow(stepIdx, newCount, mode, recLoad));
+    }
 
     if (newCount >= 10) {
       const btn = document.querySelector(`.add-set-btn[data-step="${stepIdx}"]`);
@@ -660,6 +801,31 @@ class SessionActive {
 
       const notesEl = card.querySelector('[data-field="notes_athlete"]');
       if (notesEl && notesEl.value.trim()) update.notes_athlete = notesEl.value.trim();
+
+      // Deviation tracking — flag when actual load differs >15% from recommendation
+      const recLoad   = parseFloat(step.recommended_load_kg);
+      const recSource = step.recommendation_source;
+      if (recLoad > 0 && recSource && recSource !== 'prescribed' && recSource !== 'no_data') {
+        let totalLoad = 0, loadSetCount = 0;
+        card.querySelectorAll('.set-row').forEach(row => {
+          const valueInput = row.querySelector('[data-field-type="value"]');
+          if (valueInput && valueInput.value !== '') {
+            totalLoad += Number(valueInput.value);
+            loadSetCount++;
+          }
+        });
+        if (loadSetCount > 0) {
+          const avgLoad = totalLoad / loadSetCount;
+          const deviationPct = Math.abs(avgLoad - recLoad) / recLoad;
+          if (deviationPct > 0.15) {
+            update.recommended_load_kg      = recLoad;
+            update.recommendation_source    = recSource;
+            update.load_deviation_pct       = Math.round(deviationPct * 100);
+            update.load_deviation_direction = avgLoad > recLoad ? 'above' : 'below';
+            update.flag_for_bill            = true;
+          }
+        }
+      }
 
       updates.push(update); // always include so status + timestamp gets written
     });
