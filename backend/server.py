@@ -1030,36 +1030,15 @@ def _run_weekly_prep(specific_client_id=None):
             temp_session_id, _ = client_context.initialize_session(cid, context)
             session = client_context.get_session(temp_session_id)
 
-            # Build explicit session → date mapping so Bill doesn't have to guess.
-            # day_of_week → days offset from Monday (0=Mon, 1=Tue, … 6=Sun)
-            _dow_map = {
-                'monday': 0, 'tuesday': 1, 'wednesday': 2, 'thursday': 3,
-                'friday': 4, 'saturday': 5, 'sunday': 6,
-            }
-            week_start  = item.get('week_start', '')
-            sessions_info = item.get('sessions', [])
-            date_lines = []
-            for sess in sessions_info:
-                sid  = sess['session_id']
-                dow  = sess['day_of_week'].lower()
-                date = sess['session_date']
-                if not date and week_start and dow in _dow_map:
-                    from datetime import date as _date, timedelta as _td
-                    base = _date.fromisoformat(week_start)
-                    date = str(base + _td(days=_dow_map[dow]))
-                date_lines.append(f"  {sid}: {sess['day_of_week']} → {date or 'unknown'}")
-
-            date_block = (
-                f"The week starts {week_start} (Monday).\n"
-                f"Session dates for this week:\n" + "\n".join(date_lines)
-            ) if date_lines else f"The upcoming week is {week_id}."
-
             prompt = (
-                f"This client's training week has not been set up yet and needs populating now.\n\n"
-                f"{date_block}\n\n"
+                f"This client's training week ({week_id}, {session_count} sessions) has not been "
+                f"set up yet and needs populating now.\n\n"
+                f"The upcoming week's date grid is in your context header — use it to assign "
+                f"session_date values. For the training days, use the same day pattern as the most "
+                f"recent completed or populated week in the client's session history. If no prior "
+                f"week exists, use Monday/Wednesday/Friday as the default.\n\n"
                 f"Please review their current training block and progress, then populate all "
-                f"{session_count} session(s) for week {week_id}. Use the exact session_date values "
-                f"listed above — do not recalculate or adjust them.\n\n"
+                f"{session_count} session(s) for this week.\n\n"
                 f"Proceed on the assumption that there are no new injuries unless you can see active "
                 f"contraindications in the loaded context — in which case account for them as normal."
             )
