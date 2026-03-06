@@ -918,8 +918,18 @@ Required when pattern_type assigned:
 - load_peak_kg (number) — highest load reached; same as load_start_kg if flat
 - rest_seconds (number)
 - tempo_pattern (string) — 4-digit format e.g. "3010"
+  Format: eccentric – bottom pause – concentric – top pause
   Default: "3010" for beginners, "2020" for general population
   Omit ONLY if medically contraindicated or explicitly not appropriate
+  TEMPO RULES (non-negotiable):
+  • All four values must be integers ≥ 0
+  • Eccentric (digit 1) and concentric (digit 3) must ALWAYS be ≥ 1 — the movement
+    takes real time; a value of 0 is physically impossible
+  • NEVER use "X" or "x" — this app does not support explosive shorthand. Use 1 for
+    fast/controlled concentric, 2+ for deliberately slower movements
+  • Valid:   "3010", "4020", "2111", "3121"
+  • Invalid: "3-1-x-0", "210x", "31X0" — these will be auto-corrected to 1 in the app
+             but you must not generate them
 - rpe_pattern (string) — comma-separated RPE per set e.g. "7,7,8"
 Optional:
 - tempo_per_set_pattern (string) — if tempo varies per set
@@ -1055,6 +1065,22 @@ NOTES_COACH — CONDITIONAL:
 - The Exercise Library (surfaced in the app's inline details
   panel) handles technique, safety, and cues automatically.
 - Pattern fields handle loading structure. Do not repeat them.
+
+EXERCISE NAMING — ABSOLUTE:
+- exercise_name MUST exactly match a name in the Exercises_Library.
+  Never invent, paraphrase, or abbreviate exercise names.
+- Always use the search_exercises tool to look up the correct canonical
+  name before assigning it to a step. If search returns no match,
+  choose the closest matching canonical name from the results.
+- A hallucinated exercise name (e.g. "Full Body Dynamic Prep" instead
+  of "Full-body Dynamic Flow") will have no Exercise Library data and
+  will appear blank in the app. This is a coaching error.
+
+COOLDOWN — REQUIRED:
+- Every session with estimated_duration_minutes >= 20 MUST include at
+  least one cooldown segment step (segment_type: "cooldown").
+- Cooldown steps are non-negotiable. Do not omit them to save tokens.
+- Typical cooldown: 1-2 mobility or breathing exercises, 5-10 min.
 
 NOTES_ATHLETE — ABSOLUTE:
 - notes_athlete MUST be sent as empty string "" in all steps of this

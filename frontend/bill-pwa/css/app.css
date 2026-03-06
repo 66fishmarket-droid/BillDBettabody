@@ -429,7 +429,7 @@ p {
 .sets-header,
 .set-row {
   display: grid;
-  grid-template-columns: 28px 1fr 1fr 56px;
+  grid-template-columns: 36px 1fr 1fr 56px;
   gap: var(--space-sm);
   align-items: center;
   margin-bottom: 6px;
@@ -438,7 +438,7 @@ p {
 /* 3-column variant: bodyweight (reps+RPE), time-based, distance-based */
 .sets-header.grid-3col,
 .set-row.grid-3col {
-  grid-template-columns: 28px 1fr 56px;
+  grid-template-columns: 36px 1fr 56px;
 }
 
 .sets-header {
@@ -449,11 +449,39 @@ p {
   margin-bottom: 4px;
 }
 
-.set-num {
-  font-size: 0.875rem;
+/* Set completion toggle — replaces set number; tap to confirm */
+.set-done-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--bill-border);
+  background: transparent;
   color: var(--bill-text-muted);
-  font-weight: 600;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-height: unset;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.set-done-btn.done {
+  background: var(--bill-success);
+  border-color: var(--bill-success);
+  color: #fff;
+}
+
+/* Hint text above set rows */
+.sets-hint {
+  font-size: 0.6875rem;
+  color: var(--bill-text-muted);
   text-align: center;
+  margin-bottom: 4px;
+  font-style: italic;
 }
 
 .set-input {

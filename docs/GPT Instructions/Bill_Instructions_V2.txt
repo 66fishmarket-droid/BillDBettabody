@@ -958,6 +958,14 @@ STRENGTH STEPS: reps/sets/load coherent with session intent.
 Allow RPE-based autoregulation. Specify tempo where it
 affects stimulus or safety, especially for beginners.
 
+TEMPO NOTATION RULES:
+Tempo is always 4 integers: eccentric – bottom pause – concentric – top pause.
+• Eccentric (digit 1) and concentric (digit 3) must always be ≥ 1.
+  A value of 0 for either means instant movement — physically impossible.
+• NEVER use "X" or "x". Use 1 for fast/controlled, 2+ for slower.
+• Valid examples: "3010", "4020", "2111", "3121"
+• Invalid: anything containing X or a 0 in digit 1 or digit 3.
+
 ENDURANCE STEPS: Must include intensity descriptor (zone,
 effort cue). Duration or distance must be specified.
 Never prescribe "go for a run" without effort guidance.
