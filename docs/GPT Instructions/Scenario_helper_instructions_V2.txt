@@ -1056,6 +1056,22 @@ NOTES_COACH — CONDITIONAL:
   panel) handles technique, safety, and cues automatically.
 - Pattern fields handle loading structure. Do not repeat them.
 
+EXERCISE NAMING — ABSOLUTE:
+- exercise_name MUST exactly match a name in the Exercises_Library.
+  Never invent, paraphrase, or abbreviate exercise names.
+- Always use the search_exercises tool to look up the correct canonical
+  name before assigning it to a step. If search returns no match,
+  choose the closest matching canonical name from the results.
+- A hallucinated exercise name (e.g. "Full Body Dynamic Prep" instead
+  of "Full-body Dynamic Flow") will have no Exercise Library data and
+  will appear blank in the app. This is a coaching error.
+
+COOLDOWN — REQUIRED:
+- Every session with estimated_duration_minutes >= 20 MUST include at
+  least one cooldown segment step (segment_type: "cooldown").
+- Cooldown steps are non-negotiable. Do not omit them to save tokens.
+- Typical cooldown: 1-2 mobility or breathing exercises, 5-10 min.
+
 NOTES_ATHLETE — ABSOLUTE:
 - notes_athlete MUST be sent as empty string "" in all steps of this
   payload. Any non-empty value is a hard validation error that will

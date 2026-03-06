@@ -47,9 +47,9 @@ class SessionActive {
     const baseRpe   = step.target_value ? String(step.target_value) : '';
 
     const repsArr = step.reps_pattern ? step.reps_pattern.split(',').map(s => s.trim()) : [];
-    const rpeArr  = step.rpe_pattern  ? step.rpe_pattern.split(',').map(s => s.trim()) : [];
+    const rpeArr  = step.rpe_pattern  ? step.rpe_pattern.split(',').map(s => this._normalizeRpe(s)) : [];
     const getReps = i => repsArr[i] || baseReps;
-    const getRpe  = i => rpeArr[i]  || baseRpe;
+    const getRpe  = i => rpeArr[i]  || this._normalizeRpe(baseRpe);
 
     const sets = [];
 
@@ -187,6 +187,7 @@ class SessionActive {
         <div class="${headerClass}">
           ${headerHtml}
         </div>
+        <div class="sets-hint">Numbers pre-filled from your plan — tap ○ to confirm a set, or adjust first</div>
 
         <div class="sets-rows" id="sets-rows-${idx}">
           ${this.buildPatternSets(step).map((ps, i) => this.renderSetRow(idx, i + 1, inputMode, recommendedLoad, ps)).join('')}
@@ -220,53 +221,65 @@ class SessionActive {
   }
 
   // prescribed = {load, reps, rpe} — per-set values from buildPatternSets().
-  // load is pre-filled as a value; reps/rpe shown as placeholders (athlete enters actuals).
+  // load is pre-filled as a value; reps/rpe shown as placeholders.
+  // The done-toggle button (set number) must be tapped to confirm the set —
+  // any input change auto-confirms it. Only confirmed sets are saved.
   renderSetRow(stepIdx, setNum, mode, recommendedLoad, prescribed = {}) {
-    const m = mode || 'reps_load_rpe';
+    const m    = mode || 'reps_load_rpe';
+    const pRpe = this._normalizeRpe(prescribed.rpe);
+    const doneBtn = `<button class="set-done-btn" data-step="${stepIdx}" data-set="${setNum}" data-done="false" aria-label="Confirm set ${setNum}">${setNum}</button>`;
+
+    const rowAttrs = (extraClass = '') => [
+      `class="set-row${extraClass ? ' ' + extraClass : ''}"`,
+      `data-set-num="${setNum}"`,
+      `data-prescribed-load="${prescribed.load || ''}"`,
+      `data-prescribed-reps="${prescribed.reps || ''}"`,
+      `data-prescribed-rpe="${pRpe}"`,
+    ].join(' ');
 
     if (m === 'time_rpe') {
       return `
-        <div class="set-row grid-3col" data-set-num="${setNum}">
-          <span class="set-num">${setNum}</span>
+        <div ${rowAttrs('grid-3col')}>
+          ${doneBtn}
           <input class="set-input" type="text" inputmode="decimal"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="mm:ss">
           <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
-                 placeholder="${prescribed.rpe || '—'}">
+                 placeholder="${pRpe || '—'}">
         </div>`;
     }
 
     if (m === 'distance_rpe') {
       return `
-        <div class="set-row grid-3col" data-set-num="${setNum}">
-          <span class="set-num">${setNum}</span>
+        <div ${rowAttrs('grid-3col')}>
+          ${doneBtn}
           <input class="set-input" type="number" min="0" step="1" inputmode="decimal" pattern="[0-9.]*"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="value" placeholder="—">
           <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
-                 placeholder="${prescribed.rpe || '—'}">
+                 placeholder="${pRpe || '—'}">
         </div>`;
     }
 
     if (m === 'reps_rpe') {
       return `
-        <div class="set-row grid-3col" data-set-num="${setNum}">
-          <span class="set-num">${setNum}</span>
+        <div ${rowAttrs('grid-3col')}>
+          ${doneBtn}
           <input class="set-input" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps"
                  placeholder="${prescribed.reps || '—'}">
           <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
                  data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
-                 placeholder="${prescribed.rpe || '—'}">
+                 placeholder="${pRpe || '—'}">
         </div>`;
     }
 
     // reps_load_rpe — prescribed load pre-filled as value; reps/rpe as placeholders
-    const loadVal = prescribed.load || recommendedLoad || null;
+    const loadVal  = prescribed.load || recommendedLoad || null;
     const loadAttr = loadVal ? ` value="${loadVal}"` : '';
     return `
-      <div class="set-row" data-set-num="${setNum}">
-        <span class="set-num">${setNum}</span>
+      <div ${rowAttrs()}>
+        ${doneBtn}
         <input class="set-input" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
                data-step="${stepIdx}" data-set="${setNum}" data-field-type="reps"
                placeholder="${prescribed.reps || '—'}">
@@ -275,7 +288,7 @@ class SessionActive {
                placeholder="—"${loadAttr}>
         <input class="set-input" type="number" min="1" max="10" inputmode="numeric" pattern="[0-9]*"
                data-step="${stepIdx}" data-set="${setNum}" data-field-type="rpe"
-               placeholder="${prescribed.rpe || '—'}">
+               placeholder="${pRpe || '—'}">
       </div>`;
   }
 
@@ -323,6 +336,24 @@ class SessionActive {
   renderDetailsPanel(step, idx) {
     const sections = [];
 
+    // Pattern prescription info
+    if (step.pattern_type) {
+      const rows = [];
+      const p = [`<strong>Pattern:</strong> ${this.esc(step.pattern_type)}`];
+      if (parseFloat(step.load_start_kg) > 0)     p.push(`Start: ${this.formatLoad(step.load_start_kg, step)}`);
+      if (parseFloat(step.load_increment_kg) > 0)  p.push(`+${step.load_increment_kg}kg/set`);
+      if (parseFloat(step.load_peak_kg) > 0)       p.push(`Peak: ${this.formatLoad(step.load_peak_kg, step)}`);
+      rows.push(`<p>${p.join('  •  ')}</p>`);
+      if (step.reps_pattern)          rows.push(`<p>Reps: ${this.formatPattern(step.reps_pattern)}</p>`);
+      if (step.rpe_pattern)           rows.push(`<p>RPE targets: ${this.formatPattern(step.rpe_pattern)}</p>`);
+      if (step.tempo_per_set_pattern) rows.push(`<p>Tempo per set: ${this.formatPattern(step.tempo_per_set_pattern)}</p>`);
+      if (step.pattern_notes)         rows.push(`<p><em>${this.esc(step.pattern_notes)}</em></p>`);
+      sections.push(`<div class="details-section">
+        <div class="details-label">Loading Pattern</div>
+        ${rows.join('')}
+      </div>`);
+    }
+
     if (step.notes_coach) {
       sections.push(`<div class="details-section">
         <div class="details-label">Coach Notes</div>
@@ -351,10 +382,18 @@ class SessionActive {
       ? step.video_urls
       : (step.video_url ? [step.video_url] : []);
     if (urls.length) {
-      const links = urls.map(u =>
-        `<a href="${this.esc(u)}" target="_blank" rel="noopener">▶ Watch video</a>`
-      ).join('&ensp;');
-      sections.push(`<div class="details-section">${links}</div>`);
+      const videoHtml = urls.map(u => {
+        const embedUrl = this._youtubeEmbedUrl(u);
+        if (embedUrl) {
+          return `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px;background:#000;margin-bottom:8px;">
+            <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen loading="lazy"></iframe>
+          </div>`;
+        }
+        return `<a href="${this.esc(u)}" target="_blank" rel="noopener">▶ Watch video</a>`;
+      }).join('');
+      sections.push(`<div class="details-section">${videoHtml}</div>`);
     }
 
     const body = sections.length
@@ -393,24 +432,17 @@ class SessionActive {
     }
     if (restTempo.length) lines.push(restTempo.join('  •  '));
 
-    if (step.pattern_type) {
-      const p = [`Pattern: ${this.esc(step.pattern_type)}`];
-      if (parseFloat(step.load_start_kg) > 0)    p.push(`Start: ${this.formatLoad(step.load_start_kg, step)}`);
-      if (parseFloat(step.load_increment_kg) > 0) p.push(`+${step.load_increment_kg}kg/set`);
-      if (parseFloat(step.load_peak_kg) > 0)      p.push(`Peak: ${this.formatLoad(step.load_peak_kg, step)}`);
-      lines.push(p.join('  •  '));
-    }
-
-    if (step.reps_pattern)          lines.push(`Reps: ${this.formatPattern(step.reps_pattern)}`);
-    if (step.rpe_pattern)           lines.push(`RPE target: ${this.formatPattern(step.rpe_pattern)}`);
-    if (step.tempo_per_set_pattern) lines.push(`Tempo per set: ${this.formatPattern(step.tempo_per_set_pattern)}`);
-    if (step.pattern_notes)         lines.push(`<em>${this.esc(step.pattern_notes)}</em>`);
 
     // Weight recommendation
     const recLoad   = parseFloat(step.recommended_load_kg);
     const recSource = step.recommendation_source;
     const recNote   = step.recommendation_note;
-    if (recSource === 'no_data' && !parseFloat(step.load_kg)) {
+    // Only show recommendation info for load-based exercises, not bodyweight
+    const isLoadExercise = parseFloat(step.load_kg) > 0
+      || parseFloat(step.load_start_kg) > 0
+      || parseFloat(step.load_peak_kg) > 0
+      || recLoad > 0;
+    if (recSource === 'no_data' && isLoadExercise) {
       lines.push(`<span class="rec-no-data">No recommendation — set your own weight</span>`);
     } else if (recLoad > 0 && recSource && recSource !== 'prescribed') {
       lines.push(
@@ -677,6 +709,13 @@ class SessionActive {
     return `${total}kg`;
   }
 
+  // Normalise an RPE value for display in a small input placeholder.
+  // Strips leading "RPE " or "rpe " prefix so "RPE 8" → "8", "7-8" stays "7-8".
+  _normalizeRpe(val) {
+    if (val === null || val === undefined || val === '') return '';
+    return String(val).replace(/^rpe\s*/i, '').trim();
+  }
+
   esc(str) {
     if (!str) return '';
     const d = document.createElement('div');
@@ -803,6 +842,14 @@ class SessionActive {
       if (e.target.classList.contains('details-toggle-btn')) {
         this.toggleDetailsPanel(Number(e.target.dataset.step), e.target);
       }
+      // Done-toggle: tap set number circle to confirm/unconfirm a set
+      if (e.target.classList.contains('set-done-btn')) {
+        const btn = e.target;
+        const isDone = btn.dataset.done === 'true';
+        btn.dataset.done = isDone ? 'false' : 'true';
+        btn.classList.toggle('done', !isDone);
+        btn.textContent = isDone ? btn.dataset.set : '✓';
+      }
       if (e.target.classList.contains('rest-timer-btn')) {
         const stepIdx = Number(e.target.dataset.step);
         if (this.restTimers[stepIdx]) {
@@ -812,6 +859,20 @@ class SessionActive {
           // Start timer
           const secs = parseInt(e.target.dataset.seconds, 10);
           this.startRestTimer(stepIdx, secs);
+        }
+      }
+    });
+
+    // Any input in a set row auto-confirms that set
+    container.addEventListener('input', e => {
+      if (e.target.classList.contains('set-input')) {
+        const row = e.target.closest('.set-row');
+        if (!row) return;
+        const btn = row.querySelector('.set-done-btn');
+        if (btn && btn.dataset.done !== 'true') {
+          btn.dataset.done = 'true';
+          btn.classList.add('done');
+          btn.textContent = '✓';
         }
       }
     });
@@ -869,17 +930,25 @@ class SessionActive {
       const metric       = metricSelect ? metricSelect.value : null;
 
       card.querySelectorAll('.set-row').forEach(row => {
+        const doneBtn = row.querySelector('.set-done-btn');
+        if (!doneBtn || doneBtn.dataset.done !== 'true') return; // skip unconfirmed sets
+
         const setNum     = row.dataset.setNum;
         const repsInput  = row.querySelector('[data-field-type="reps"]');
         const valueInput = row.querySelector('[data-field-type="value"]');
         const rpeInput   = row.querySelector('[data-field-type="rpe"]');
 
-        if (repsInput  && repsInput.value  !== '') update[`actual_set${setNum}_reps`]  = Number(repsInput.value);
-        if (valueInput && valueInput.value !== '') {
-          update[`actual_set${setNum}_value`]  = Number(valueInput.value);
+        // Use entered value; fall back to prescribed if input left blank
+        const repsVal  = repsInput?.value?.trim()  || row.dataset.prescribedReps  || '';
+        const loadVal  = valueInput?.value?.trim()  || row.dataset.prescribedLoad  || '';
+        const rpeVal   = rpeInput?.value?.trim()    || row.dataset.prescribedRpe   || '';
+
+        if (repsVal  !== '') update[`actual_set${setNum}_reps`]  = Number(repsVal);
+        if (loadVal  !== '') {
+          update[`actual_set${setNum}_value`]  = Number(loadVal);
           if (metric) update[`actual_set${setNum}_metric`] = metric;
         }
-        if (rpeInput   && rpeInput.value   !== '') update[`actual_set${setNum}_rpe`]   = Number(rpeInput.value);
+        if (rpeVal   !== '') update[`actual_set${setNum}_rpe`]   = Number(rpeVal);
       });
 
       const notesEl = card.querySelector('[data-field="notes_athlete"]');
@@ -891,9 +960,12 @@ class SessionActive {
       if (recLoad > 0 && recSource && recSource !== 'prescribed' && recSource !== 'no_data') {
         let totalLoad = 0, loadSetCount = 0;
         card.querySelectorAll('.set-row').forEach(row => {
+          const doneBtn = row.querySelector('.set-done-btn');
+          if (!doneBtn || doneBtn.dataset.done !== 'true') return;
           const valueInput = row.querySelector('[data-field-type="value"]');
-          if (valueInput && valueInput.value !== '') {
-            totalLoad += Number(valueInput.value);
+          const loadVal = valueInput?.value?.trim() || row.dataset.prescribedLoad || '';
+          if (loadVal !== '') {
+            totalLoad += Number(loadVal);
             loadSetCount++;
           }
         });
