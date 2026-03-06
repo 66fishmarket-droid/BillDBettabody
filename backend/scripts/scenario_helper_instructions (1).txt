@@ -501,6 +501,7 @@ Other session keys are mapped into Plans_Sessions (if missing they become blank 
 - intended_hr_zone (string)
 - estimated_duration_minutes (number/integer)
 - linked_sport (string)
+- session_summary (string)
 
 steps (array) REQUIRED:
 Each item is a step object. These fields are mapped into Plans_Steps (missing -> blank cells):
@@ -561,6 +562,28 @@ explicitly during record creation to avoid orphaned rows.
 
 END OF IDENTIFIER CASCADE RULE
 ------------------------------------------------------------
+
+-----------------------------
+SESSION SUMMARY REQUIREMENTS
+-----------------------------
+CRITICAL FIELD: session_summary
+
+Each session object MUST include a session_summary field (string):
+- Purpose: Provides 2-3 sentence plain-language explanation of session intent
+- When to populate: During populate_training_week execution (Bill generates this)
+- Content: Bill's gruff-but-warm voice explaining what to expect
+- Examples:
+  - Strength: "Right then, leg day. Today's about building raw strength..."
+  - Endurance: "Easy aerobic session today. Conversational pace, building your base..."
+  - Recovery: "Light session today - movement quality, not chasing numbers..."
+
+If session_summary is missing or empty:
+- The session will still populate (steps are more critical)
+- But this is considered incomplete and should be logged as an issue
+- PWA dashboard will have no contextual message for the client
+
+PERSONA RULE:
+session_summary must use Bill's direct, working-class voice and frame effort honestly.
 
 -----------------------------
 FRAGILE BITS / BREAK CONDITIONS
@@ -629,6 +652,10 @@ CANONICAL SOURCE: Make Scenario (Bill - Session Update) updated to map notes_ath
 SHEETS REFERENCE: Bill Google Sheets headers Overview.txt
 WEBHOOK PURPOSE:
 Patch one existing Plans_Sessions row (by client_id + session_id) and patch existing Plans_Steps rows (by client_id + step_id).
+SESSION SUMMARY UPDATES:
+When session intent changes significantly (e.g. injury modification, equipment change, 
+effort adjustment), session_summary SHOULD be updated via session_updates to reflect 
+the new context.
 
 -----------------------------
 INPUT CONTRACT (JSON BODY)
@@ -646,6 +673,7 @@ Optional:
   - supplements (string)
   - notes (string)
   - session_status (string)
+  - session_summary (string)
 
 - steps_upsert (array) OPTIONAL but preferred to send as [] when none
   Each item MUST include:

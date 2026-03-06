@@ -1,0 +1,102 @@
+TITLE: Device-based auto-login for PWA
+STATUS: Backlog
+PRIORITY: Medium
+SUMMARY
+-------
+Enable automatic login for returning users on their personal devices without requiring manual client ID entry each time. The goal is for clients to open the PWA and be immediately logged in if they've used the device before, while maintaining security and allowing manual login as fallback.
+
+USER STORY
+----------
+As a client, I want to open Bill's app on my phone and be automatically logged in, so that I can get straight to my training without typing my ID every time. If I'm on a new device or cleared my data, I should still be able to log in manually.
+
+DATA / MODEL IMPACT
+-------------------
+- Add device_fingerprint field to Clients sheet (column TBD - probably after watch_user_id).
+- device_fingerprint stores a unique identifier for the user's device.
+- Multiple devices per client supported (comma-separated or separate Device_Registry sheet if scaling).
+- No new sheets required for MVP (can add Device_Registry later if needed).
+
+TECHNICAL REQUIREMENTS (MVP)
+----------------------------
+1) Device Fingerprinting on PWA:
+   - On first login, generate device fingerprint using:
+     - localStorage persistent ID (primary)
+     - Browser fingerprint as backup (canvas, fonts, screen, timezone combo)
+     - Store fingerprint in localStorage: bill_device_id
+   - Platform differences:
+     - iOS: localStorage persists if app installed to home screen (PWA mode)
+     - Android: localStorage persists reliably in installed PWAs
+     - Fallback: If localStorage cleared, regenerate and prompt re-link
+
+2) Backend Endpoint: POST /device/link
+   - Input:
+     - client_id (string)
+     - device_fingerprint (string)
+     - device_name (optional, e.g. "iPhone 13", "Chrome on Windows")
+   - Steps:
+     - Verify client_id exists
+     - Store device_fingerprint in Clients sheet device_fingerprint column
+     - If multiple devices needed, append to comma-separated list or write to Device_Registry
+   - Output:
+     - success (boolean)
+     - message (string)
+
+3) Backend Endpoint: POST /initialize (modify existing)
+   - Current: takes client_id → stranger/onboarding/ready
+   - New: also accept device_fingerprint
+   - If device_fingerprint provided and no client_id:
+     - Look up client_id from Clients sheet where device_fingerprint matches
+     - If found: return ready state with full context
+     - If not found: return stranger state (prompt for client_id)
+
+4) PWA Login Flow:
+   - On app open:
+     - Check localStorage for bill_device_id
+     - If exists: call /initialize with device_fingerprint
+     - If match found: auto-login to dashboard
+     - If no match: show login screen with client_id input
+   - On first manual login:
+     - User enters client_id
+     - Generate device_fingerprint
+     - Call /device/link to register device
+     - Save bill_device_id to localStorage
+     - Future visits: auto-login
+
+5) Security Considerations:
+   - Device fingerprint is convenience, not high security (like "remember me")
+   - For sensitive operations, still require confirmation
+   - Allow users to "unlink devices" in settings (future)
+   - Session timeout remains in backend (24h default)
+
+SCENARIOS AFFECTED
+------------------
+- New: Bill - Link Device (simple Google Sheets lookup/write)
+- Modified: Bill - Load Client Context (add device_fingerprint lookup)
+- Modified: PWA index.html (add device fingerprinting logic)
+- Modified: Backend /initialize endpoint (accept device_fingerprint param)
+
+GOOGLE SHEETS CHANGES
+---------------------
+- Clients sheet: Add column device_fingerprint (text field)
+- Alternative (if scaling): Create Device_Registry sheet with:
+  - client_id
+  - device_fingerprint
+  - device_name
+  - date_linked
+  - last_used
+  - status (active/revoked)
+
+OPEN QUESTIONS
+--------------
+- Do we store multiple devices per client in Clients sheet (comma-separated) or create Device_Registry sheet?
+- Should device fingerprint include timestamp for expiry (e.g. re-link after 90 days)?
+- Do we need "logout" functionality that clears device_fingerprint from localStorage?
+- Should we show "You're logged in as [name]" on landing page for auto-logged users?
+- iOS vs Android: Any differences in PWA localStorage persistence we need to handle?
+
+FUTURE ENHANCEMENTS
+-------------------
+- Device management UI: "Your Devices" page showing linked devices with revoke option
+- Push notifications tied to specific devices
+- Device-specific preferences (e.g. "on phone, show simplified UI")
+- Multi-factor auth for high-risk operations (injury logging, plan changes)
