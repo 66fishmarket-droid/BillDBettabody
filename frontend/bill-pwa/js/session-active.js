@@ -410,7 +410,7 @@ class SessionActive {
     const restTempo = [];
     if (parseInt(step.rest_seconds, 10) > 0) restTempo.push(`Rest: ${step.rest_seconds}s`);
     if (step.tempo_pattern) {
-      restTempo.push(`Tempo: ${this.formatPattern(step.tempo_pattern)} <span class="tempo-guide">(down · pause · up · pause)</span>`);
+      restTempo.push(`Tempo: ${this.formatPattern(this._sanitizeTempo(step.tempo_pattern))} <span class="tempo-guide">(down · pause · up · pause)</span>`);
     }
     if (restTempo.length) lines.push(restTempo.join('  •  '));
 
@@ -424,7 +424,7 @@ class SessionActive {
     }
     if (step.reps_pattern)          lines.push(`Reps: ${this.formatPattern(step.reps_pattern)}`);
     if (step.rpe_pattern)           lines.push(`RPE: ${this.formatPattern(step.rpe_pattern)}`);
-    if (step.tempo_per_set_pattern) lines.push(`Tempo per set: ${this.formatPattern(step.tempo_per_set_pattern)}`);
+    if (step.tempo_per_set_pattern) lines.push(`Tempo per set: ${this.formatPattern(this._sanitizeTempo(step.tempo_per_set_pattern))}`);
     if (step.pattern_notes)         lines.push(`<em>${this.esc(step.pattern_notes)}</em>`);
 
     // Weight recommendation
@@ -463,7 +463,7 @@ class SessionActive {
 
     if (parseInt(step.rest_seconds, 10) > 0) lines.push(`Rest: ${step.rest_seconds}s`);
     if (step.tempo_pattern) {
-      lines.push(`Tempo: ${this.formatPattern(step.tempo_pattern)} <span class="tempo-guide">(down · pause · up · pause)</span>`);
+      lines.push(`Tempo: ${this.formatPattern(this._sanitizeTempo(step.tempo_pattern))} <span class="tempo-guide">(down · pause · up · pause)</span>`);
     }
 
     return this.wrapPrescription(lines, step.notes_coach);
@@ -708,6 +708,14 @@ class SessionActive {
   _normalizeRpe(val) {
     if (val === null || val === undefined || val === '') return '';
     return String(val).replace(/^rpe\s*/i, '').trim();
+  }
+
+  // Sanitize a tempo string — replaces any X/x (explosive shorthand) with 1.
+  // Eccentric and concentric must always be >= 1; X is not meaningful here.
+  // e.g. "3-1-x-0" → "3-1-1-0", "210x" → "2101"
+  _sanitizeTempo(val) {
+    if (!val) return val;
+    return String(val).replace(/x/gi, '1');
   }
 
   esc(str) {

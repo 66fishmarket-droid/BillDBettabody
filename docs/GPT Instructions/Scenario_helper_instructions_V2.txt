@@ -918,8 +918,18 @@ Required when pattern_type assigned:
 - load_peak_kg (number) — highest load reached; same as load_start_kg if flat
 - rest_seconds (number)
 - tempo_pattern (string) — 4-digit format e.g. "3010"
+  Format: eccentric – bottom pause – concentric – top pause
   Default: "3010" for beginners, "2020" for general population
   Omit ONLY if medically contraindicated or explicitly not appropriate
+  TEMPO RULES (non-negotiable):
+  • All four values must be integers ≥ 0
+  • Eccentric (digit 1) and concentric (digit 3) must ALWAYS be ≥ 1 — the movement
+    takes real time; a value of 0 is physically impossible
+  • NEVER use "X" or "x" — this app does not support explosive shorthand. Use 1 for
+    fast/controlled concentric, 2+ for deliberately slower movements
+  • Valid:   "3010", "4020", "2111", "3121"
+  • Invalid: "3-1-x-0", "210x", "31X0" — these will be auto-corrected to 1 in the app
+             but you must not generate them
 - rpe_pattern (string) — comma-separated RPE per set e.g. "7,7,8"
 Optional:
 - tempo_per_set_pattern (string) — if tempo varies per set
