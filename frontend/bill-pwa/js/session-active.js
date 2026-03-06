@@ -336,24 +336,6 @@ class SessionActive {
   renderDetailsPanel(step, idx) {
     const sections = [];
 
-    // Pattern prescription info
-    if (step.pattern_type) {
-      const rows = [];
-      const p = [`<strong>Pattern:</strong> ${this.esc(step.pattern_type)}`];
-      if (parseFloat(step.load_start_kg) > 0)     p.push(`Start: ${this.formatLoad(step.load_start_kg, step)}`);
-      if (parseFloat(step.load_increment_kg) > 0)  p.push(`+${step.load_increment_kg}kg/set`);
-      if (parseFloat(step.load_peak_kg) > 0)       p.push(`Peak: ${this.formatLoad(step.load_peak_kg, step)}`);
-      rows.push(`<p>${p.join('  •  ')}</p>`);
-      if (step.reps_pattern)          rows.push(`<p>Reps: ${this.formatPattern(step.reps_pattern)}</p>`);
-      if (step.rpe_pattern)           rows.push(`<p>RPE targets: ${this.formatPattern(step.rpe_pattern)}</p>`);
-      if (step.tempo_per_set_pattern) rows.push(`<p>Tempo per set: ${this.formatPattern(step.tempo_per_set_pattern)}</p>`);
-      if (step.pattern_notes)         rows.push(`<p><em>${this.esc(step.pattern_notes)}</em></p>`);
-      sections.push(`<div class="details-section">
-        <div class="details-label">Loading Pattern</div>
-        ${rows.join('')}
-      </div>`);
-    }
-
     if (step.notes_coach) {
       sections.push(`<div class="details-section">
         <div class="details-label">Coach Notes</div>
@@ -432,6 +414,18 @@ class SessionActive {
     }
     if (restTempo.length) lines.push(restTempo.join('  •  '));
 
+    // Pattern fields — always visible at-a-glance
+    if (step.pattern_type) {
+      const p = [`<strong>Pattern:</strong> ${this.esc(step.pattern_type)}`];
+      if (parseFloat(step.load_start_kg) > 0)     p.push(`Start: ${this.formatLoad(step.load_start_kg, step)}`);
+      if (parseFloat(step.load_increment_kg) > 0)  p.push(`+${step.load_increment_kg}kg/set`);
+      if (parseFloat(step.load_peak_kg) > 0)       p.push(`Peak: ${this.formatLoad(step.load_peak_kg, step)}`);
+      lines.push(p.join('  •  '));
+    }
+    if (step.reps_pattern)          lines.push(`Reps: ${this.formatPattern(step.reps_pattern)}`);
+    if (step.rpe_pattern)           lines.push(`RPE: ${this.formatPattern(step.rpe_pattern)}`);
+    if (step.tempo_per_set_pattern) lines.push(`Tempo per set: ${this.formatPattern(step.tempo_per_set_pattern)}`);
+    if (step.pattern_notes)         lines.push(`<em>${this.esc(step.pattern_notes)}</em>`);
 
     // Weight recommendation
     const recLoad   = parseFloat(step.recommended_load_kg);
