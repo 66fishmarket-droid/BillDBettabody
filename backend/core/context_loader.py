@@ -357,9 +357,23 @@ def build_client_context_text(session):
     today_str = now_local.strftime('%Y-%m-%d')
     day_name = now_local.strftime('%A')  # e.g. "Sunday"
     tz_label = session.get('_resolved_timezone', 'UTC')
+    # Build the upcoming Mon–Sun date grid. The week always starts on Monday.
+    # If today is Monday, the upcoming week is this week. Otherwise it's next Monday.
+    from datetime import timedelta
+    today_date = now_local.date()
+    days_to_monday = (7 - today_date.weekday()) % 7 or 7  # 0 if Mon → show next Mon
+    next_monday = today_date + timedelta(days=days_to_monday)
+    day_names_ordered = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    week_grid = '  '.join(
+        f"{d}: {(next_monday + timedelta(days=i)).strftime('%Y-%m-%d')}"
+        for i, d in enumerate(day_names_ordered)
+    )
+
     parts.append("=" * 60)
     parts.append(f"TODAY'S DATE: {today_str} ({day_name}) [{tz_label}]  ← USE THIS FOR ALL DATE CALCULATIONS")
     parts.append("All session_date values you generate must be >= this date unless explicitly editing historical data.")
+    parts.append(f"UPCOMING WEEK (Mon–Sun): {week_grid}")
+    parts.append("When populating a training week, assign session_date values from this grid based on the agreed training days. Do not invent dates outside this range.")
     parts.append("=" * 60)
     parts.append("CURRENT CLIENT CONTEXT")
     parts.append(f"Last refreshed: {session.get('last_refresh', 'Never')}")
