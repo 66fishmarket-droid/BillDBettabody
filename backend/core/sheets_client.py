@@ -1257,18 +1257,22 @@ def get_clients_needing_weekly_prep():
         # Sort ascending so the first session we hit per client is their nearest upcoming one
         upcoming.sort(key=lambda s: str(s.get('session_date', '')))
 
-        client_week = {}  # client_id → {week_id: str, session_ids: list}
+        client_week = {}  # client_id → {week_id, session_ids, sessions}
         for s in upcoming:
-            client_id = str(s.get('client_id', '') or '').strip()
-            week_id   = str(s.get('week_id',   '') or '').strip()
+            client_id  = str(s.get('client_id',  '') or '').strip()
+            week_id    = str(s.get('week_id',    '') or '').strip()
             session_id = str(s.get('session_id', '') or '').strip()
             if not client_id or not week_id or not session_id:
                 continue
             if client_id not in client_week:
-                # First (nearest) upcoming week for this client
-                client_week[client_id] = {'week_id': week_id, 'session_ids': []}
+                client_week[client_id] = {'week_id': week_id, 'session_ids': [], 'sessions': []}
             if client_week[client_id]['week_id'] == week_id:
                 client_week[client_id]['session_ids'].append(session_id)
+                client_week[client_id]['sessions'].append({
+                    'session_id':  session_id,
+                    'day_of_week': str(s.get('day_of_week', '') or '').strip(),
+                    'session_date': str(s.get('session_date', '') or '').strip(),
+                })
 
         if not client_week:
             logger.info("[Sheets] Weekly prep check: no upcoming sessions found")
@@ -1302,6 +1306,8 @@ def get_clients_needing_weekly_prep():
                     'client_id':     client_id,
                     'week_id':       week_id,
                     'session_count': len(session_ids),
+                    'sessions':      info['sessions'],
+                    'week_start':    this_monday,
                 })
 
         return needing_prep
